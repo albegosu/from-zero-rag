@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
+@import "./ai-elements-hypar.css";
 
 /* ── Global tokens ───────────────────────────────────────────── */
 :root {

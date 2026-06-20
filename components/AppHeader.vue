@@ -3,7 +3,7 @@
     <div class="px-4 h-12 flex items-center justify-between text-xs">
 
       <NuxtLink to="/" class="flex items-center gap-3 shrink-0">
-        <HyparMark />
+        <BrandHyparMark />
         <div class="flex items-center gap-2">
           <span class="wz-strong font-semibold">{{ t('app.brand') }}</span>
         </div>

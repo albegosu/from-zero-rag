@@ -9,12 +9,17 @@ export default defineNuxtConfig({
   },
 
   modules: [
+    'ai-elements-nuxt',
     '@nuxt/ui',
     '@pinia/nuxt',
     '@vueuse/nuxt',
     'workflow/nuxt',
     './modules/copy-workflow-bundles',
   ],
+
+  aiElements: {
+    defaultStyles: true,
+  },
 
   css: ['~/assets/css/main.css'],
 

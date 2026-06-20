@@ -4,7 +4,7 @@
 
       <header class="glass hairline-b px-4 h-12 flex items-center justify-between text-xs shrink-0">
         <div class="flex items-center gap-3">
-          <HyparMark />
+          <BrandHyparMark />
           <span class="wz-strong font-semibold">hypar</span>
         </div>
         <button type="button" class="wz-btn-ghost wz-theme-toggle" @click="toggleTheme">

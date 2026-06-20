@@ -37,7 +37,7 @@
     "@ai-sdk/vue": "^3.0.174",
     "@google/generative-ai": "^0.24.1",
     "@nuxt/icon": "^1.15.0",
-    "@nuxt/ui": "^3.0.0",
+    "@nuxt/ui": "^4.9.0",
     "@pinia/nuxt": "^0.5.1",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",

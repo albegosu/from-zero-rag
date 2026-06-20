@@ -14,6 +14,23 @@ A learning-focused, full-stack **Retrieval-Augmented Generation (RAG)** app buil
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue)](https://www.typescriptlang.org/)
 [![Nuxt](https://img.shields.io/badge/Nuxt-3-green)](https://nuxt.com/)
 [![pgvector](https://img.shields.io/badge/pgvector-0.5-purple)](https://github.com/pgvector/pgvector)
+[![Live demo](https://img.shields.io/badge/Live_demo-hypar.up.railway.app-black)](https://hypar.up.railway.app/)
+
+**▶ Try it live: [hypar.up.railway.app](https://hypar.up.railway.app/)** · 📖 [Docs](https://albegosu.github.io/hypar/) · 🚀 [Deploy your own](#deploy-your-own)
+
+---
+
+## Why hypar?
+
+Most RAG tutorials are toy scripts; most production RAG repos are black boxes. **hypar is both readable and real** — and it's what makes it worth your time:
+
+- **Every stage is one small, named file you can open and follow** — chunking, embedding, hybrid search, MMR, HyDE, agentic tool-calling. No framework magic to reverse-engineer.
+- **Tune the whole pipeline at runtime, no redeploy** — chunk size, top-K, hybrid α, MMR λ, HyDE on/off, search mode (`auto` / `search` / `direct`), system prompt — all live from `/admin/settings`.
+- **One Nuxt 3 app, front-to-back** — same process for UI and API: no CORS, no separate backend, no microservice sprawl. Clone, set one API key, run.
+- **Agentic, not just retrieval** — the LLM decides *whether* to search your knowledge base for each message, so small-talk doesn't waste an embedding round-trip.
+- **Production-shaped** — multi-user auth, per-user document scoping, durable ingestion with retries, rate limits, citations, and an audit trail of what was retrieved.
+
+If you want to *understand* RAG by reading and tweaking a working system — not just `pip install` a library — this is built for you.
 
 ---
 
@@ -287,6 +304,20 @@ With **Docker**, the compose file injects `DATABASE_URL` into the app container;
 
 ---
 
+## Deploy your own
+
+A live instance runs at **[hypar.up.railway.app](https://hypar.up.railway.app/)**. To host your own:
+
+| Platform | How |
+|---|---|
+| **Render** | One-click via the included [`render.yaml`](render.yaml) Blueprint — provisions a Postgres (with `pgvector`) + the web service from the `Dockerfile`. Click **New → Blueprint**, point it at your fork, then set `GOOGLE_API_KEY`. |
+| **Railway** | New project → Deploy from repo. Add a PostgreSQL plugin, enable the `vector` extension, set `DATABASE_URL` + `GOOGLE_API_KEY`. The image runs `prisma migrate deploy` on boot. |
+| **Docker anywhere** | `docker compose -f docker-compose.prod.yml up -d` on any VM; put it behind the included [`Caddyfile`](Caddyfile) for automatic HTTPS. |
+
+Minimum required env: `DATABASE_URL` (Postgres + pgvector) and one embedding key — `GOOGLE_API_KEY` (free tier, recommended) or `OPENAI_API_KEY`. See [`.env.example`](.env.example) for the full list.
+
+---
+
 ## API Reference
 
 All endpoints are under `/api/` (same origin, no CORS needed).
@@ -388,15 +419,11 @@ hypar/
 
 ---
 
-## Internal notes
-
-- [`agents-plans/`](agents-plans/) — ephemeral Cursor/agent scratch plans (see [agents-plans/README.md](agents-plans/README.md)); **not** maintained as product documentation.
-
 ## Further reading
 
 - [CONTRIBUTING.md](CONTRIBUTING.md) — branch naming, commits, dev workflow
-- [ROADMAP.md](ROADMAP.md) — month-by-month calendar plan (May → Dec 2026, with version targets)
-- [PRODUCT-ROADMAP.md](PRODUCT-ROADMAP.md) — stage-based product vision (no dates, ordered by technical dependency)
+- [Roadmap](https://albegosu.github.io/hypar/roadmap) — what's shipped, in progress, and next (three tracks + v1.0 criteria)
+- [Product vision](https://albegosu.github.io/hypar/product/vision) — calendar-free, dependency-ordered narrative of how far hypar can grow
 - [.github/CI-CD.md](.github/CI-CD.md) — CI pipeline + Docker build
 - **Published docs (GitHub Pages)** — full VitePress site at [https://albegosu.github.io/hypar/](https://albegosu.github.io/hypar/) (Guide, Features, API, Architecture, Roadmap, ADRs/RFCs). Build with `pnpm docs:build`; deploy on push to `main` when `docs/**` changes (see `.github/workflows/pages.yml`).
 

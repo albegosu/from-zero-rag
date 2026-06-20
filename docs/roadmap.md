@@ -2,7 +2,7 @@
 
 hypar targets **v1.0 by December 2026**, serving three audiences simultaneously: a drop-in RAG library, a learn-from-zero tutorial, and a portfolio-grade production demo.
 
-This page tracks what is already shipped, what is in progress, and what comes next — broken down by the three tracks.
+This page tracks what is already shipped, what is in progress, and what comes next — broken down by the three tracks. For the *why* behind the ordering — a calendar-free, dependency-ordered narrative of how far hypar can grow — see the [Product vision](/product/vision).
 
 ---
 
@@ -94,6 +94,19 @@ Everything below is live on `main` and documented in these docs.
 | --- | --- | --- |
 | **v0.5** | Q3 2026 | Vector-store abstraction merged; Chunking + Embeddings tutorial chapters published; RAGAS in `pnpm eval` |
 | **v1.0** | Q4 2026 | `pnpm create hypar-app` working end-to-end; full tutorial curriculum (ES + EN); public benchmark results live |
+
+### v1.0 success criteria (checked at year-end)
+
+| Dimension | v1.0 target |
+| --- | --- |
+| Tests | ≥80% line coverage on `server/utils/**`, ≥70% overall, CI green on PRs |
+| Eval harness | Hit-rate ≥0.85, MRR ≥0.7, RAGAS faithfulness ≥0.8 on a public dataset |
+| Latency | p50 < 800 ms, p95 < 2.0 s for streaming first-token on a 50k-chunk corpus |
+| Observability | Per-request trace (Langfuse / OpenLLMetry) with cost, tokens, retrieval scores |
+| Vector store | At least one alternative backend behind a stable interface (Qdrant *or* Weaviate) |
+| Tutorial | 8 written chapters, 4 of them bilingual ES/EN, linked from VitePress |
+| Community | Issue & PR templates, RFC process, CODEOWNERS, ≥10 closed issues from external contributors |
+| Release hygiene | Semantic versioning, changelog from Conventional Commits, signed git tags |
 
 ---
 

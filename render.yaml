@@ -1,0 +1,39 @@
+# Render Blueprint — one-click deploy of hypar.
+# Provisions a managed PostgreSQL (pgvector is enabled by the init migration's
+# `CREATE EXTENSION IF NOT EXISTS vector`) and a web service built from the Dockerfile.
+# Spec: https://render.com/docs/blueprint-spec
+#
+# Deploy: Render dashboard -> New -> Blueprint -> point at your fork of this repo.
+# After the first deploy, fill the two `sync: false` vars below (they need values
+# only you can provide), then trigger a redeploy.
+
+databases:
+  - name: hypar-db
+    plan: free
+    postgresMajorVersion: "16"
+
+services:
+  - type: web
+    name: hypar
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter
+    healthCheckPath: /
+    envVars:
+      # Injected from the managed Postgres above.
+      - key: DATABASE_URL
+        fromDatabase:
+          name: hypar-db
+          property: connectionString
+      # Session signing secret — generated once by Render and kept stable.
+      - key: BETTER_AUTH_SECRET
+        generateValue: true
+      - key: NODE_ENV
+        value: production
+      # Set after the first deploy to your assigned https URL, e.g.
+      # https://hypar.onrender.com — Better Auth needs the full origin.
+      - key: BETTER_AUTH_URL
+        sync: false
+      # Free Gemini embedding key — https://aistudio.google.com/app/apikey
+      - key: GOOGLE_API_KEY
+        sync: false

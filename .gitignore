@@ -30,7 +30,6 @@ data/workflow/
 
 # Logs and caches
 *.log
-!.cursor/debug-de37c6.log
 npm-debug.log*
 .cache/
 
@@ -45,6 +44,9 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 .claude/
+
+# Internal agent scratch notes (not product docs)
+agents-plans/
 
 # Test / coverage
 coverage/

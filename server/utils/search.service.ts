@@ -297,7 +297,7 @@ function stripEmbedding(r: SearchResult): SearchResult {
   return rest
 }
 
-function parsePgVector(text: string): number[] {
+export function parsePgVector(text: string): number[] {
   if (!text) return []
   const trimmed = text.trim().replace(/^\[/, '').replace(/\]$/, '')
   if (!trimmed) return []
@@ -309,7 +309,7 @@ function parsePgVector(text: string): number[] {
   return out
 }
 
-function cosineSim(a: number[], b: number[]): number {
+export function cosineSim(a: number[], b: number[]): number {
   if (a.length !== b.length || a.length === 0) return 0
   let dot = 0, na = 0, nb = 0
   for (let i = 0; i < a.length; i++) {
@@ -321,7 +321,7 @@ function cosineSim(a: number[], b: number[]): number {
   return denom === 0 ? 0 : dot / denom
 }
 
-function mmrRank(
+export function mmrRank(
   queryVec: number[],
   candidates: SearchResult[],
   k: number,

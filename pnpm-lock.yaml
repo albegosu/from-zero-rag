@@ -48,8 +48,8 @@ importers:
         specifier: ^6.0.174
         version: 6.0.174(zod@3.25.76)
       ai-elements-nuxt:
-        specifier: file:../ai-elements-nuxt
-        version: file:../ai-elements-nuxt(19a928f6c6204fc5ab1442e22aa812c8)
+        specifier: ^0.5.0
+        version: 0.5.0(19a928f6c6204fc5ab1442e22aa812c8)
       better-auth:
         specifier: ^1.6.10
         version: 1.6.10(@opentelemetry/api@1.9.0)(@prisma/client@7.8.0(prisma@7.8.0(@types/react@19.2.14)(magicast@0.5.2)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@5.9.3))(typescript@5.9.3))(mysql2@3.15.3)(pg@8.20.0)(prisma@7.8.0(@types/react@19.2.14)(magicast@0.5.2)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@5.9.3))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vitest@2.1.9(@types/node@20.19.39)(lightningcss@1.32.0)(terser@5.46.2))(vue@3.5.33(typescript@5.9.3))
@@ -3788,8 +3788,8 @@ packages:
     resolution: {integrity: sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ==}
     engines: {node: '>= 14'}
 
-  ai-elements-nuxt@file:../ai-elements-nuxt:
-    resolution: {directory: ../ai-elements-nuxt, type: directory}
+  ai-elements-nuxt@0.5.0:
+    resolution: {integrity: sha512-SOAj9fKWbX5yZbIvVuYfeoE6TkhmVN/ctmmAJLsZ2ZiK3xoUeRdIQlEU54iOYyvqrTRR3y73E1Pj9M4czznk8g==}
     peerDependencies:
       '@ai-sdk/vue': ^3.0.0
       ai: ^6.0.0
@@ -12216,7 +12216,7 @@ snapshots:
 
   agent-base@7.1.4: {}
 
-  ai-elements-nuxt@file:../ai-elements-nuxt(19a928f6c6204fc5ab1442e22aa812c8):
+  ai-elements-nuxt@0.5.0(19a928f6c6204fc5ab1442e22aa812c8):
     dependencies:
       '@nuxt/kit': 3.21.2(magicast@0.5.2)
       marked: 15.0.12

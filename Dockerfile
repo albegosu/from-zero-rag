@@ -3,7 +3,7 @@
 FROM node:20-alpine AS deps
 RUN apk add --no-cache libc6-compat python3 make g++
 WORKDIR /app
-COPY package.json pnpm-lock.yaml* ./
+COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml ./
 RUN corepack enable && corepack prepare --activate
 COPY patches/ ./patches/
 RUN pnpm install --frozen-lockfile --ignore-scripts

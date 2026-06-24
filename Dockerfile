@@ -3,16 +3,17 @@
 FROM node:20-alpine AS deps
 RUN apk add --no-cache libc6-compat python3 make g++
 WORKDIR /app
-RUN npm install -g pnpm
 COPY package.json pnpm-lock.yaml* ./
+RUN corepack enable && corepack prepare --activate
+COPY patches/ ./patches/
 RUN pnpm install --frozen-lockfile --ignore-scripts
 
 FROM node:20-alpine AS builder
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
-RUN npm install -g pnpm
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+RUN corepack enable && corepack prepare --activate
 # Generate Prisma client now that schema is present, then build app
 RUN pnpm prisma generate && pnpm run build
 

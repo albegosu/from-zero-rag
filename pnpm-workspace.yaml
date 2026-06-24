@@ -8,3 +8,5 @@ allowBuilds:
   esbuild: true
   prisma: true
   vue-demi: true
+patchedDependencies:
+  ai-elements-nuxt@0.5.0: patches/ai-elements-nuxt@0.5.0.patch

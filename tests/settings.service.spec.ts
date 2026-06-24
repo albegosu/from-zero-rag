@@ -27,6 +27,10 @@ describe('settings.service crypto', () => {
     expect(decryptSecret(cipher)).toBe(plain)
   })
 
+  it('decryptSecret returns null for corrupted data', () => {
+    expect(decryptSecret('not-valid-base64-ciphertext!!')).toBeNull()
+  })
+
   it('getAuthSecret returns configured secret', () => {
     expect(getAuthSecret()).toBe('test-secret-for-unit-tests-min-32-chars')
   })

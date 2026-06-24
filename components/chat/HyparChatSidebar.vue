@@ -40,7 +40,7 @@ function getIconForType(type: string) {
   >
     <div class="flex flex-col min-h-0 flex-1 basis-0 lg:flex-[1_1_0]">
       <AiConversation
-        :threads="[...safeThreads]"
+        :threads="safeThreads"
         :active-id="activeId ?? undefined"
         @select="(thread: AiConversationThread) => emit('selectConversation', thread.id)"
         @create="emit('newConversation')"

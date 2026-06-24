@@ -48,8 +48,8 @@ importers:
         specifier: ^6.0.174
         version: 6.0.174(zod@3.25.76)
       ai-elements-nuxt:
-        specifier: ^0.5.0
-        version: 0.5.0(19a928f6c6204fc5ab1442e22aa812c8)
+        specifier: file:../ai-elements-nuxt
+        version: file:../ai-elements-nuxt(19a928f6c6204fc5ab1442e22aa812c8)
       better-auth:
         specifier: ^1.6.10
         version: 1.6.10(@opentelemetry/api@1.9.0)(@prisma/client@7.8.0(prisma@7.8.0(@types/react@19.2.14)(magicast@0.5.2)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@5.9.3))(typescript@5.9.3))(mysql2@3.15.3)(pg@8.20.0)(prisma@7.8.0(@types/react@19.2.14)(magicast@0.5.2)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@5.9.3))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vitest@2.1.9(@types/node@20.19.39)(lightningcss@1.32.0)(terser@5.46.2))(vue@3.5.33(typescript@5.9.3))
@@ -3788,8 +3788,8 @@ packages:
     resolution: {integrity: sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ==}
     engines: {node: '>= 14'}
 
-  ai-elements-nuxt@0.5.0:
-    resolution: {integrity: sha512-SOAj9fKWbX5yZbIvVuYfeoE6TkhmVN/ctmmAJLsZ2ZiK3xoUeRdIQlEU54iOYyvqrTRR3y73E1Pj9M4czznk8g==}
+  ai-elements-nuxt@file:../ai-elements-nuxt:
+    resolution: {directory: ../ai-elements-nuxt, type: directory}
     peerDependencies:
       '@ai-sdk/vue': ^3.0.0
       ai: ^6.0.0
@@ -9386,7 +9386,7 @@ snapshots:
 
   '@nuxt/devtools-kit@3.2.4(magicast@0.5.2)(vite@5.4.21(@types/node@20.19.39)(lightningcss@1.32.0)(terser@5.46.2))':
     dependencies:
-      '@nuxt/kit': 4.4.2(magicast@0.5.2)
+      '@nuxt/kit': 4.4.7(magicast@0.5.2)
       execa: 8.0.1
       vite: 5.4.21(@types/node@20.19.39)(lightningcss@1.32.0)(terser@5.46.2)
     transitivePeerDependencies:
@@ -9629,6 +9629,31 @@ snapshots:
       semver: 7.7.4
       tinyglobby: 0.2.16
       ufo: 1.6.3
+      unctx: 2.5.0
+      untyped: 2.0.0
+    transitivePeerDependencies:
+      - magicast
+
+  '@nuxt/kit@4.4.7(magicast@0.5.2)':
+    dependencies:
+      c12: 3.3.4(magicast@0.5.2)
+      consola: 3.4.2
+      defu: 6.1.7
+      destr: 2.0.5
+      errx: 0.1.0
+      exsolve: 1.0.8
+      ignore: 7.0.5
+      jiti: 2.7.0
+      klona: 2.0.6
+      mlly: 1.8.2
+      ohash: 2.0.11
+      pathe: 2.0.3
+      pkg-types: 2.3.1
+      rc9: 3.0.1
+      scule: 1.3.0
+      semver: 7.8.1
+      tinyglobby: 0.2.17
+      ufo: 1.6.4
       unctx: 2.5.0
       untyped: 2.0.0
     transitivePeerDependencies:
@@ -12216,7 +12241,7 @@ snapshots:
 
   agent-base@7.1.4: {}
 
-  ai-elements-nuxt@0.5.0(19a928f6c6204fc5ab1442e22aa812c8):
+  ai-elements-nuxt@file:../ai-elements-nuxt(19a928f6c6204fc5ab1442e22aa812c8):
     dependencies:
       '@nuxt/kit': 3.21.2(magicast@0.5.2)
       marked: 15.0.12

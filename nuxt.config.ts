@@ -21,6 +21,10 @@ export default defineNuxtConfig({
     defaultStyles: true,
   },
 
+  build: {
+    transpile: ['ai-elements-nuxt'],
+  },
+
   css: ['~/assets/css/main.css'],
 
   colorMode: {

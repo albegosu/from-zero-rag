@@ -7,12 +7,15 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json-summary'],
-      include: ['server/utils/**/*.ts'],
+      include: [
+        'server/utils/**/*.ts',
+        'server/middleware/**/*.ts',
+      ],
       thresholds: {
-        lines: 12,
-        functions: 35,
+        lines: 25,
+        functions: 40,
         branches: 50,
-        statements: 12,
+        statements: 25,
       },
     },
   },

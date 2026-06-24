@@ -27,30 +27,34 @@
                 <p class="text-[11px] wz-faint">Join your workspace</p>
               </div>
 
-              <div class="space-y-2">
-                <button
-                  type="button"
-                  class="wz-btn-outline w-full justify-center"
-                  :disabled="!!loadingProvider"
-                  @click="registerWith('google')"
-                >
-                  {{ loadingProvider === 'google' ? '…' : '▸ continue with google' }}
-                </button>
-                <button
-                  type="button"
-                  class="wz-btn-outline w-full justify-center"
-                  :disabled="!!loadingProvider"
-                  @click="registerWith('github')"
-                >
-                  {{ loadingProvider === 'github' ? '…' : '▸ continue with github' }}
-                </button>
-              </div>
+              <template v-if="hasOAuth">
+                <div class="space-y-2">
+                  <button
+                    v-if="providers.google"
+                    type="button"
+                    class="wz-btn-outline w-full justify-center"
+                    :disabled="!!loadingProvider"
+                    @click="registerWith('google')"
+                  >
+                    {{ loadingProvider === 'google' ? '…' : '▸ continue with google' }}
+                  </button>
+                  <button
+                    v-if="providers.github"
+                    type="button"
+                    class="wz-btn-outline w-full justify-center"
+                    :disabled="!!loadingProvider"
+                    @click="registerWith('github')"
+                  >
+                    {{ loadingProvider === 'github' ? '…' : '▸ continue with github' }}
+                  </button>
+                </div>
 
-              <div class="flex items-center gap-3">
-                <div class="flex-1 h-px" style="background: var(--term-accent-line)" />
-                <span class="text-[10px] wz-faint">── or ──</span>
-                <div class="flex-1 h-px" style="background: var(--term-accent-line)" />
-              </div>
+                <div class="flex items-center gap-3">
+                  <div class="flex-1 h-px" style="background: var(--term-accent-line)" />
+                  <span class="text-[10px] wz-faint">── or ──</span>
+                  <div class="flex-1 h-px" style="background: var(--term-accent-line)" />
+                </div>
+              </template>
 
               <form class="space-y-4" @submit.prevent="registerWithEmail">
                 <div class="space-y-1.5">
@@ -133,6 +137,17 @@ const password = ref('')
 const error = ref('')
 const loadingEmail = ref(false)
 const loadingProvider = ref<'google' | 'github' | null>(null)
+
+const providers = ref<{ google: boolean; github: boolean }>({ google: false, github: false })
+const hasOAuth = computed(() => providers.value.google || providers.value.github)
+
+onMounted(async () => {
+  try {
+    providers.value = await $fetch('/api/config/auth-providers')
+  } catch {
+    // OAuth section stays hidden
+  }
+})
 
 async function registerWithEmail() {
   error.value = ''

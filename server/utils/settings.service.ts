@@ -44,7 +44,7 @@ export function encryptSecret(plaintext: string): string {
   return Buffer.concat([iv, tag, encrypted]).toString('base64')
 }
 
-export function decryptSecret(ciphertext: string): string {
+export function decryptSecret(ciphertext: string): string | null {
   try {
     const buf = Buffer.from(ciphertext, 'base64')
     const iv = buf.subarray(0, 12)
@@ -55,13 +55,15 @@ export function decryptSecret(ciphertext: string): string {
     decipher.setAuthTag(tag)
     return decipher.update(encrypted) + decipher.final('utf8')
   } catch {
-    return ''
+    console.error('[settings] Failed to decrypt secret — data may be corrupted or key changed')
+    return null
   }
 }
 
 function resolveStoredValue(row: { value: string; encrypted: boolean }): string {
   if (!row.value) return ''
-  return row.encrypted ? decryptSecret(row.value) : row.value
+  if (!row.encrypted) return row.value
+  return decryptSecret(row.value) ?? ''
 }
 
 interface CacheEntry {
@@ -216,7 +218,7 @@ export async function getEffectiveSetting(key: string, userId: string, fallback 
   try {
     const userRow = await prisma.userSetting.findUnique({ where: { userId_key: { userId, key } } })
     if (userRow?.value) {
-      return userRow.encrypted ? decryptSecret(userRow.value) : userRow.value
+      return (userRow.encrypted ? decryptSecret(userRow.value) : userRow.value) ?? ''
     }
   } catch {
     // fall through to global
@@ -293,7 +295,7 @@ export async function getEffectiveSettingForUpload(
       where: { userId_key: { userId: ctx.userId, key } },
     })
     if (userRow?.value?.trim()) {
-      return userRow.encrypted ? decryptSecret(userRow.value) : userRow.value
+      return (userRow.encrypted ? decryptSecret(userRow.value) : userRow.value) ?? ''
     }
   } catch {
     // fall through
@@ -320,7 +322,7 @@ export async function getUserSettings(userId: string, category: string): Promise
   const rows = await prisma.userSetting.findMany({ where: { userId, category } })
   const result: Record<string, string> = {}
   for (const row of rows) {
-    result[row.key] = row.encrypted ? decryptSecret(row.value) : row.value
+    result[row.key] = (row.encrypted ? decryptSecret(row.value) : row.value) ?? ''
   }
   return result
 }

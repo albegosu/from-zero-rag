@@ -1,0 +1,969 @@
+diff --git a/dist/module.json b/dist/module.json
+index ac16508c8e19bd1e37b7a85c1026122127e7ba69..cf707164328187242670eb7ccba0a4c536ea5b96 100644
+--- a/dist/module.json
++++ b/dist/module.json
+@@ -1,7 +1,7 @@
+ {
+   "name": "ai-elements-nuxt",
+   "configKey": "aiElements",
+-  "version": "0.5.0",
++  "version": "0.5.1",
+   "builder": {
+     "@nuxt/module-builder": "1.0.2",
+     "unbuild": "unknown"
+diff --git a/dist/module.mjs b/dist/module.mjs
+index 0a72acf5fbab9d8bb7693365954f087de0634307..635a595753fb909d721eaac6cc90e5d8bb116c45 100644
+--- a/dist/module.mjs
++++ b/dist/module.mjs
+@@ -25,6 +25,7 @@ const module$1 = defineNuxtModule({
+     addImportsDir(resolve("./runtime/composables"));
+     addImportsDir(resolve("./runtime/utils"));
+     nuxt.options.alias["#ai-elements"] = resolve("./runtime");
++    nuxt.options.build.transpile.push("ai-elements-nuxt");
+     if (options.defaultStyles) {
+       nuxt.options.css.push(resolve("./runtime/assets/ai-elements.css"));
+     }
+diff --git a/dist/runtime/components/chatbot/Checkpoint.vue b/dist/runtime/components/chatbot/Checkpoint.vue
+index f37f47653d292321cb86fb05f8776439d1e5d90b..14453b2cee026b49636c5228cb826aefc4d1df5c 100644
+--- a/dist/runtime/components/chatbot/Checkpoint.vue
++++ b/dist/runtime/components/chatbot/Checkpoint.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { computed } from "vue";
+ const props = defineProps({
+   checkpoint: { type: Object, required: true }
+ });
+diff --git a/dist/runtime/components/chatbot/Confirmation.vue b/dist/runtime/components/chatbot/Confirmation.vue
+index c99f815e6c1e3e62c8d61914afbc7a6fb25e19a0..360b014c7bc8506c641d55caf37e7fd1cbfa7c95 100644
+--- a/dist/runtime/components/chatbot/Confirmation.vue
++++ b/dist/runtime/components/chatbot/Confirmation.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { computed } from "vue";
+ import { useUniqueId } from "../../utils/useUniqueId";
+ const descriptionId = useUniqueId("ai-confirmation-desc");
+ const props = defineProps({
+diff --git a/dist/runtime/components/chatbot/Context.vue b/dist/runtime/components/chatbot/Context.vue
+index df9720ef7d82a7000cacff4b3f79f034d8818538..48c52edee14b8f2e0f506e4b21923986687ed052 100644
+--- a/dist/runtime/components/chatbot/Context.vue
++++ b/dist/runtime/components/chatbot/Context.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { computed, ref, watch } from "vue";
+ import { useUniqueId } from "../../utils/useUniqueId";
+ const listId = useUniqueId("ai-context-list");
+ const props = defineProps({
+diff --git a/dist/runtime/components/chatbot/Conversation.vue b/dist/runtime/components/chatbot/Conversation.vue
+index 728bce87adb5c2aea6c8741b471b00a1f3781784..4373cc79c434b1a75bb973069cfc59f0f0ab8967 100644
+--- a/dist/runtime/components/chatbot/Conversation.vue
++++ b/dist/runtime/components/chatbot/Conversation.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { computed } from "vue";
+ const props = defineProps({
+   threads: { type: Array, required: true },
+   activeId: { type: String, required: false },
+@@ -6,8 +7,9 @@ const props = defineProps({
+ });
+ const emit = defineEmits(["select", "create", "delete", "archive"]);
+ const visibleThreads = computed(() => {
+-  if (props.showArchived) return props.threads;
+-  return props.threads.filter((t) => !t.archived);
++  const threads = props.threads ?? [];
++  if (props.showArchived) return threads;
++  return threads.filter((t) => !t.archived);
+ });
+ </script>
+ 
+diff --git a/dist/runtime/components/chatbot/ErrorBoundary.vue b/dist/runtime/components/chatbot/ErrorBoundary.vue
+index eca216d95c753896beb30a0bfebf56b1a3adeca4..434e2223ee0cb9dea54e0995dacd4e3a8fc8f4e8 100644
+--- a/dist/runtime/components/chatbot/ErrorBoundary.vue
++++ b/dist/runtime/components/chatbot/ErrorBoundary.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { computed, onErrorCaptured, ref } from "vue";
+ const props = defineProps({
+   error: { type: [Error, String, null], required: false },
+   retryable: { type: Boolean, required: false, default: true }
+diff --git a/dist/runtime/components/chatbot/InlineCitation.vue b/dist/runtime/components/chatbot/InlineCitation.vue
+index 22dca26cb6c8b724d477daa126b87c6d0acc53f5..4b59f39e586a3d697fe8a0a6630ad565f238bc75 100644
+--- a/dist/runtime/components/chatbot/InlineCitation.vue
++++ b/dist/runtime/components/chatbot/InlineCitation.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { ref } from "vue";
+ import { useUniqueId } from "../../utils/useUniqueId";
+ const props = defineProps({
+   citation: { type: Object, required: true },
+diff --git a/dist/runtime/components/chatbot/Message.vue b/dist/runtime/components/chatbot/Message.vue
+index b5d3fbc6296aa13f152fe60a0efecba3cea09e99..ada505e8bee167278ec01b4f4439e699eeb2e332 100644
+--- a/dist/runtime/components/chatbot/Message.vue
++++ b/dist/runtime/components/chatbot/Message.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { computed } from "vue";
+ import { sanitizeRenderedHtml } from "../../utils/sanitizeHtml";
+ const props = defineProps({
+   role: { type: String, required: true },
+diff --git a/dist/runtime/components/chatbot/ModelSelector.vue b/dist/runtime/components/chatbot/ModelSelector.vue
+index a62686ba8c3cc8e5a8bdc5107c0be577b3275f35..dd2840850618c9c1014b953d80404c9b194b01a5 100644
+--- a/dist/runtime/components/chatbot/ModelSelector.vue
++++ b/dist/runtime/components/chatbot/ModelSelector.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { computed, onMounted, onUnmounted, ref } from "vue";
+ const props = defineProps({
+   models: { type: Array, required: true },
+   modelValue: { type: String, required: false },
+diff --git a/dist/runtime/components/chatbot/PromptInput.d.vue.ts b/dist/runtime/components/chatbot/PromptInput.d.vue.ts
+index e24c333a37d9032e8cd01546c7d33721aa8de941..55ae099cc906e8fed8e9a0fb744690716cd79937 100644
+--- a/dist/runtime/components/chatbot/PromptInput.d.vue.ts
++++ b/dist/runtime/components/chatbot/PromptInput.d.vue.ts
+@@ -41,7 +41,7 @@ type __VLS_Slots = {} & {
+ };
+ declare const __VLS_component: import("vue").DefineComponent<__VLS_Props, {
+     focus: typeof focus;
+-    textareaRef: any;
++    textareaRef: import("vue").Ref<HTMLTextAreaElement | null, HTMLTextAreaElement | null>;
+ }, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {} & {
+     submit: (value: string) => any;
+     stop: () => any;
+diff --git a/dist/runtime/components/chatbot/PromptInput.vue b/dist/runtime/components/chatbot/PromptInput.vue
+index df8f40585d6463b08f0355c37e6e5429b5d8862f..6d924f7ed78d160a1b18e4688116a09eba6c9bcc 100644
+--- a/dist/runtime/components/chatbot/PromptInput.vue
++++ b/dist/runtime/components/chatbot/PromptInput.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { computed, ref } from "vue";
+ const props = defineProps({
+   modelValue: { type: String, required: false, default: "" },
+   placeholder: { type: String, required: false, default: "Type a message..." },
+diff --git a/dist/runtime/components/chatbot/PromptInput.vue.d.ts b/dist/runtime/components/chatbot/PromptInput.vue.d.ts
+index e24c333a37d9032e8cd01546c7d33721aa8de941..55ae099cc906e8fed8e9a0fb744690716cd79937 100644
+--- a/dist/runtime/components/chatbot/PromptInput.vue.d.ts
++++ b/dist/runtime/components/chatbot/PromptInput.vue.d.ts
+@@ -41,7 +41,7 @@ type __VLS_Slots = {} & {
+ };
+ declare const __VLS_component: import("vue").DefineComponent<__VLS_Props, {
+     focus: typeof focus;
+-    textareaRef: any;
++    textareaRef: import("vue").Ref<HTMLTextAreaElement | null, HTMLTextAreaElement | null>;
+ }, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {} & {
+     submit: (value: string) => any;
+     stop: () => any;
+diff --git a/dist/runtime/components/chatbot/Reasoning.vue b/dist/runtime/components/chatbot/Reasoning.vue
+index adac9ec4a9fdd17ccadf5a488479dc687677a6bb..466655c6c11f617822249a4225c8597fefdbedad 100644
+--- a/dist/runtime/components/chatbot/Reasoning.vue
++++ b/dist/runtime/components/chatbot/Reasoning.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { ref, watch } from "vue";
+ import { useUniqueId } from "../../utils/useUniqueId";
+ const contentId = useUniqueId("ai-reasoning-content");
+ const props = defineProps({
+diff --git a/dist/runtime/components/chatbot/Shimmer.vue b/dist/runtime/components/chatbot/Shimmer.vue
+index 2d8039e263c41d053df897e589f1b4e781020fbf..f58a8879d5330ea220a62fb1e127a048f9cc4335 100644
+--- a/dist/runtime/components/chatbot/Shimmer.vue
++++ b/dist/runtime/components/chatbot/Shimmer.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { computed } from "vue";
+ const props = defineProps({
+   active: { type: Boolean, required: false, default: true },
+   lines: { type: Number, required: false, default: 3 }
+diff --git a/dist/runtime/components/chatbot/Task.vue b/dist/runtime/components/chatbot/Task.vue
+index 78d5bfffb6de8a68595f9bd2ee67d89df3eee0ac..6c1a5058bda57fc87ead3a5ad7755af5073d9c42 100644
+--- a/dist/runtime/components/chatbot/Task.vue
++++ b/dist/runtime/components/chatbot/Task.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { computed } from "vue";
+ const props = defineProps({
+   task: { type: Object, required: true }
+ });
+diff --git a/dist/runtime/components/chatbot/Tool.vue b/dist/runtime/components/chatbot/Tool.vue
+index 0d0acaacc1b04f6f2273f67d10d4272769c62cc0..73b325e8a4b1ef67204fc020e183448d5cf2b7be 100644
+--- a/dist/runtime/components/chatbot/Tool.vue
++++ b/dist/runtime/components/chatbot/Tool.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { computed } from "vue";
+ import {
+   isAiToolApprovalRequested,
+   isAiToolComplete,
+diff --git a/dist/runtime/components/chatbot/ToolApproval.vue b/dist/runtime/components/chatbot/ToolApproval.vue
+index fb6703d4fb504c0d333240cd3ca5acd77782b5c7..3840d62fbc62eaf4f24aa24e3ae2c0ec47df6ad6 100644
+--- a/dist/runtime/components/chatbot/ToolApproval.vue
++++ b/dist/runtime/components/chatbot/ToolApproval.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { computed, ref, watch } from "vue";
+ import { isAiToolApprovalRequested } from "../../types";
+ const props = defineProps({
+   toolCall: { type: Object, required: true },
+diff --git a/dist/runtime/components/code/Agent.vue b/dist/runtime/components/code/Agent.vue
+index 018ebdd14ff87c8c3c8cf3f51deecfb77e9ae9d1..e0080fc011ba16b00e86addd85eacb7692bf0668 100644
+--- a/dist/runtime/components/code/Agent.vue
++++ b/dist/runtime/components/code/Agent.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { computed } from "vue";
+ const props = defineProps({
+   steps: { type: Array, required: true },
+   title: { type: String, required: false }
+diff --git a/dist/runtime/components/code/Artifact.vue b/dist/runtime/components/code/Artifact.vue
+index c3769f0c6795645edd6db9bf12296a91a0e57d29..203b3b790a35bd5fd0b69c317577863984c05720 100644
+--- a/dist/runtime/components/code/Artifact.vue
++++ b/dist/runtime/components/code/Artifact.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { computed, ref, watch } from "vue";
+ import { sanitizeRenderedHtml } from "../../utils/sanitizeHtml";
+ const props = defineProps({
+   artifacts: { type: Array, required: true }
+diff --git a/dist/runtime/components/code/CodeBlock.vue b/dist/runtime/components/code/CodeBlock.vue
+index c33a7deac43ab828363e4e4a5eef0d27fbdb2ab3..69d6bd155bbcd44eee86b343a9353549e983046a 100644
+--- a/dist/runtime/components/code/CodeBlock.vue
++++ b/dist/runtime/components/code/CodeBlock.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { computed, ref } from "vue";
+ const props = defineProps({
+   code: { type: String, required: true },
+   language: { type: String, required: false, default: "text" },
+diff --git a/dist/runtime/components/code/Commit.vue b/dist/runtime/components/code/Commit.vue
+index ba93a86736f361df277ff1b398a978d16aeee4d7..b5d0a2f5a385d69b5fad30be89d5402f6326b2e0 100644
+--- a/dist/runtime/components/code/Commit.vue
++++ b/dist/runtime/components/code/Commit.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { computed, ref, watch } from "vue";
+ const props = defineProps({
+   commit: { type: Object, required: true },
+   expanded: { type: Boolean, required: false, default: false }
+diff --git a/dist/runtime/components/code/EnvVars.vue b/dist/runtime/components/code/EnvVars.vue
+index f1934f3723caf60e8c1fe0fc2726dd0f7ddd87f2..8818e733b06430e0cc17691ec05dee9bd0fedfb5 100644
+--- a/dist/runtime/components/code/EnvVars.vue
++++ b/dist/runtime/components/code/EnvVars.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { ref } from "vue";
+ defineProps({
+   variables: { type: Array, required: true }
+ });
+diff --git a/dist/runtime/components/code/Sandbox.vue b/dist/runtime/components/code/Sandbox.vue
+index f095eb88dce152c1b771cbe174fe509c324f5020..48c677b3b161cda97ef6013e9d5f342500f098b4 100644
+--- a/dist/runtime/components/code/Sandbox.vue
++++ b/dist/runtime/components/code/Sandbox.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { computed, onMounted, ref } from "vue";
+ const props = defineProps({
+   code: { type: String, required: true },
+   language: { type: String, required: false, default: "html" },
+diff --git a/dist/runtime/components/code/SchemaDisplay.vue b/dist/runtime/components/code/SchemaDisplay.vue
+index cf38b5c7ebdb0fd52aa8695af3a8af93c7300c8f..10b5bf0f89635248e99f1b1364c4e58dd3ad211c 100644
+--- a/dist/runtime/components/code/SchemaDisplay.vue
++++ b/dist/runtime/components/code/SchemaDisplay.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { ref } from "vue";
+ defineOptions({ name: "AiSchemaDisplay" });
+ defineProps({
+   fields: { type: Array, required: true },
+diff --git a/dist/runtime/components/code/Snippet.vue b/dist/runtime/components/code/Snippet.vue
+index f9ead8197256164b53752c5aa7325760b02dbb5f..55f3c94f5009c4be6175cbb85b6c1844a895d46a 100644
+--- a/dist/runtime/components/code/Snippet.vue
++++ b/dist/runtime/components/code/Snippet.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { ref } from "vue";
+ const props = defineProps({
+   code: { type: String, required: true },
+   language: { type: String, required: false, default: "text" },
+diff --git a/dist/runtime/components/code/StackTrace.vue b/dist/runtime/components/code/StackTrace.vue
+index a03c460b510e95fc93978d3c44c63f624e36d2bf..85ee5cf05728b5a4d05f01d012a03adb7e1a69e0 100644
+--- a/dist/runtime/components/code/StackTrace.vue
++++ b/dist/runtime/components/code/StackTrace.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { ref, watch } from "vue";
+ const props = defineProps({
+   error: { type: String, required: true },
+   errorType: { type: String, required: false },
+diff --git a/dist/runtime/components/code/TestResults.vue b/dist/runtime/components/code/TestResults.vue
+index 8d5cbaec6b8c644e81f7f9943a99095a02bc7276..20f9e7a9dee528e5691ced4a2c7849ebd7c639ac 100644
+--- a/dist/runtime/components/code/TestResults.vue
++++ b/dist/runtime/components/code/TestResults.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { computed } from "vue";
+ const props = defineProps({
+   tests: { type: Array, required: true },
+   summary: { type: Object, required: false }
+diff --git a/dist/runtime/components/code/VuePreview.d.vue.ts b/dist/runtime/components/code/VuePreview.d.vue.ts
+index cd870337fc9829a3e343067543773abf4fffb215..546aba6986e64fe08082c808eae64b7e5785012b 100644
+--- a/dist/runtime/components/code/VuePreview.d.vue.ts
++++ b/dist/runtime/components/code/VuePreview.d.vue.ts
+@@ -24,8 +24,8 @@ type __VLS_Slots = {} & {
+ };
+ declare const __VLS_component: import("vue").DefineComponent<__VLS_Props, {
+     refresh: typeof refresh;
+-    previewRef: any;
+-    error: any;
++    previewRef: import("vue").Ref<HTMLDivElement | null, HTMLDivElement | null>;
++    error: import("vue").Ref<string | null, string | null>;
+ }, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {}, string, import("vue").PublicProps, Readonly<__VLS_Props> & Readonly<{}>, {
+     height: string;
+ }, {}, {}, {}, string, import("vue").ComponentProvideOptions, false, {}, any>;
+diff --git a/dist/runtime/components/code/VuePreview.vue b/dist/runtime/components/code/VuePreview.vue
+index b3fcbe2c97c3020123a7cd2ec174c01078032e3e..94957fed2b41d4b0fac9256cde8c5afdba2d7da1 100644
+--- a/dist/runtime/components/code/VuePreview.vue
++++ b/dist/runtime/components/code/VuePreview.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { ref, watch } from "vue";
+ const props = defineProps({
+   code: { type: String, required: false },
+   html: { type: String, required: false },
+diff --git a/dist/runtime/components/code/VuePreview.vue.d.ts b/dist/runtime/components/code/VuePreview.vue.d.ts
+index cd870337fc9829a3e343067543773abf4fffb215..546aba6986e64fe08082c808eae64b7e5785012b 100644
+--- a/dist/runtime/components/code/VuePreview.vue.d.ts
++++ b/dist/runtime/components/code/VuePreview.vue.d.ts
+@@ -24,8 +24,8 @@ type __VLS_Slots = {} & {
+ };
+ declare const __VLS_component: import("vue").DefineComponent<__VLS_Props, {
+     refresh: typeof refresh;
+-    previewRef: any;
+-    error: any;
++    previewRef: import("vue").Ref<HTMLDivElement | null, HTMLDivElement | null>;
++    error: import("vue").Ref<string | null, string | null>;
+ }, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {}, string, import("vue").PublicProps, Readonly<__VLS_Props> & Readonly<{}>, {
+     height: string;
+ }, {}, {}, {}, string, import("vue").ComponentProvideOptions, false, {}, any>;
+diff --git a/dist/runtime/components/code/WebPreview.d.vue.ts b/dist/runtime/components/code/WebPreview.d.vue.ts
+index 649dc32a5edc6de895da1044d69c2a676dfdc003..63cfde4a58aae104d2c2e25a635cf5546addd52e 100644
+--- a/dist/runtime/components/code/WebPreview.d.vue.ts
++++ b/dist/runtime/components/code/WebPreview.d.vue.ts
+@@ -34,7 +34,7 @@ type __VLS_Slots = {} & {
+ };
+ declare const __VLS_component: import("vue").DefineComponent<__VLS_Props, {
+     refresh: typeof refresh;
+-    iframeRef: any;
++    iframeRef: import("vue").Ref<HTMLIFrameElement | null, HTMLIFrameElement | null>;
+ }, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {}, string, import("vue").PublicProps, Readonly<__VLS_Props> & Readonly<{}>, {
+     width: string;
+     height: string;
+diff --git a/dist/runtime/components/code/WebPreview.vue b/dist/runtime/components/code/WebPreview.vue
+index 6538eaf52391beefbb589e770c0e9099997eb2f0..5208db41ded315b4a7c244886d9fdb8b979c0bd6 100644
+--- a/dist/runtime/components/code/WebPreview.vue
++++ b/dist/runtime/components/code/WebPreview.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { computed, ref, watch } from "vue";
+ const props = defineProps({
+   url: { type: String, required: false },
+   html: { type: String, required: false },
+diff --git a/dist/runtime/components/code/WebPreview.vue.d.ts b/dist/runtime/components/code/WebPreview.vue.d.ts
+index 649dc32a5edc6de895da1044d69c2a676dfdc003..63cfde4a58aae104d2c2e25a635cf5546addd52e 100644
+--- a/dist/runtime/components/code/WebPreview.vue.d.ts
++++ b/dist/runtime/components/code/WebPreview.vue.d.ts
+@@ -34,7 +34,7 @@ type __VLS_Slots = {} & {
+ };
+ declare const __VLS_component: import("vue").DefineComponent<__VLS_Props, {
+     refresh: typeof refresh;
+-    iframeRef: any;
++    iframeRef: import("vue").Ref<HTMLIFrameElement | null, HTMLIFrameElement | null>;
+ }, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {}, string, import("vue").PublicProps, Readonly<__VLS_Props> & Readonly<{}>, {
+     width: string;
+     height: string;
+diff --git a/dist/runtime/components/utilities/Image.vue b/dist/runtime/components/utilities/Image.vue
+index 7075e2363a1b2266cdf07e8808034532097bb774..28bda17e195fafeb1ceb5ec969fd996862c0b654 100644
+--- a/dist/runtime/components/utilities/Image.vue
++++ b/dist/runtime/components/utilities/Image.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { onMounted, onUnmounted, ref } from "vue";
+ const props = defineProps({
+   src: { type: String, required: true },
+   alt: { type: String, required: false, default: "" },
+diff --git a/dist/runtime/components/utilities/Markdown.vue b/dist/runtime/components/utilities/Markdown.vue
+index bebdf1a8de9cc64c625e8bbeba57d977a6539116..2d9c7338126fb735c034b3bab8cb4a7c39b21962 100644
+--- a/dist/runtime/components/utilities/Markdown.vue
++++ b/dist/runtime/components/utilities/Markdown.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { computed } from "vue";
+ import { useAiMarkdown } from "../../composables/useAiMarkdown";
+ const props = defineProps({
+   content: { type: String, required: false, default: "" }
+diff --git a/dist/runtime/components/voice/AudioPlayer.d.vue.ts b/dist/runtime/components/voice/AudioPlayer.d.vue.ts
+index 7134e5a87c72bdf3d468cd9b429e2f4c6817bae4..27c9bbbfbbe2e1b02e982f80598e8530d841fa92 100644
+--- a/dist/runtime/components/voice/AudioPlayer.d.vue.ts
++++ b/dist/runtime/components/voice/AudioPlayer.d.vue.ts
+@@ -42,7 +42,7 @@ declare const __VLS_component: import("vue").DefineComponent<__VLS_Props, {
+     play: typeof play;
+     pause: typeof pause;
+     seek: typeof seek;
+-    audioRef: any;
++    audioRef: import("vue").Ref<HTMLAudioElement | null, HTMLAudioElement | null>;
+ }, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {} & {
+     ended: () => any;
+     pause: () => any;
+diff --git a/dist/runtime/components/voice/AudioPlayer.vue b/dist/runtime/components/voice/AudioPlayer.vue
+index e36cad3b7917bc4d417791aa0c1b2b8eeb9e1807..6c4ff656858948ecdcc1f79c12458fe7f9ad78f0 100644
+--- a/dist/runtime/components/voice/AudioPlayer.vue
++++ b/dist/runtime/components/voice/AudioPlayer.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { computed, ref } from "vue";
+ defineProps({
+   src: { type: String, required: true },
+   title: { type: String, required: false },
+diff --git a/dist/runtime/components/voice/AudioPlayer.vue.d.ts b/dist/runtime/components/voice/AudioPlayer.vue.d.ts
+index 7134e5a87c72bdf3d468cd9b429e2f4c6817bae4..27c9bbbfbbe2e1b02e982f80598e8530d841fa92 100644
+--- a/dist/runtime/components/voice/AudioPlayer.vue.d.ts
++++ b/dist/runtime/components/voice/AudioPlayer.vue.d.ts
+@@ -42,7 +42,7 @@ declare const __VLS_component: import("vue").DefineComponent<__VLS_Props, {
+     play: typeof play;
+     pause: typeof pause;
+     seek: typeof seek;
+-    audioRef: any;
++    audioRef: import("vue").Ref<HTMLAudioElement | null, HTMLAudioElement | null>;
+ }, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {} & {
+     ended: () => any;
+     pause: () => any;
+diff --git a/dist/runtime/components/voice/MicSelector.vue b/dist/runtime/components/voice/MicSelector.vue
+index 821ede1ab80c84411f6f377fd37b70f307ff01ea..502d6b2b12b945a68eabb41ee84495a6a13031dc 100644
+--- a/dist/runtime/components/voice/MicSelector.vue
++++ b/dist/runtime/components/voice/MicSelector.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { onMounted, ref } from "vue";
+ const props = defineProps({
+   modelValue: { type: String, required: false }
+ });
+diff --git a/dist/runtime/components/voice/SpeechInput.vue b/dist/runtime/components/voice/SpeechInput.vue
+index cd3e33ac1a58e99a967278c6515b46ea02d7326a..451530a89e6620c4efe272a4d6dbea7cff05585e 100644
+--- a/dist/runtime/components/voice/SpeechInput.vue
++++ b/dist/runtime/components/voice/SpeechInput.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { onMounted, onUnmounted, ref, watch } from "vue";
+ const props = defineProps({
+   language: { type: String, required: false, default: "en-US" },
+   continuous: { type: Boolean, required: false, default: false },
+diff --git a/dist/runtime/components/voice/Transcription.vue b/dist/runtime/components/voice/Transcription.vue
+index 6983ca83108e9ce588f5c4e11379c6503d83db09..218924b8e1378180dc85ac6933b8c24bf2ce3227 100644
+--- a/dist/runtime/components/voice/Transcription.vue
++++ b/dist/runtime/components/voice/Transcription.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { computed } from "vue";
+ const props = defineProps({
+   segments: { type: Array, required: true },
+   currentTime: { type: Number, required: false },
+diff --git a/dist/runtime/components/voice/VoiceSelector.vue b/dist/runtime/components/voice/VoiceSelector.vue
+index e4c47901f4e0a86de4973281a72d22e05ae31f6b..f3aa78fcded189105e59ce78c447e78fce3af0be 100644
+--- a/dist/runtime/components/voice/VoiceSelector.vue
++++ b/dist/runtime/components/voice/VoiceSelector.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { computed } from "vue";
+ const props = defineProps({
+   voices: { type: Array, required: true },
+   modelValue: { type: String, required: false }
+diff --git a/dist/runtime/components/workflow/Canvas.d.vue.ts b/dist/runtime/components/workflow/Canvas.d.vue.ts
+index 86835ad7e580e1904aa8d713e5fc54ab43cac529..e972cf91c90b66df9b0e4112f5ed50984ad0e5ba 100644
+--- a/dist/runtime/components/workflow/Canvas.d.vue.ts
++++ b/dist/runtime/components/workflow/Canvas.d.vue.ts
+@@ -47,7 +47,7 @@ declare const __VLS_component: import("vue").DefineComponent<__VLS_Props, {
+     zoomOut: typeof zoomOut;
+     resetView: typeof resetView;
+     fitView: typeof fitView;
+-    canvasRef: any;
++    canvasRef: import("vue").Ref<HTMLDivElement | null, HTMLDivElement | null>;
+     clientToCanvas: typeof clientToCanvas;
+ }, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {} & {
+     select: (ids: string[]) => any;
+diff --git a/dist/runtime/components/workflow/Canvas.vue b/dist/runtime/components/workflow/Canvas.vue
+index 4143d8abdaf835918e9cfa680ca6632db065cd93..5432168321db4b67f0819b68f24bb834d76a0235 100644
+--- a/dist/runtime/components/workflow/Canvas.vue
++++ b/dist/runtime/components/workflow/Canvas.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { computed, ref, watch } from "vue";
+ const props = defineProps({
+   width: { type: String, required: false, default: "100%" },
+   height: { type: String, required: false, default: "500px" },
+diff --git a/dist/runtime/components/workflow/Canvas.vue.d.ts b/dist/runtime/components/workflow/Canvas.vue.d.ts
+index 86835ad7e580e1904aa8d713e5fc54ab43cac529..e972cf91c90b66df9b0e4112f5ed50984ad0e5ba 100644
+--- a/dist/runtime/components/workflow/Canvas.vue.d.ts
++++ b/dist/runtime/components/workflow/Canvas.vue.d.ts
+@@ -47,7 +47,7 @@ declare const __VLS_component: import("vue").DefineComponent<__VLS_Props, {
+     zoomOut: typeof zoomOut;
+     resetView: typeof resetView;
+     fitView: typeof fitView;
+-    canvasRef: any;
++    canvasRef: import("vue").Ref<HTMLDivElement | null, HTMLDivElement | null>;
+     clientToCanvas: typeof clientToCanvas;
+ }, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {} & {
+     select: (ids: string[]) => any;
+diff --git a/dist/runtime/components/workflow/Connection.vue b/dist/runtime/components/workflow/Connection.vue
+index a65252f27d57bffab62f26159b0c04b9cd64fd5e..b6cf6876c94df4ef18a7319f1c40353d68429ffa 100644
+--- a/dist/runtime/components/workflow/Connection.vue
++++ b/dist/runtime/components/workflow/Connection.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { computed } from "vue";
+ const props = defineProps({
+   sourceX: { type: Number, required: true },
+   sourceY: { type: Number, required: true },
+diff --git a/dist/runtime/components/workflow/Edge.vue b/dist/runtime/components/workflow/Edge.vue
+index 58234c326ef14844f69ba318026e0895acc13124..f7b71faed65ad55917f47ec6187f5b40314576fb 100644
+--- a/dist/runtime/components/workflow/Edge.vue
++++ b/dist/runtime/components/workflow/Edge.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { computed } from "vue";
+ const props = defineProps({
+   id: { type: String, required: true },
+   sourceX: { type: Number, required: true },
+diff --git a/dist/runtime/components/workflow/Node.d.vue.ts b/dist/runtime/components/workflow/Node.d.vue.ts
+index 510b0aa75e246982632f396262e80fd07d681846..486f645e7311f1f4c63602416e1cb806c20c10d2 100644
+--- a/dist/runtime/components/workflow/Node.d.vue.ts
++++ b/dist/runtime/components/workflow/Node.d.vue.ts
+@@ -52,7 +52,7 @@ type __VLS_Slots = {} & {
+     resize?: (props: typeof __VLS_13) => any;
+ };
+ declare const __VLS_component: import("vue").DefineComponent<__VLS_Props, {
+-    nodeRef: any;
++    nodeRef: import("vue").Ref<HTMLDivElement | null, HTMLDivElement | null>;
+ }, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {} & {
+     select: (id: string, event?: MouseEvent | undefined) => any;
+     move: (id: string, x: number, y: number) => any;
+diff --git a/dist/runtime/components/workflow/Node.vue b/dist/runtime/components/workflow/Node.vue
+index 4589477cb261d81b2a2d665ea73c2899fe9d9178..957cfd6f7aaecc2b6e7a92c85c5bea154efc4e5b 100644
+--- a/dist/runtime/components/workflow/Node.vue
++++ b/dist/runtime/components/workflow/Node.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { ref } from "vue";
+ const props = defineProps({
+   id: { type: String, required: true },
+   label: { type: String, required: true },
+diff --git a/dist/runtime/components/workflow/Node.vue.d.ts b/dist/runtime/components/workflow/Node.vue.d.ts
+index 510b0aa75e246982632f396262e80fd07d681846..486f645e7311f1f4c63602416e1cb806c20c10d2 100644
+--- a/dist/runtime/components/workflow/Node.vue.d.ts
++++ b/dist/runtime/components/workflow/Node.vue.d.ts
+@@ -52,7 +52,7 @@ type __VLS_Slots = {} & {
+     resize?: (props: typeof __VLS_13) => any;
+ };
+ declare const __VLS_component: import("vue").DefineComponent<__VLS_Props, {
+-    nodeRef: any;
++    nodeRef: import("vue").Ref<HTMLDivElement | null, HTMLDivElement | null>;
+ }, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {} & {
+     select: (id: string, event?: MouseEvent | undefined) => any;
+     move: (id: string, x: number, y: number) => any;
+diff --git a/dist/runtime/components/workflow/Panel.vue b/dist/runtime/components/workflow/Panel.vue
+index 71db7319fd514d276dcf9dff49fd81362a8c0081..31fde2f4976688e6e2810cf8009d763cf9d89fe3 100644
+--- a/dist/runtime/components/workflow/Panel.vue
++++ b/dist/runtime/components/workflow/Panel.vue
+@@ -1,4 +1,5 @@
+ <script setup>
++import { ref, watch } from "vue";
+ const props = defineProps({
+   title: { type: String, required: false },
+   position: { type: String, required: false, default: "right" },
+diff --git a/src/runtime/components/chatbot/Checkpoint.vue b/src/runtime/components/chatbot/Checkpoint.vue
+index ffd10728ffe442d0cc0595ac4ae32c5a1637699c..4a687084caa7d41603cf24875d583d1083518285 100644
+--- a/src/runtime/components/chatbot/Checkpoint.vue
++++ b/src/runtime/components/chatbot/Checkpoint.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { computed } from 'vue'
+ import type { AiCheckpointData } from '../../types'
+ 
+ const props = defineProps<{
+diff --git a/src/runtime/components/chatbot/Confirmation.vue b/src/runtime/components/chatbot/Confirmation.vue
+index f491e3116d27d06c331289b6d7ae7f31d292d22a..835d0d8e6598acce8af404c88e67c085b828135c 100644
+--- a/src/runtime/components/chatbot/Confirmation.vue
++++ b/src/runtime/components/chatbot/Confirmation.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { computed } from 'vue'
+ import type { AiConfirmationData } from '../../types'
+ import { useUniqueId } from '../../utils/useUniqueId'
+ 
+diff --git a/src/runtime/components/chatbot/Context.vue b/src/runtime/components/chatbot/Context.vue
+index 480e932141507f6eff4975fb78bca8d46fb03c18..a64e02c872757cf102c1e7b7529d893daf866e5c 100644
+--- a/src/runtime/components/chatbot/Context.vue
++++ b/src/runtime/components/chatbot/Context.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { computed, ref, watch } from 'vue'
+ import type { AiContextItem } from '../../types'
+ import { useUniqueId } from '../../utils/useUniqueId'
+ 
+diff --git a/src/runtime/components/chatbot/Conversation.vue b/src/runtime/components/chatbot/Conversation.vue
+index 0223fe6e9f8f10867925c71308dd80eb59fbe69a..e2261022b2de78580807c8a95574f2f7171f8c85 100644
+--- a/src/runtime/components/chatbot/Conversation.vue
++++ b/src/runtime/components/chatbot/Conversation.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { computed } from 'vue'
+ import type { AiConversationThread } from '../../types'
+ 
+ const props = withDefaults(defineProps<{
+@@ -17,8 +18,9 @@ const emit = defineEmits<{
+ }>()
+ 
+ const visibleThreads = computed(() => {
+-  if (props.showArchived) return props.threads
+-  return props.threads.filter(t => !t.archived)
++  const threads = props.threads ?? []
++  if (props.showArchived) return threads
++  return threads.filter(t => !t.archived)
+ })
+ </script>
+ 
+diff --git a/src/runtime/components/chatbot/ErrorBoundary.vue b/src/runtime/components/chatbot/ErrorBoundary.vue
+index aef1a34dbf0d4e11196e2112de473a3a6433063b..322161e43d9097ddc38d879adb01d04f987eddf7 100644
+--- a/src/runtime/components/chatbot/ErrorBoundary.vue
++++ b/src/runtime/components/chatbot/ErrorBoundary.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { computed, onErrorCaptured, ref } from 'vue'
+ const props = withDefaults(defineProps<{
+   error?: Error | string | null
+   retryable?: boolean
+diff --git a/src/runtime/components/chatbot/InlineCitation.vue b/src/runtime/components/chatbot/InlineCitation.vue
+index fe0f44327b4f7e53f2cf6e525f56ee14096e901e..91aba776729a24455fe408c11e6a4ff63e44435f 100644
+--- a/src/runtime/components/chatbot/InlineCitation.vue
++++ b/src/runtime/components/chatbot/InlineCitation.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { ref } from 'vue'
+ import type { AiCitation } from '../../types'
+ import { useUniqueId } from '../../utils/useUniqueId'
+ 
+diff --git a/src/runtime/components/chatbot/Message.vue b/src/runtime/components/chatbot/Message.vue
+index be9b7b05e679425aeb2810c41271ce97b854cbc8..44f1be136505ab30214869c2651e1bce7bf434bb 100644
+--- a/src/runtime/components/chatbot/Message.vue
++++ b/src/runtime/components/chatbot/Message.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { computed } from 'vue'
+ import type { AiMessageProps } from '../../types'
+ import { sanitizeRenderedHtml } from '../../utils/sanitizeHtml'
+ 
+diff --git a/src/runtime/components/chatbot/ModelSelector.vue b/src/runtime/components/chatbot/ModelSelector.vue
+index 5c3a2dcd875bcf4c84808b78cc7d2eb7395af290..054e464d282adf11d6a9f4566e1b174046a27882 100644
+--- a/src/runtime/components/chatbot/ModelSelector.vue
++++ b/src/runtime/components/chatbot/ModelSelector.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { computed, onMounted, onUnmounted, ref } from 'vue'
+ import type { AiModelOption } from '../../types'
+ 
+ const props = withDefaults(defineProps<{
+diff --git a/src/runtime/components/chatbot/PromptInput.vue b/src/runtime/components/chatbot/PromptInput.vue
+index 7ecfb44277d3c29bf2c5779bf551ae92eec8ed90..f987c9c31847e4429047546d1d0ee256d14e4135 100644
+--- a/src/runtime/components/chatbot/PromptInput.vue
++++ b/src/runtime/components/chatbot/PromptInput.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { computed, ref } from 'vue'
+ const props = withDefaults(defineProps<{
+   modelValue?: string
+   placeholder?: string
+diff --git a/src/runtime/components/chatbot/Reasoning.vue b/src/runtime/components/chatbot/Reasoning.vue
+index 2472c8caeed20b9875cd17bf4fdecc345f9e9305..9a21eb2a2464fde6d900781473cd30922a6af4d9 100644
+--- a/src/runtime/components/chatbot/Reasoning.vue
++++ b/src/runtime/components/chatbot/Reasoning.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { ref, watch } from 'vue'
+ import { useUniqueId } from '../../utils/useUniqueId'
+ 
+ const contentId = useUniqueId('ai-reasoning-content')
+diff --git a/src/runtime/components/chatbot/Shimmer.vue b/src/runtime/components/chatbot/Shimmer.vue
+index e6008f87e599db73861ae2d8333e714b8f8efb19..93de970ab539097d613e1e79156bf18d7f5766fe 100644
+--- a/src/runtime/components/chatbot/Shimmer.vue
++++ b/src/runtime/components/chatbot/Shimmer.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { computed } from 'vue'
+ const props = withDefaults(defineProps<{
+   active?: boolean
+   lines?: number
+diff --git a/src/runtime/components/chatbot/Task.vue b/src/runtime/components/chatbot/Task.vue
+index f86e9f69131cd5ced6832d97b37562734eb604de..c549f89a133678831c603e0781f4665e3b4feb8c 100644
+--- a/src/runtime/components/chatbot/Task.vue
++++ b/src/runtime/components/chatbot/Task.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { computed } from 'vue'
+ import type { AiTaskData } from '../../types'
+ 
+ const props = defineProps<{
+diff --git a/src/runtime/components/chatbot/Tool.vue b/src/runtime/components/chatbot/Tool.vue
+index 975ff52b4a4b15cc279404b91f97d9b32b53d521..5ddb095f05cc1762e3c2dedd4bdb45bc9536e8fe 100644
+--- a/src/runtime/components/chatbot/Tool.vue
++++ b/src/runtime/components/chatbot/Tool.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { computed } from 'vue'
+ import type { AiToolCall, AiToolUIPartState } from '../../types'
+ import {
+   isAiToolApprovalRequested,
+diff --git a/src/runtime/components/chatbot/ToolApproval.vue b/src/runtime/components/chatbot/ToolApproval.vue
+index e22b2a28cea19cfa570f04b6408837d98dfa362b..031275a2ef0859be71547a22f83781a7c70aac6c 100644
+--- a/src/runtime/components/chatbot/ToolApproval.vue
++++ b/src/runtime/components/chatbot/ToolApproval.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { computed, ref, watch } from 'vue'
+ import type { AiToolCall } from '../../types'
+ import { isAiToolApprovalRequested } from '../../types'
+ 
+diff --git a/src/runtime/components/code/Agent.vue b/src/runtime/components/code/Agent.vue
+index 0b0ad9a4607f2d3d03a4168d3fcdf36659c9d01a..c6cf3f7e307a5d0b59ec2427d266b54b2989a964 100644
+--- a/src/runtime/components/code/Agent.vue
++++ b/src/runtime/components/code/Agent.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { computed } from 'vue'
+ import type { AiAgentStep } from '../../types'
+ 
+ const props = defineProps<{
+diff --git a/src/runtime/components/code/Artifact.vue b/src/runtime/components/code/Artifact.vue
+index 43344ea9a893819dcfb983dd58a3e724d566b524..a70507144b5fa5e860ecd8cf180439607c7d0284 100644
+--- a/src/runtime/components/code/Artifact.vue
++++ b/src/runtime/components/code/Artifact.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { computed, ref, watch } from 'vue'
+ import type { AiArtifactData } from '../../types'
+ import { sanitizeRenderedHtml } from '../../utils/sanitizeHtml'
+ 
+diff --git a/src/runtime/components/code/CodeBlock.vue b/src/runtime/components/code/CodeBlock.vue
+index c93737e4dcf2bea50a89425b379579b8af0cfd24..8e666b4a5fc565b0e380581254f7cdfe5cfb4eac 100644
+--- a/src/runtime/components/code/CodeBlock.vue
++++ b/src/runtime/components/code/CodeBlock.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { computed, ref } from 'vue'
+ const props = withDefaults(defineProps<{
+   code: string
+   language?: string
+diff --git a/src/runtime/components/code/Commit.vue b/src/runtime/components/code/Commit.vue
+index 907e73489eee370de334949f3e76a1d6302d9e68..e0aeaa58a187ef1a191367e213e965d63a433bba 100644
+--- a/src/runtime/components/code/Commit.vue
++++ b/src/runtime/components/code/Commit.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { computed, ref, watch } from 'vue'
+ import type { AiCommitData, AiCommitFile } from '../../types'
+ 
+ const props = withDefaults(defineProps<{
+diff --git a/src/runtime/components/code/EnvVars.vue b/src/runtime/components/code/EnvVars.vue
+index c637efa56df7ea627d04d449d965458cae37376e..a7075b9ff9813367bd74d6ff0bdb43915f2a3a8f 100644
+--- a/src/runtime/components/code/EnvVars.vue
++++ b/src/runtime/components/code/EnvVars.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { ref } from 'vue'
+ import type { AiEnvVar } from '../../types'
+ 
+ defineProps<{
+diff --git a/src/runtime/components/code/Sandbox.vue b/src/runtime/components/code/Sandbox.vue
+index 80c5011476671c3af1c70c0798a06a0cac7d6ba4..1da974c0c0c51ae6028fe50750cd5427d33fbbc9 100644
+--- a/src/runtime/components/code/Sandbox.vue
++++ b/src/runtime/components/code/Sandbox.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { computed, onMounted, ref } from 'vue'
+ const props = withDefaults(defineProps<{
+   code: string
+   language?: string
+diff --git a/src/runtime/components/code/SchemaDisplay.vue b/src/runtime/components/code/SchemaDisplay.vue
+index 7f7dd2495909869f7f26a7b928d93e0a778ede7f..244ca21571c6d08972f8f4769e9e060e35b61199 100644
+--- a/src/runtime/components/code/SchemaDisplay.vue
++++ b/src/runtime/components/code/SchemaDisplay.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { ref } from 'vue'
+ import type { AiSchemaField } from '../../types'
+ 
+ defineOptions({ name: 'AiSchemaDisplay' })
+diff --git a/src/runtime/components/code/Snippet.vue b/src/runtime/components/code/Snippet.vue
+index 73f39a43644a7aa734bd26eda5e833e982f93983..d47409edfdc3961a871d6b9322da597da145d9c1 100644
+--- a/src/runtime/components/code/Snippet.vue
++++ b/src/runtime/components/code/Snippet.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { ref } from 'vue'
+ const props = withDefaults(defineProps<{
+   code: string
+   language?: string
+diff --git a/src/runtime/components/code/StackTrace.vue b/src/runtime/components/code/StackTrace.vue
+index 24e2b562e4a4a1201ba0d59d313c16f9ece777df..8d82dadb91e67f38d28313013dbcfb7eb1d17928 100644
+--- a/src/runtime/components/code/StackTrace.vue
++++ b/src/runtime/components/code/StackTrace.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { ref, watch } from 'vue'
+ import type { AiStackFrame } from '../../types'
+ 
+ const props = withDefaults(defineProps<{
+diff --git a/src/runtime/components/code/TestResults.vue b/src/runtime/components/code/TestResults.vue
+index 0dbc9e5bffed71f7b17f92b5a000df3e25013824..d5c85ade604c0fe03466ca86e1897e634d1bb4f3 100644
+--- a/src/runtime/components/code/TestResults.vue
++++ b/src/runtime/components/code/TestResults.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { computed } from 'vue'
+ import type { AiTestResult, AiTestSummary } from '../../types'
+ 
+ const props = defineProps<{
+diff --git a/src/runtime/components/code/VuePreview.vue b/src/runtime/components/code/VuePreview.vue
+index 03e39fae798e002ba1d777156ab017e09e5a2cfd..60b48403f7490aaa5ddae83cf95810b240b574a7 100644
+--- a/src/runtime/components/code/VuePreview.vue
++++ b/src/runtime/components/code/VuePreview.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { ref, watch } from 'vue'
+ const props = withDefaults(defineProps<{
+   /** Vue SFC source or HTML template string */
+   code?: string
+diff --git a/src/runtime/components/code/WebPreview.vue b/src/runtime/components/code/WebPreview.vue
+index 4cd7be744d2b3e8340e3523a5d65118cd0c0e1cc..0192e458a8f8a4ba3fc3bab809130191e2f9afae 100644
+--- a/src/runtime/components/code/WebPreview.vue
++++ b/src/runtime/components/code/WebPreview.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { computed, ref, watch } from 'vue'
+ const props = withDefaults(defineProps<{
+   url?: string
+   html?: string
+diff --git a/src/runtime/components/utilities/Image.vue b/src/runtime/components/utilities/Image.vue
+index 9c7fe5c799c1481de8dcde0043679b2b33fbd539..c22a8ca0c48097e6f6915d96cf9fb48fdf72a8b9 100644
+--- a/src/runtime/components/utilities/Image.vue
++++ b/src/runtime/components/utilities/Image.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { onMounted, onUnmounted, ref } from 'vue'
+ const props = withDefaults(defineProps<{
+   src: string
+   alt?: string
+diff --git a/src/runtime/components/utilities/Markdown.vue b/src/runtime/components/utilities/Markdown.vue
+index 30894c8a6ea59ecdc016f7425e25c961349391d8..e54f0cd76f585659d6850abc4dc91a4a0cdc43e8 100644
+--- a/src/runtime/components/utilities/Markdown.vue
++++ b/src/runtime/components/utilities/Markdown.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { computed } from 'vue'
+ import { useAiMarkdown } from '../../composables/useAiMarkdown'
+ 
+ const props = withDefaults(defineProps<{
+diff --git a/src/runtime/components/voice/AudioPlayer.vue b/src/runtime/components/voice/AudioPlayer.vue
+index d12cbee78ed61d4b3fb6cf9fb110e6cf82119fa3..57722db3e5dcb9f7686448469249eec9e2656ada 100644
+--- a/src/runtime/components/voice/AudioPlayer.vue
++++ b/src/runtime/components/voice/AudioPlayer.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { computed, ref } from 'vue'
+ withDefaults(defineProps<{
+   src: string
+   title?: string
+diff --git a/src/runtime/components/voice/MicSelector.vue b/src/runtime/components/voice/MicSelector.vue
+index 6845bae623eee28812c6187b661a17b2e019c1e3..ce50949a8293d4f4d43584803a834932064403ea 100644
+--- a/src/runtime/components/voice/MicSelector.vue
++++ b/src/runtime/components/voice/MicSelector.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { onMounted, ref } from 'vue'
+ const props = defineProps<{
+   modelValue?: string
+ }>()
+diff --git a/src/runtime/components/voice/SpeechInput.vue b/src/runtime/components/voice/SpeechInput.vue
+index b6a42f9cfdeef425f99d27c43a4158522f010b67..c76a4cb7a1fafc4f514328e0d3a3922f9c23bfae 100644
+--- a/src/runtime/components/voice/SpeechInput.vue
++++ b/src/runtime/components/voice/SpeechInput.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { onMounted, onUnmounted, ref, watch } from 'vue'
+ const props = withDefaults(defineProps<{
+   language?: string
+   continuous?: boolean
+diff --git a/src/runtime/components/voice/Transcription.vue b/src/runtime/components/voice/Transcription.vue
+index ff11329e87854493d2ae262a355e25e39487b762..4f248f0613504c89168febf3cb8bc1d2d2a3a970 100644
+--- a/src/runtime/components/voice/Transcription.vue
++++ b/src/runtime/components/voice/Transcription.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { computed } from 'vue'
+ const props = defineProps<{
+   segments: { id: string; text: string; startTime: number; endTime: number; speaker?: string; confidence?: number }[]
+   currentTime?: number
+diff --git a/src/runtime/components/voice/VoiceSelector.vue b/src/runtime/components/voice/VoiceSelector.vue
+index 4ba6933e15eb10e935a753b2bad2cc4dc93b7f9e..772047fa401e2867d4ec5e73fc34cb325f9cb04c 100644
+--- a/src/runtime/components/voice/VoiceSelector.vue
++++ b/src/runtime/components/voice/VoiceSelector.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { computed } from 'vue'
+ const props = defineProps<{
+   voices: { id: string; name: string; language?: string; gender?: string; preview?: string }[]
+   modelValue?: string
+diff --git a/src/runtime/components/workflow/Canvas.vue b/src/runtime/components/workflow/Canvas.vue
+index 994dd8111b9837d359aa289e56ea8539cd383148..98c5db122991982f3f3decf4e935b9065832b289 100644
+--- a/src/runtime/components/workflow/Canvas.vue
++++ b/src/runtime/components/workflow/Canvas.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { computed, ref, watch } from 'vue'
+ const props = withDefaults(defineProps<{
+   width?: string
+   height?: string
+diff --git a/src/runtime/components/workflow/Connection.vue b/src/runtime/components/workflow/Connection.vue
+index d809d260bbb73436c6c43c26fa354645d205143f..858f66e1fd031317b73eaab16783ca44fc11dbfa 100644
+--- a/src/runtime/components/workflow/Connection.vue
++++ b/src/runtime/components/workflow/Connection.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { computed } from 'vue'
+ const props = withDefaults(defineProps<{
+   sourceX: number
+   sourceY: number
+diff --git a/src/runtime/components/workflow/Edge.vue b/src/runtime/components/workflow/Edge.vue
+index 69be7b1d5290dc10517a5250e5eb62d983deff12..8f2438d32bf069b02811f3adcff12d231ddc9f5d 100644
+--- a/src/runtime/components/workflow/Edge.vue
++++ b/src/runtime/components/workflow/Edge.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { computed } from 'vue'
+ const props = withDefaults(defineProps<{
+   id: string
+   sourceX: number
+diff --git a/src/runtime/components/workflow/Node.vue b/src/runtime/components/workflow/Node.vue
+index f0fb1249757f2139e159029147317f731c70bcb7..d98c1cd43a9538d7b2b5cb054545d01dcd454ef7 100644
+--- a/src/runtime/components/workflow/Node.vue
++++ b/src/runtime/components/workflow/Node.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { ref } from 'vue'
+ const props = withDefaults(defineProps<{
+   id: string
+   label: string
+diff --git a/src/runtime/components/workflow/Panel.vue b/src/runtime/components/workflow/Panel.vue
+index 060545d82233d1ce96d058478ecfa7adf2f4e2b3..ad79405d313b253696327e350f5786697a6c64a6 100644
+--- a/src/runtime/components/workflow/Panel.vue
++++ b/src/runtime/components/workflow/Panel.vue
+@@ -1,4 +1,5 @@
+ <script setup lang="ts">
++import { ref, watch } from 'vue'
+ const props = withDefaults(defineProps<{
+   title?: string
+   position?: 'left' | 'right'

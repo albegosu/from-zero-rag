@@ -99,6 +99,7 @@
     "node": ">=20.0.0",
     "pnpm": ">=10.0.0"
   },
+  "packageManager": "pnpm@10.34.4",
   "lint-staged": {
     "server/**/*.ts": "eslint --fix",
     "tests/**/*.ts": "eslint --fix",

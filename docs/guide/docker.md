@@ -2,8 +2,6 @@
 
 # Docker Guide
 
-> For the full reference (all env vars, troubleshooting, production notes), see the [Docker Deployment Guide](/DOCKER).
-
 ## Architecture
 
 ```
@@ -15,6 +13,24 @@
 ```
 
 Everything in one container — no separate frontend/backend split.
+
+---
+
+## Quick start
+
+```bash
+# 1. Configure
+cp .env.example .env
+# Edit .env — set GOOGLE_API_KEY (recommended) or OPENAI_API_KEY at minimum
+
+# 2. Start (app + database + local Ollama)
+docker compose --profile full up -d --build
+
+# 3. Open
+open http://localhost:3000
+```
+
+The app runs `prisma migrate deploy` automatically on startup — no manual migration step needed.
 
 ---
 
@@ -33,7 +49,7 @@ docker compose --profile full up -d --build
 # Stop
 docker compose --profile full down
 
-# Stop and delete volumes (⚠️ erases all data)
+# Stop and delete volumes (erases all data)
 docker compose --profile full down -v
 ```
 
@@ -46,6 +62,35 @@ docker compose --profile full down -v
 | App (UI + API) | http://localhost:3000 |
 | PostgreSQL | localhost:5432 |
 | Ollama (if running) | http://localhost:11434 |
+
+---
+
+## Environment variables
+
+For the full variable reference, see [Environment variables](/guide/env). Below are the Docker-specific essentials.
+
+### Minimum required
+
+| Variable | Default | Description |
+|---|---|---|
+| `PORT` | 3000 | App port |
+| `DATABASE_URL` | — | Full Postgres connection string (pgvector or Supabase) |
+
+### PostgreSQL container (docker-compose only)
+
+| Variable | Default | Description |
+|---|---|---|
+| `POSTGRES_USER` | rag | DB user |
+| `POSTGRES_PASSWORD` | rag_password | DB password |
+| `POSTGRES_DB` | rag_db | DB name |
+| `POSTGRES_PORT` | 5432 | Postgres port |
+
+### Provider selection
+
+| Variable | Default | Description |
+|---|---|---|
+| `EMBEDDING_PROVIDER` | auto-detect | `gemini` / `openai` / `voyage` / `ollama-local` |
+| `LLM_PROVIDER` | auto-detect | `anthropic` / `openai` / `mistral` / `ollama-cloud` / `ollama-local` |
 
 ---
 
@@ -126,8 +171,18 @@ docker system prune -a
 docker compose --profile full up -d --build
 ```
 
+**Backup database:**
+```bash
+docker compose exec postgres pg_dump -U rag rag_db > backup_$(date +%Y%m%d).sql
+```
+
 ---
 
 ## Going to production?
 
-The development `docker-compose.yml` exposes all ports to the host and is not hardened for production. Use [docker-compose.prod.yml](./production) instead — it adds Caddy for automatic TLS and keeps the database off the public network.
+The development `docker-compose.yml` exposes all ports and is not hardened for production. See the [Production deployment](/guide/production) guide — it uses `docker-compose.prod.yml` with Caddy for automatic TLS and keeps the database off the public network.
+
+**Production tips:**
+- Change all default passwords in `.env` before deploying
+- Use a managed PostgreSQL service (Railway, Supabase, Neon) instead of the Docker container
+- Add a reverse proxy (Caddy included, or nginx) for HTTPS

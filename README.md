@@ -164,15 +164,18 @@ GENERATION (streaming)
 
 ### Recommended models
 
-The default (`OLLAMA_LLM_MODEL=tinyllama`) keeps the stack runnable on a laptop
-but **does not reliably tool-call** — the agent will often answer without ever
-querying the knowledge base. For a useful experience switch to a model that
-supports tool calling:
+The default (`OLLAMA_LLM_MODEL=llama3.1:8b`) supports tool calling reliably —
+the agent will search the knowledge base when relevant and cite sources. If you
+need a lighter alternative:
 
 ```bash
 # In .env
-OLLAMA_LLM_MODEL=qwen2.5:7b-instruct  # or llama3.1:8b
+OLLAMA_LLM_MODEL=llama3.1:8b          # default — good balance, 8 GB VRAM
+# OLLAMA_LLM_MODEL=qwen2.5:7b-instruct  # fast alternative
 ```
+
+Smaller models such as `tinyllama` do **not** support tool calling and will
+ignore the knowledge base entirely.
 
 Embeddings (`nomic-embed-text`, 768 dims) work well as-is.
 
@@ -353,11 +356,13 @@ POST /api/search/inspect # embedding debug + latency info
 ### Admin (signed-in session or `ADMIN_API_KEY`)
 
 ```http
-GET  /api/admin/stats     # document/chunk/query counts
-GET  /api/admin/usage     # recent query log + latency stats
-GET  /api/admin/users     # list users, manage roles
-GET  /api/admin/settings  # read runtime settings (by category)
-POST /api/admin/settings  # update a runtime setting
+GET   /api/admin/metrics   # Prometheus text exposition (request counters, latency)
+GET   /api/admin/stats     # document/chunk/query counts
+GET   /api/admin/usage     # recent query log + latency stats
+GET   /api/admin/users     # list users, manage roles
+PATCH /api/admin/users/:id # promote / demote a user (body: { role })
+GET   /api/admin/settings  # read runtime settings (by category)
+POST  /api/admin/settings  # update a runtime setting
 ```
 
 ---

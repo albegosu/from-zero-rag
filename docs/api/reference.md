@@ -62,9 +62,27 @@ JSON status for load balancers: DB connectivity, embedding provider reachability
 
 Text parts are capped at **64 KiB** each.
 
-**Response:** `UIMessageStream` (not plain JSON).
+**Response:** `UIMessageStream` (not plain JSON — streamed chunks).
 
 **Side effects:** appends user + assistant messages, may create/refine conversation title, logs a **`Query`** row on completion.
+
+**Example:**
+
+```bash
+curl -N -X POST http://localhost:3000/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{
+    "messages": [
+      {
+        "role": "user",
+        "parts": [{ "type": "text", "text": "What is hybrid search?" }]
+      }
+    ],
+    "conversationId": "550e8400-e29b-41d4-a716-446655440000"
+  }'
+```
+
+The response is a streamed `UIMessageStream` — clients should use the AI SDK `useChat` composable or consume the stream incrementally.
 
 ---
 
@@ -122,6 +140,23 @@ Returns creation + workflow **`runId`** / status for async ingest (see service).
 
 Returns **`documentId`**, **`runId`**, **`processing`** status.
 
+**Example:**
+
+```bash
+curl -X POST http://localhost:3000/api/documents/upload \
+  -F "file=@./my-document.pdf"
+```
+
+```json
+{
+  "documentId": "clxyz123...",
+  "runId": "run_abc456",
+  "status": "processing"
+}
+```
+
+Poll `GET /api/documents/:id/ingest-status?runId=run_abc456` until status is `completed` or `failed`.
+
 ### `GET /api/documents/:id`
 
 Single document metadata + chunks (when ready).
@@ -149,6 +184,28 @@ Poll until status is terminal (`completed` / `failed` / etc. — see handler).
 **Body:** `{ query: string, limit?: number }` — `limit` 1–20, default **5**.
 
 **Response:** ranked chunk list (hybrid + MMR). No HyDE.
+
+**Example:**
+
+```bash
+curl -X POST http://localhost:3000/api/search \
+  -H "Content-Type: application/json" \
+  -d '{ "query": "hybrid search", "limit": 5 }'
+```
+
+```json
+{
+  "results": [
+    {
+      "id": "chunk_abc",
+      "content": "Hybrid search combines vector similarity with BM25...",
+      "score": 0.87,
+      "documentId": "doc_123",
+      "documentTitle": "RAG Architecture"
+    }
+  ]
+}
+```
 
 ### `POST /api/search/rag`
 

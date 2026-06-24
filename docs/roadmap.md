@@ -35,10 +35,10 @@ Everything below is live on `main` and documented in these docs.
 | **Ops** | Rate limits, Zod validation, 64 KB chat cap; `/api/admin/*` accepts session or `ADMIN_API_KEY` |
 | **Tests** | Vitest — chunking, text utils, agent commands, search |
 | **Docs** | This VitePress site → GitHub Pages (`pnpm docs:build`) |
-| **Eval harness** | 📋 Planned — `pnpm eval` + `evals/golden.jsonl` not yet in-tree |
-| **Learning quest** | 📋 Not in current app — see [Learning quest](/features/learning-quest) |
 | **Deployment** | Docker Compose profiles (`full`, `api`, `all`), Caddyfile, GitHub Actions |
 | **Runtime settings** | DB-backed `/admin/settings` + `/setup` wizard |
+
+**Coming next:** `pnpm eval` harness with `evals/golden.jsonl` (see Track 3 below).
 
 ---
 

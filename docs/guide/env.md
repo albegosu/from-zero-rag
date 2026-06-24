@@ -10,7 +10,7 @@ cp .env.example .env
 
 Edit `.env` for your machine; never commit real secrets.
 
-- **Docker Compose:** defaults for Postgres and the app are set in `docker-compose.yml`. See [Docker guide](../DOCKER.md) for container-specific usage.
+- **Docker Compose:** defaults for Postgres and the app are set in `docker-compose.yml`. See [Docker guide](./docker) for container-specific usage.
 - **Local `pnpm dev`:** set `DATABASE_URL`, `OLLAMA_URL` (often `http://localhost:11434`), and `WORKFLOW_LOCAL_DATA_DIR` as described in `.env.example`.
 - **Onboarding / first run:** open **`/setup`** in the app. The wizard (DB-backed + provider steps) configures keys and creates the first admin; it does **not** write `.env` for you — keep using root **`.env.example`** as the template and sync values manually if needed.
 

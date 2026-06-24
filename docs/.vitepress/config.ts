@@ -25,7 +25,7 @@ const enNav = [
 ]
 
 const esNav = [
-  { text: 'Guía', link: '/guide/getting-started' },
+  { text: 'Guía', link: '/es/guide/getting-started' },
   { text: 'Features', link: '/features/rag-pipeline' },
   { text: 'API', link: '/api/reference' },
   { text: 'Arquitectura', link: '/architecture' },
@@ -42,6 +42,7 @@ const enSidebar = [
       { text: 'Docker (development)', link: '/guide/docker' },
       { text: 'Production Deployment', link: '/guide/production' },
       { text: 'Environment Variables', link: '/guide/env' },
+      { text: 'Glossary', link: '/guide/glossary' },
     ],
   },
   {
@@ -60,7 +61,6 @@ const enSidebar = [
       { text: 'RAG Pipeline', link: '/features/rag-pipeline' },
       { text: 'Hybrid Search & HyDE', link: '/features/search' },
       { text: 'Memory & Commands', link: '/features/memory' },
-      { text: 'Learning Quest (legacy)', link: '/features/learning-quest' },
     ],
   },
   {
@@ -78,6 +78,7 @@ const enSidebar = [
     items: [
       { text: 'ADR: Monorepo unification', link: '/decisions/monorepo-unification' },
       { text: 'RFC: Auth phases (2026)', link: '/rfcs/2026-auth-phases' },
+      { text: 'Learning Quest (legacy)', link: '/features/learning-quest' },
     ],
   },
 ]
@@ -86,16 +87,17 @@ const esSidebar = [
   {
     text: 'Guía',
     items: [
-      { text: 'Primeros pasos', link: '/guide/getting-started' },
-      { text: 'Docker (desarrollo)', link: '/guide/docker' },
-      { text: 'Despliegue en producción', link: '/guide/production' },
-      { text: 'Variables de entorno', link: '/guide/env' },
+      { text: 'Primeros pasos', link: '/es/guide/getting-started' },
+      { text: 'Docker (desarrollo)', link: '/es/guide/docker' },
+      { text: 'Despliegue en producción', link: '/es/guide/production' },
+      { text: 'Variables de entorno', link: '/es/guide/env' },
+      { text: 'Glosario', link: '/guide/glossary' },
     ],
   },
   {
     text: 'Usuarios y acceso',
     items: [
-      { text: 'Autenticación', link: '/guide/auth' },
+      { text: 'Autenticación', link: '/es/guide/auth' },
       { text: 'Workspaces', link: '/guide/workspaces' },
       { text: 'Roles y permisos', link: '/guide/roles-and-permissions' },
       { text: 'Settings', link: '/guide/settings' },
@@ -108,7 +110,6 @@ const esSidebar = [
       { text: 'Pipeline RAG', link: '/features/rag-pipeline' },
       { text: 'Búsqueda híbrida y HyDE', link: '/features/search' },
       { text: 'Memoria y comandos', link: '/features/memory' },
-      { text: 'Learning Quest (legacy)', link: '/features/learning-quest' },
     ],
   },
   {
@@ -126,6 +127,7 @@ const esSidebar = [
     items: [
       { text: 'ADR: Unificación de monorepo', link: '/decisions/monorepo-unification' },
       { text: 'RFC: Fases de auth (2026)', link: '/rfcs/2026-auth-phases' },
+      { text: 'Learning Quest (legacy)', link: '/features/learning-quest' },
     ],
   },
 ]

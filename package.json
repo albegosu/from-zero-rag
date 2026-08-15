@@ -33,7 +33,7 @@
     "@ai-sdk/anthropic": "^3.0.74",
     "@ai-sdk/google": "^3.0.67",
     "@ai-sdk/mistral": "^3.0.33",
-    "@ai-sdk/openai": "^3.0.58",
+    "@ai-sdk/openai": "^4.0.40",
     "@ai-sdk/vue": "^3.0.174",
     "@google/generative-ai": "^0.24.1",
     "@nuxt/icon": "^1.15.0",

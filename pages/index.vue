@@ -1,19 +1,15 @@
 <script setup lang="ts">
 import { useEmbryoStore, type EmbryoState } from '~/stores/embryos'
+import { LIFECYCLE, appendTranscript, stateColor } from '~/utils/embryo-display'
 
 const store = useEmbryoStore()
+const { locale } = useTerminalPrefs()
 
 const seedInput = ref('')
 const creating = ref(false)
 const activeFilter = ref<EmbryoState | 'ALL'>('ALL')
 
-const LIFECYCLE: Array<{ state: EmbryoState; label: string; glyph: string }> = [
-  { state: 'LATENT',      label: 'latent',      glyph: '◌' },
-  { state: 'GERMINATING', label: 'germinating',  glyph: '◎' },
-  { state: 'GROWING',     label: 'growing',      glyph: '●' },
-  { state: 'MATURE',      label: 'mature',       glyph: '◉' },
-  { state: 'FOSSIL',      label: 'fossil',       glyph: '◈' },
-]
+const speechLang = computed(() => (locale.value === 'es' ? 'es-ES' : 'en-US'))
 
 const visible = computed(() => {
   const list = activeFilter.value === 'ALL' ? store.embryos : store.embryos.filter(e => e.state === activeFilter.value)
@@ -36,14 +32,9 @@ async function submitSeed() {
   }
 }
 
-function stateColor(state: EmbryoState) {
-  return {
-    LATENT:      'text-[var(--term-text-faint)]',
-    GERMINATING: 'text-[var(--term-accent)]',
-    GROWING:     'text-[var(--term-accent-strong)]',
-    MATURE:      'text-[var(--term-text-strong)]',
-    FOSSIL:      'text-[var(--term-text-dim)]',
-  }[state]
+function onSeedSpeech(transcript: string, isFinal: boolean) {
+  if (!isFinal) return
+  seedInput.value = appendTranscript(seedInput.value, transcript)
 }
 
 onMounted(() => store.fetchAll())
@@ -77,15 +68,27 @@ onMounted(() => store.fetchAll())
           class="flex-1 bg-transparent resize-none text-sm wz-strong placeholder:wz-faint focus:outline-none font-mono"
           @keydown.meta.enter="submitSeed"
         />
-        <button
-          class="self-end px-3 py-1.5 text-xs wz-accent border border-[var(--term-accent-line)] hover:bg-[var(--term-accent-soft)] transition-colors disabled:opacity-40"
-          :disabled="!seedInput.trim() || creating"
-          @click="submitSeed"
-        >
-          {{ creating ? 'engaging...' : '+ seed' }}
-        </button>
+        <div class="flex flex-col gap-2 self-end">
+          <AiSpeechInput
+            class="hypar-speech"
+            :language="speechLang"
+            @result="onSeedSpeech"
+          >
+            <template #transcript />
+            <template #unsupported />
+          </AiSpeechInput>
+          <button
+            class="px-3 py-1.5 text-xs wz-accent border border-[var(--term-accent-line)] hover:bg-[var(--term-accent-soft)] transition-colors disabled:opacity-40"
+            :disabled="!seedInput.trim() || creating"
+            @click="submitSeed"
+          >
+            {{ creating ? 'engaging...' : '+ seed' }}
+          </button>
+        </div>
       </div>
     </div>
+
+    <GardenPendingQueue />
 
     <!-- filter bar -->
     <div class="flex gap-2 flex-wrap">

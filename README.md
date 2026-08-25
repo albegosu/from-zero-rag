@@ -37,6 +37,7 @@ The agent is constrained: one challenging question per invocation. No summaries,
 | Database | PostgreSQL 16 |
 | LLM | Ollama (local or cloud) via OpenAI-compatible API |
 | AI SDK | Vercel AI SDK (`ai`, `@ai-sdk/openai`) |
+| AI UI | [`ai-elements-nuxt`](https://github.com/albegosu/ai-elements-nuxt) (headless `Ai*` components) |
 | Auth | better-auth (email + password, sessions, roles) |
 
 ---

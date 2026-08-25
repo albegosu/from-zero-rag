@@ -31,12 +31,12 @@ Edit `.env` and fill in **all** `CHANGE_ME` values:
 
 ```env
 # PostgreSQL — use strong random values
-POSTGRES_USER=rag
+POSTGRES_USER=hypar
 POSTGRES_PASSWORD=a_strong_random_password
-POSTGRES_DB=rag_db
+POSTGRES_DB=hypar_db
 
 # Caddy — your public domain
-DOMAIN=rag.yourdomain.com
+DOMAIN=hypar.yourdomain.com
 
 # LLM — llama3.1:8b supports tool calling
 OLLAMA_LLM_MODEL=llama3.1:8b
@@ -60,7 +60,7 @@ Caddy will automatically obtain a TLS certificate for your domain. The first sta
 
 ```bash
 # App is up and database is reachable
-curl https://rag.yourdomain.com/api/health
+curl https://hypar.yourdomain.com/api/health
 # → {"status":"ok","checks":{"db":true,"embedding":true},"ts":"..."}
 
 # Container health

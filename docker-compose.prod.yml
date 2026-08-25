@@ -1,7 +1,7 @@
 # Production docker-compose — uses Caddy for automatic TLS.
 # Requirements:
 #   1. Copy .env.example → .env and fill in all CHANGE_ME values.
-#   2. Set DOMAIN=rag.yourdomain.com in .env (must have DNS pointing to this server).
+#   2. Set DOMAIN=hypar.yourdomain.com in .env (must have DNS pointing to this server).
 #   3. Open ports 80 and 443 on your firewall.
 #
 # Usage:
@@ -11,7 +11,7 @@
 services:
   caddy:
     image: caddy:2-alpine
-    container_name: rag-caddy
+    container_name: hypar-caddy
     restart: unless-stopped
     ports:
       - "80:80"
@@ -22,7 +22,7 @@ services:
       - caddy_data:/data
       - caddy_config:/config
     networks:
-      - rag-network
+      - hypar-network
     depends_on:
       - app
 
@@ -30,7 +30,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: rag-app
+    container_name: hypar-app
     restart: unless-stopped
     env_file: .env
     environment:
@@ -91,7 +91,7 @@ services:
       postgres:
         condition: service_healthy
     networks:
-      - rag-network
+      - hypar-network
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/health | grep -q '\"status\":\"ok\"' || exit 1"]
       interval: 30s
@@ -101,7 +101,7 @@ services:
 
   postgres:
     image: pgvector/pgvector:pg16
-    container_name: rag-postgres
+    container_name: hypar-postgres
     restart: unless-stopped
     env_file: .env
     environment:
@@ -113,7 +113,7 @@ services:
       - ./init-scripts:/docker-entrypoint-initdb.d:ro
     # No ports: — database not exposed to host in production
     networks:
-      - rag-network
+      - hypar-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
@@ -122,7 +122,7 @@ services:
 
   ollama:
     image: ollama/ollama:latest
-    container_name: rag-ollama
+    container_name: hypar-ollama
     restart: unless-stopped
     volumes:
       - ollama_data:/root/.ollama
@@ -137,7 +137,7 @@ services:
     expose:
       - "11434"          # Not exposed to host — only reachable by app container
     networks:
-      - rag-network
+      - hypar-network
     healthcheck:
       test: ["CMD-SHELL", "ollama list >/dev/null 2>&1"]
       interval: 10s
@@ -153,5 +153,5 @@ volumes:
   caddy_config:
 
 networks:
-  rag-network:
+  hypar-network:
     driver: bridge

@@ -33,6 +33,11 @@ const bodySchema = z.discriminatedUnion('action', [
     action: z.literal('dismiss_note'),
     noteId: z.string(),
   }),
+  z.object({
+    action: z.literal('reply'),
+    noteId: z.string(),
+    reply: z.string().min(1).max(10000),
+  }),
 ])
 
 export default defineEventHandler(async (event) => {
@@ -160,6 +165,61 @@ export default defineEventHandler(async (event) => {
     return prisma.agentNote.update({
       where: { id: body.noteId },
       data: { dismissed: true },
+    })
+  }
+
+  if (body.action === 'reply') {
+    const note = await prisma.agentNote.findFirst({
+      where: { id: body.noteId, embryoId: id, type: 'PENDING_QUESTION', dismissed: false },
+    })
+    if (!note) {
+      throw createError({ statusCode: 404, statusMessage: 'Pending question not found' })
+    }
+
+    const existingTension = await prisma.tension.findFirst({
+      where: { embryoId: id, question: note.content, resolved: false },
+    })
+
+    return prisma.$transaction(async (tx) => {
+      const tension = existingTension ?? await tx.tension.create({
+        data: {
+          embryoId: id,
+          question: note.content,
+          raisedBy: 'AGENT',
+        },
+      })
+
+      if (!existingTension) {
+        await tx.embryoEvent.create({
+          data: {
+            embryoId: id,
+            type: 'TENSION_ADDED',
+            initiatedBy: 'AGENT',
+            payload: { tensionId: tension.id, fromReply: true },
+          },
+        })
+      }
+
+      const event = await tx.embryoEvent.create({
+        data: {
+          embryoId: id,
+          type: 'USER_RESPONSE',
+          initiatedBy: 'USER',
+          payload: {
+            noteId: note.id,
+            question: note.content,
+            reply: body.reply,
+            tensionId: tension.id,
+          },
+        },
+      })
+
+      await tx.agentNote.update({
+        where: { id: note.id },
+        data: { dismissed: true },
+      })
+
+      return { event, tension, noteId: note.id }
     })
   }
 })

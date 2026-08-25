@@ -19,7 +19,8 @@ interface Rule {
 const RULES: Rule[] = [
   {
     label: 'chat',
-    test: (p, m) => m === 'POST' && p.startsWith('/api/chat'),
+    test: (p, m) =>
+      m === 'POST' && (p.startsWith('/api/chat') || /\/api\/embryos\/[^/]+\/agent$/.test(p)),
     capacity: 30,
     refillPerSec: 30 / 60, // 30 req/min
   },

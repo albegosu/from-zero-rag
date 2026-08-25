@@ -3,7 +3,7 @@ import { useEmbryoStore, type EmbryoState, type ConnectionType, type EmbryoSumma
 
 const route = useRoute()
 const store = useEmbryoStore()
-const id = route.params.id as string
+const id = computed(() => route.params.id as string)
 
 const tensionInput = ref('')
 const fossilReason = ref('')
@@ -12,7 +12,10 @@ const addingTension = ref(false)
 const fossilizing = ref(false)
 const askingAgent = ref(false)
 const agentError = ref<string | null>(null)
-const agentStream = ref('')
+const agentThinking = ref(false)
+const replyInput = ref('')
+const replying = ref(false)
+const autoEngagedFor = ref<string | null>(null)
 
 const showConnectDialog = ref(false)
 const connectSearch = ref('')
@@ -41,7 +44,7 @@ async function openConnectDialog() {
   connectSearch.value = ''
   const all = await $fetch<EmbryoSummary[]>('/api/embryos')
   const existing = new Set([
-    id,
+    id.value,
     ...(store.current?.connections.map(c => c.targetId) ?? []),
   ])
   connectCandidates.value = all
@@ -52,10 +55,10 @@ async function openConnectDialog() {
 async function askAgent() {
   askingAgent.value = true
   agentError.value = null
-  agentStream.value = ''
+  agentThinking.value = true
 
   try {
-    const response = await fetch(`/api/embryos/${id}/agent`, {
+    const response = await fetch(`/api/embryos/${id.value}/agent`, {
       method: 'POST',
       credentials: 'include',
     })
@@ -83,12 +86,10 @@ async function askAgent() {
         if (!line.startsWith('data: ')) continue
         try {
           const data = JSON.parse(line.slice(6))
-          if (data.type === 'chunk') {
-            agentStream.value += data.text
-          } else if (data.type === 'error') {
+          if (data.type === 'error') {
             agentError.value = data.message
           } else if (data.type === 'done') {
-            await store.fetchOne(id)
+            await store.fetchOne(id.value, { silent: true })
           }
         } catch {}
       }
@@ -97,8 +98,19 @@ async function askAgent() {
     agentError.value = e?.message ?? 'Agent unavailable'
   } finally {
     askingAgent.value = false
-    agentStream.value = ''
+    agentThinking.value = false
   }
+}
+
+async function maybeAutoEngage(embryoId: string) {
+  if (autoEngagedFor.value === embryoId) return
+  const e = store.current
+  if (!e || e.id !== embryoId || e.state === 'FOSSIL') return
+  const pendingQuestion = e.agentNotes.some(n => n.type === 'PENDING_QUESTION')
+  const everAsked = e.events.some(ev => ev.type === 'AGENT_QUESTION')
+  if (pendingQuestion || everAsked) return
+  autoEngagedFor.value = embryoId
+  await askAgent()
 }
 
 const LIFECYCLE: Array<{ state: EmbryoState; glyph: string }> = [
@@ -115,9 +127,61 @@ const isFossil = computed(() => embryo.value?.state === 'FOSSIL')
 const pendingConnections = computed(() =>
   embryo.value?.agentNotes.filter(n => n.type === 'PENDING_CONNECTION') ?? [],
 )
-const pendingQuestions = computed(() =>
-  embryo.value?.agentNotes.filter(n => n.type !== 'PENDING_CONNECTION') ?? [],
+const unansweredQuestion = computed(() =>
+  embryo.value?.agentNotes.find(n => n.type === 'PENDING_QUESTION') ?? null,
 )
+const dialogue = computed(() => {
+  const events = embryo.value?.events ?? []
+  const turns: Array<{ role: 'agent' | 'user'; text: string; at: string }> = []
+  for (const ev of events) {
+    if (ev.type === 'AGENT_QUESTION' && ev.payload?.question) {
+      turns.push({ role: 'agent', text: String(ev.payload.question), at: ev.createdAt })
+    }
+    if (ev.type === 'USER_RESPONSE' && ev.payload?.reply) {
+      turns.push({ role: 'user', text: String(ev.payload.reply), at: ev.createdAt })
+    }
+  }
+  const pending = unansweredQuestion.value
+  if (pending && !turns.some(t => t.role === 'agent' && t.text === pending.content)) {
+    turns.push({ role: 'agent', text: pending.content, at: pending.createdAt })
+  }
+  return turns
+})
+const neverEngaged = computed(() => {
+  const e = embryo.value
+  if (!e) return true
+  return !unansweredQuestion.value && !e.events.some(ev => ev.type === 'AGENT_QUESTION')
+})
+const firstEngageFailed = computed(() =>
+  autoEngagedFor.value === id.value
+  && !askingAgent.value
+  && neverEngaged.value
+  && !!agentError.value,
+)
+const canAsk = computed(() =>
+  !isFossil.value && !askingAgent.value && !unansweredQuestion.value && (!neverEngaged.value || firstEngageFailed.value),
+)
+
+async function submitReply() {
+  const text = replyInput.value.trim()
+  const note = unansweredQuestion.value
+  if (!text || !note) return
+  replying.value = true
+  agentError.value = null
+  const ok = await store.reply(id.value, note.id, text)
+  replying.value = false
+  if (!ok) return
+  replyInput.value = ''
+  await askAgent()
+}
+
+watch(id, async (embryoId) => {
+  autoEngagedFor.value = null
+  replyInput.value = ''
+  agentError.value = null
+  await store.fetchOne(embryoId)
+  await maybeAutoEngage(embryoId)
+}, { immediate: true })
 
 function parseConnectionNote(content: string): { type: string; targetId: string; reason: string } | null {
   const match = content.match(/^(\w+)\s+\[([^\]]+)\]:\s*(.+)$/)
@@ -128,8 +192,8 @@ function parseConnectionNote(content: string): { type: string; targetId: string;
 async function acceptConnection(noteId: string, content: string) {
   const parsed = parseConnectionNote(content)
   if (!parsed) return
-  await store.connect(id, parsed.targetId, parsed.type as ConnectionType, parsed.reason)
-  await store.dismissNote(id, noteId)
+  await store.connect(id.value, parsed.targetId, parsed.type as ConnectionType, parsed.reason)
+  await store.dismissNote(id.value, noteId)
 }
 
 function stateColor(state: EmbryoState) {
@@ -143,14 +207,14 @@ function stateColor(state: EmbryoState) {
 }
 
 async function transition(state: Exclude<EmbryoState, 'FOSSIL'>) {
-  await store.transition(id, state)
+  await store.transition(id.value, state)
 }
 
 async function submitTension() {
   const q = tensionInput.value.trim()
   if (!q) return
   addingTension.value = true
-  await store.addTension(id, q)
+  await store.addTension(id.value, q)
   tensionInput.value = ''
   addingTension.value = false
 }
@@ -158,7 +222,7 @@ async function submitTension() {
 async function submitFossilize() {
   if (!fossilReason.value.trim()) return
   fossilizing.value = true
-  await store.fossilize(id, fossilReason.value.trim())
+  await store.fossilize(id.value, fossilReason.value.trim())
   showFossilDialog.value = false
   fossilReason.value = ''
   fossilizing.value = false
@@ -166,7 +230,7 @@ async function submitFossilize() {
 
 async function submitConnection(targetId: string) {
   connecting.value = true
-  await store.connect(id, targetId, connectType.value, connectNote.value.trim() || undefined)
+  await store.connect(id.value, targetId, connectType.value, connectNote.value.trim() || undefined)
   connectNote.value = ''
   connectSearch.value = ''
   showConnectDialog.value = false
@@ -185,8 +249,6 @@ const EVENT_LABELS: Record<string, string> = {
   FOSSIL_PROPOSED: 'fossil proposed',
   FOSSILIZED: 'fossilized',
 }
-
-onMounted(() => store.fetchOne(id))
 </script>
 
 <template>
@@ -263,22 +325,19 @@ onMounted(() => store.fetchOne(id))
             <span class="wz-label ml-2">agent.collaborate</span>
           </div>
           <button
-            v-if="!isFossil"
+            v-if="canAsk"
             class="text-[11px] wz-accent border border-[var(--term-accent-line)] px-2 py-0.5 hover:bg-[var(--term-accent-soft)] disabled:opacity-40 transition-colors"
             :disabled="askingAgent"
             @click="askAgent"
           >
-            {{ askingAgent ? 'thinking...' : '↯ ask' }}
+            {{ dialogue.length ? 'ask again' : 'engage' }}
           </button>
+          <span v-else-if="askingAgent" class="text-[11px] wz-accent">thinking...</span>
         </div>
 
-        <!-- streaming output -->
-        <div v-if="agentStream" class="px-4 py-3 border-b border-[var(--term-accent-faint)]">
-          <p class="text-[10px] wz-accent mb-1">streaming...</p>
-          <p class="text-xs wz-strong leading-relaxed font-mono whitespace-pre-wrap">{{ agentStream }}</p>
+        <div v-if="agentError" class="px-4 py-3 text-[11px] text-[var(--term-danger)] border-b border-[var(--term-accent-faint)]">
+          {{ agentError }}
         </div>
-
-        <div v-if="agentError" class="px-4 py-3 text-[11px] text-[var(--term-danger)]">{{ agentError }}</div>
 
         <!-- pending connection suggestions from agent -->
         <div v-if="pendingConnections.length" class="divide-y divide-[var(--term-accent-faint)]">
@@ -312,28 +371,56 @@ onMounted(() => store.fetchOne(id))
           </div>
         </div>
 
-        <!-- agent question notes -->
-        <div v-if="pendingQuestions.length" class="divide-y divide-[var(--term-accent-faint)]">
+        <!-- dialogue -->
+        <div v-if="dialogue.length" class="divide-y divide-[var(--term-accent-faint)]">
           <div
-            v-for="note in pendingQuestions"
-            :key="note.id"
-            class="px-4 py-3 flex items-start justify-between gap-3"
+            v-for="(turn, idx) in dialogue"
+            :key="`${turn.role}-${turn.at}-${idx}`"
+            class="px-4 py-3"
           >
-            <div class="flex-1 min-w-0">
-              <p class="text-[10px] wz-faint mb-1">{{ note.type.toLowerCase().replace('_', ' ') }}</p>
-              <p class="text-xs wz-strong leading-relaxed">{{ note.content }}</p>
-            </div>
-            <button
-              v-if="!isFossil"
-              class="text-[10px] wz-faint hover:text-[var(--term-danger)] shrink-0 transition-colors"
-              @click="store.dismissNote(id, note.id)"
-            >
-              dismiss ×
-            </button>
+            <p class="text-[10px] mb-1" :class="turn.role === 'agent' ? 'wz-accent' : 'wz-faint'">
+              {{ turn.role === 'agent' ? 'agent' : 'you' }}
+            </p>
+            <p class="text-xs wz-strong leading-relaxed">{{ turn.text }}</p>
           </div>
         </div>
-        <div v-if="!pendingQuestions.length && !pendingConnections.length && !agentStream" class="px-4 py-3 wz-faint text-[11px]">
-          {{ isFossil ? 'no agent notes recorded' : 'no agent notes yet — press ↯ ask to engage' }}
+
+        <div v-else-if="agentThinking || (neverEngaged && !firstEngageFailed && !isFossil)" class="px-4 py-3 wz-faint text-[11px]">
+          the agent is reading the seed...
+        </div>
+        <div v-else-if="!pendingConnections.length" class="px-4 py-3 wz-faint text-[11px]">
+          {{ isFossil ? 'no exchange recorded' : 'waiting for the agent...' }}
+        </div>
+
+        <!-- reply composer: the question is answered, not dismissed -->
+        <div
+          v-if="unansweredQuestion && !isFossil"
+          class="p-4 border-t border-[var(--term-accent-faint)] flex flex-col gap-3"
+        >
+          <textarea
+            v-model="replyInput"
+            rows="3"
+            placeholder="reply — push back, go deeper, or name the assumption"
+            class="bg-transparent resize-none text-sm wz-strong placeholder:wz-faint focus:outline-none font-mono w-full"
+            :disabled="replying || askingAgent"
+            @keydown.meta.enter="submitReply"
+          />
+          <div class="flex items-center justify-between gap-2">
+            <button
+              class="text-[10px] wz-faint hover:text-[var(--term-danger)] transition-colors"
+              :disabled="replying || askingAgent"
+              @click="store.dismissNote(id, unansweredQuestion.id)"
+            >
+              skip
+            </button>
+            <button
+              class="text-[11px] wz-accent border border-[var(--term-accent-line)] px-2 py-0.5 hover:bg-[var(--term-accent-soft)] disabled:opacity-40 transition-colors"
+              :disabled="!replyInput.trim() || replying || askingAgent"
+              @click="submitReply"
+            >
+              {{ replying ? '...' : 'reply' }}
+            </button>
+          </div>
         </div>
       </div>
 

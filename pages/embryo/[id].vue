@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useEmbryoStore, type EmbryoState, type ConnectionType } from '~/stores/embryos'
+import { useEmbryoStore, type EmbryoState, type ConnectionType, type EmbryoSummary } from '~/stores/embryos'
 
 const route = useRoute()
 const store = useEmbryoStore()
@@ -12,12 +12,14 @@ const addingTension = ref(false)
 const fossilizing = ref(false)
 const askingAgent = ref(false)
 const agentError = ref<string | null>(null)
+const agentStream = ref('')
 
 const showConnectDialog = ref(false)
-const connectTargetId = ref('')
+const connectSearch = ref('')
 const connectType = ref<ConnectionType>('EXTENDS')
 const connectNote = ref('')
 const connecting = ref(false)
+const connectCandidates = ref<Array<{ id: string; seed: string; state: EmbryoState }>>([])
 
 const CONNECTION_TYPES: Array<{ value: ConnectionType; label: string; glyph: string }> = [
   { value: 'REINFORCES',  label: 'reinforces',  glyph: '⟶' },
@@ -26,16 +28,76 @@ const CONNECTION_TYPES: Array<{ value: ConnectionType; label: string; glyph: str
   { value: 'RESURRECTS',   label: 'resurrects',  glyph: '↺' },
 ]
 
+const filteredCandidates = computed(() => {
+  const q = connectSearch.value.toLowerCase().trim()
+  if (!q) return connectCandidates.value
+  return connectCandidates.value.filter(e =>
+    e.seed.toLowerCase().includes(q) || e.id.includes(q),
+  )
+})
+
+async function openConnectDialog() {
+  showConnectDialog.value = true
+  connectSearch.value = ''
+  const all = await $fetch<EmbryoSummary[]>('/api/embryos')
+  const existing = new Set([
+    id,
+    ...(store.current?.connections.map(c => c.targetId) ?? []),
+  ])
+  connectCandidates.value = all
+    .filter(e => !existing.has(e.id))
+    .map(e => ({ id: e.id, seed: e.seed, state: e.state }))
+}
+
 async function askAgent() {
   askingAgent.value = true
   agentError.value = null
+  agentStream.value = ''
+
   try {
-    await $fetch(`/api/embryos/${id}/agent`, { method: 'POST', credentials: 'include' })
-    await store.fetchOne(id)
+    const response = await fetch(`/api/embryos/${id}/agent`, {
+      method: 'POST',
+      credentials: 'include',
+    })
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}))
+      throw new Error(err.statusMessage || `HTTP ${response.status}`)
+    }
+
+    const reader = response.body?.getReader()
+    if (!reader) throw new Error('No stream')
+
+    const decoder = new TextDecoder()
+    let buffer = ''
+
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+
+      buffer += decoder.decode(value, { stream: true })
+      const lines = buffer.split('\n')
+      buffer = lines.pop() || ''
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue
+        try {
+          const data = JSON.parse(line.slice(6))
+          if (data.type === 'chunk') {
+            agentStream.value += data.text
+          } else if (data.type === 'error') {
+            agentError.value = data.message
+          } else if (data.type === 'done') {
+            await store.fetchOne(id)
+          }
+        } catch {}
+      }
+    }
   } catch (e: any) {
-    agentError.value = e?.data?.statusMessage ?? e?.statusMessage ?? 'Agent unavailable'
+    agentError.value = e?.message ?? 'Agent unavailable'
   } finally {
     askingAgent.value = false
+    agentStream.value = ''
   }
 }
 
@@ -49,6 +111,26 @@ const LIFECYCLE: Array<{ state: EmbryoState; glyph: string }> = [
 
 const embryo = computed(() => store.current)
 const isFossil = computed(() => embryo.value?.state === 'FOSSIL')
+
+const pendingConnections = computed(() =>
+  embryo.value?.agentNotes.filter(n => n.type === 'PENDING_CONNECTION') ?? [],
+)
+const pendingQuestions = computed(() =>
+  embryo.value?.agentNotes.filter(n => n.type !== 'PENDING_CONNECTION') ?? [],
+)
+
+function parseConnectionNote(content: string): { type: string; targetId: string; reason: string } | null {
+  const match = content.match(/^(\w+)\s+\[([^\]]+)\]:\s*(.+)$/)
+  if (!match) return null
+  return { type: match[1]!, targetId: match[2]!, reason: match[3]! }
+}
+
+async function acceptConnection(noteId: string, content: string) {
+  const parsed = parseConnectionNote(content)
+  if (!parsed) return
+  await store.connect(id, parsed.targetId, parsed.type as ConnectionType, parsed.reason)
+  await store.dismissNote(id, noteId)
+}
 
 function stateColor(state: EmbryoState) {
   return {
@@ -82,12 +164,11 @@ async function submitFossilize() {
   fossilizing.value = false
 }
 
-async function submitConnection() {
-  if (!connectTargetId.value.trim()) return
+async function submitConnection(targetId: string) {
   connecting.value = true
-  await store.connect(id, connectTargetId.value.trim(), connectType.value, connectNote.value.trim() || undefined)
-  connectTargetId.value = ''
+  await store.connect(id, targetId, connectType.value, connectNote.value.trim() || undefined)
   connectNote.value = ''
+  connectSearch.value = ''
   showConnectDialog.value = false
   connecting.value = false
 }
@@ -190,10 +271,51 @@ onMounted(() => store.fetchOne(id))
             {{ askingAgent ? 'thinking...' : '↯ ask' }}
           </button>
         </div>
+
+        <!-- streaming output -->
+        <div v-if="agentStream" class="px-4 py-3 border-b border-[var(--term-accent-faint)]">
+          <p class="text-[10px] wz-accent mb-1">streaming...</p>
+          <p class="text-xs wz-strong leading-relaxed font-mono whitespace-pre-wrap">{{ agentStream }}</p>
+        </div>
+
         <div v-if="agentError" class="px-4 py-3 text-[11px] text-[var(--term-danger)]">{{ agentError }}</div>
-        <div v-if="embryo.agentNotes.length" class="divide-y divide-[var(--term-accent-faint)]">
+
+        <!-- pending connection suggestions from agent -->
+        <div v-if="pendingConnections.length" class="divide-y divide-[var(--term-accent-faint)]">
           <div
-            v-for="note in embryo.agentNotes"
+            v-for="note in pendingConnections"
+            :key="note.id"
+            class="px-4 py-3 flex items-start justify-between gap-3 bg-[var(--term-accent-soft)]"
+          >
+            <div class="flex-1 min-w-0">
+              <p class="text-[10px] wz-accent mb-1">suggested connection</p>
+              <p class="text-xs wz-strong leading-relaxed">{{ parseConnectionNote(note.content)?.reason ?? note.content }}</p>
+              <p class="text-[10px] wz-faint mt-1">
+                {{ parseConnectionNote(note.content)?.type?.toLowerCase() }} →
+                {{ parseConnectionNote(note.content)?.targetId }}
+              </p>
+            </div>
+            <div v-if="!isFossil" class="flex gap-2 shrink-0">
+              <button
+                class="text-[10px] wz-accent hover:wz-strong transition-colors"
+                @click="acceptConnection(note.id, note.content)"
+              >
+                accept ✓
+              </button>
+              <button
+                class="text-[10px] wz-faint hover:text-[var(--term-danger)] transition-colors"
+                @click="store.dismissNote(id, note.id)"
+              >
+                dismiss ×
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- agent question notes -->
+        <div v-if="pendingQuestions.length" class="divide-y divide-[var(--term-accent-faint)]">
+          <div
+            v-for="note in pendingQuestions"
             :key="note.id"
             class="px-4 py-3 flex items-start justify-between gap-3"
           >
@@ -210,7 +332,7 @@ onMounted(() => store.fetchOne(id))
             </button>
           </div>
         </div>
-        <div v-else class="px-4 py-3 wz-faint text-[11px]">
+        <div v-if="!pendingQuestions.length && !pendingConnections.length && !agentStream" class="px-4 py-3 wz-faint text-[11px]">
           {{ isFossil ? 'no agent notes recorded' : 'no agent notes yet — press ↯ ask to engage' }}
         </div>
       </div>
@@ -298,20 +420,14 @@ onMounted(() => store.fetchOne(id))
           <button
             v-if="!isFossil"
             class="text-[11px] wz-accent border border-[var(--term-accent-line)] px-2 py-0.5 hover:bg-[var(--term-accent-soft)] transition-colors"
-            @click="showConnectDialog = !showConnectDialog"
+            @click="openConnectDialog"
           >
             + connect
           </button>
         </div>
 
-        <!-- connect dialog -->
+        <!-- connect dialog with search -->
         <div v-if="showConnectDialog" class="px-4 py-3 border-b border-[var(--term-accent-faint)] flex flex-col gap-3">
-          <input
-            v-model="connectTargetId"
-            type="text"
-            placeholder="target embryo id"
-            class="bg-transparent text-xs wz-strong placeholder:wz-faint focus:outline-none font-mono w-full"
-          />
           <div class="flex flex-wrap gap-2">
             <button
               v-for="ct in CONNECTION_TYPES"
@@ -326,20 +442,36 @@ onMounted(() => store.fetchOne(id))
             </button>
           </div>
           <input
+            v-model="connectSearch"
+            type="text"
+            placeholder="search embryos..."
+            class="bg-transparent text-xs wz-strong placeholder:wz-faint focus:outline-none font-mono w-full border-b border-[var(--term-accent-faint)] pb-2"
+          />
+          <div class="max-h-48 overflow-y-auto flex flex-col gap-1">
+            <button
+              v-for="candidate in filteredCandidates.slice(0, 10)"
+              :key="candidate.id"
+              class="text-left px-2 py-1.5 text-xs hover:bg-[var(--term-accent-soft)] transition-colors flex items-center gap-2 group"
+              :disabled="connecting"
+              @click="submitConnection(candidate.id)"
+            >
+              <span :class="['text-[10px] font-mono shrink-0', stateColor(candidate.state)]">
+                {{ LIFECYCLE.find(l => l.state === candidate.state)?.glyph }}
+              </span>
+              <span class="wz-muted truncate flex-1 group-hover:wz-strong">{{ candidate.seed }}</span>
+            </button>
+            <p v-if="filteredCandidates.length === 0" class="text-[11px] wz-faint py-2 text-center">
+              {{ connectCandidates.length === 0 ? 'no other embryos available' : 'no matches' }}
+            </p>
+          </div>
+          <input
             v-model="connectNote"
             type="text"
             placeholder="note (optional)"
             class="bg-transparent text-xs wz-strong placeholder:wz-faint focus:outline-none font-mono w-full"
           />
-          <div class="flex gap-2 justify-end">
+          <div class="flex justify-end">
             <button class="text-xs wz-faint px-3 py-1 hover:wz-muted" @click="showConnectDialog = false">cancel</button>
-            <button
-              class="text-[11px] wz-accent border border-[var(--term-accent-line)] px-2 py-0.5 hover:bg-[var(--term-accent-soft)] disabled:opacity-40 transition-colors"
-              :disabled="!connectTargetId.trim() || connecting"
-              @click="submitConnection"
-            >
-              {{ connecting ? '...' : 'link' }}
-            </button>
           </div>
         </div>
 
@@ -376,7 +508,7 @@ onMounted(() => store.fetchOne(id))
             <span class="text-xs wz-muted truncate">{{ c.source.seed }}</span>
           </NuxtLink>
         </div>
-        <div v-else class="px-4 py-3 wz-faint text-[11px]">no connections yet</div>
+        <div v-else-if="!showConnectDialog" class="px-4 py-3 wz-faint text-[11px]">no connections yet</div>
       </div>
 
       <!-- event history -->

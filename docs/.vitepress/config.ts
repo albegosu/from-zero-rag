@@ -49,6 +49,8 @@ export default defineConfig({
         text: 'Research',
         items: [
           { text: 'Experiments', link: '/experiments/' },
+          { text: 'Method as process', link: '/experiments/method-as-process' },
+          { text: 'ai-elements surfaces', link: '/experiments/ai-elements-surfaces' },
         ],
       },
       {

@@ -15,7 +15,9 @@ A connection between two embryos can be:
 
 The question is whether these should be visually distinct, and if so, how. An explicit connection carries the user's intent. An inferred connection carries the agent's hypothesis. Treating them the same risks elevating agent speculation to the level of user decision.
 
-*Status: unresolved — pending first experiments on the connection surface.*
+The [ai-elements surfaces](/experiments/ai-elements-surfaces) experiment draws this on a canvas: **solid** edges for explicit or confirmed links, **dashed / animated** edges for agent-inferred unconfirmed links. Whether that distinction is enough is still an observation, not a finding.
+
+*Status: in experiment — graph surface mounted; visual language still under review.*
 
 ---
 
@@ -70,6 +72,26 @@ Scroll depth? A separate view? A toggle between "surface" and "strata"? A search
 This is one of the first UI experiments planned.
 
 *Status: unresolved — pending experiment.*
+
+---
+
+## Does the agent’s question depend on lifecycle state?
+
+Today the agent is told to challenge, extend, or destabilize, regardless of state. `LATENT` is not even included in the user message. The [method-as-process experiment](/experiments/method-as-process) proposes a stance per state: define → probe → generate paths → select the simplest.
+
+The risk is theatre: we add stance text and the questions do not change. Phase 2 of that experiment logs a named *move* without showing it in the UI. If move × state is random, prompt-only failed.
+
+*Status: implemented, awaiting observation — count `payload.move` on `AGENT_QUESTION` events against embryo state.*
+
+---
+
+## Variety vs exactly one question
+
+Munari’s useful claim is that creativity needs alternative *paths*, not the first clever answer. Hypar’s useful constraint is one question per invocation.
+
+These can coexist (one question that forces a choice) or they cannot (growing embryos need an explicit `paths[]` field). Phase 3 shipped option A: pending paths the user accepts as tensions. Whether the model actually fills `paths` in `GROWING` is still an observation.
+
+*Status: implemented (option A), awaiting observation — [method as process](/experiments/method-as-process).*
 
 ---
 

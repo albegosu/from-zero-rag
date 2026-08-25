@@ -71,15 +71,15 @@ An embryo can move backward in the lifecycle if new tensions emerge. A mature em
 
 ## What state signals
 
-The state of an embryo tells you — and the agent — how to engage with it:
+The state of an embryo tells you — and the agent — how to engage with it. The lifecycle is the method: define, probe, generate paths, then select the simplest. States are not renamed; the stance changes.
 
 | State | What it means | Agent engagement |
 |---|---|---|
-| Latent | Waiting to be explored | Low — periodic check-ins |
-| Germinating | Being probed | High — active questioning |
-| Growing | Developing momentum | Medium — connection surfacing |
-| Mature | Ready to close | Low — waiting for decision |
-| Fossil | Closed, preserved | Passive — surfaces when relevant |
+| Latent | Waiting to name the real problem | **DEFINE** — recover the problem if the seed is already a solution |
+| Germinating | Being probed | **PROBE / INVERT** — assumptions, not patches |
+| Growing | Generating paths, not the answer | **VARIETY** — alternative directions; optional path proposals |
+| Mature | Tension resolved — close or reopen | **SIMPLEST** — remaining tension, or fossil proposal |
+| Fossil | Path closed, reason kept | Passive — surfaces when relevant |
 
 ---
 

@@ -1,44 +1,16 @@
 import { streamText } from 'ai'
-import { createOpenAI } from '@ai-sdk/openai'
 import { prisma } from '~/server/utils/prisma'
 import { requireSessionUserId } from '~/server/utils/session'
 import { logger } from '~/server/utils/logger'
+import { createOllamaChatModel } from '~/server/utils/ollama'
 import { classifyLlmError } from '~/utils/llm-errors'
 import {
-  AGENT_SYSTEM_PROMPT,
+  buildAgentSystemPrompt,
   buildAgentUserMessage,
   dialogueFromEvents,
   parseAgentResponse,
 } from '~/server/utils/embryo-agent'
-
-function createOllamaChatModel() {
-  const config = useRuntimeConfig()
-  const provider = String(config.llmProvider || '')
-  const configuredUrl = String(config.ollamaUrl || 'http://localhost:11434').replace(/\/+$/, '')
-  const isCloud = provider === 'ollama-cloud' || configuredUrl.includes('ollama.com')
-  const host = isCloud
-    ? (configuredUrl.includes('ollama.com') ? configuredUrl : 'https://ollama.com')
-    : configuredUrl
-  const apiKey = String(config.ollamaApiKey || '')
-
-  if (isCloud && !apiKey) {
-    throw createError({
-      statusCode: 503,
-      statusMessage: 'OLLAMA_API_KEY is required for Ollama Cloud',
-    })
-  }
-
-  const ollama = createOpenAI({
-    baseURL: `${host}/v1`,
-    apiKey: apiKey || 'ollama',
-    name: 'ollama',
-  })
-
-  return {
-    model: ollama.chat(config.ollamaLlmModel || 'llama3.2'),
-    timeoutMs: Number(config.ollamaChatTimeoutMs) || 180_000,
-  }
-}
+import { formatFossilNote } from '~/utils/embryo-method'
 
 export default defineEventHandler(async (event) => {
   const userId = requireSessionUserId(event)
@@ -60,6 +32,15 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 409, statusMessage: 'Fossils cannot receive agent input' })
   }
 
+  let requestedModel: string | undefined
+  try {
+    const body = await readBody<{ model?: string }>(event)
+    requestedModel = body?.model
+  }
+  catch {
+    requestedModel = undefined
+  }
+
   const otherEmbryos = await prisma.embryo.findMany({
     where: { userId, id: { not: id }, state: { not: 'FOSSIL' } },
     select: { id: true, seed: true, state: true },
@@ -79,7 +60,7 @@ export default defineEventHandler(async (event) => {
     dialogue,
   })
 
-  const { model, timeoutMs } = createOllamaChatModel()
+  const { model, timeoutMs } = createOllamaChatModel(requestedModel)
 
   setResponseHeader(event, 'Content-Type', 'text/event-stream')
   setResponseHeader(event, 'Cache-Control', 'no-cache')
@@ -90,7 +71,7 @@ export default defineEventHandler(async (event) => {
   try {
     const result = streamText({
       model,
-      system: AGENT_SYSTEM_PROMPT,
+      system: buildAgentSystemPrompt(embryo.state),
       prompt: userMessage,
       abortSignal: AbortSignal.timeout(timeoutMs),
     })
@@ -125,7 +106,7 @@ export default defineEventHandler(async (event) => {
                 embryoId: id,
                 type: 'AGENT_QUESTION',
                 initiatedBy: 'AGENT',
-                payload: { question: parsed.question },
+                payload: { question: parsed.question, move: parsed.move },
               },
             }),
           ]
@@ -163,12 +144,63 @@ export default defineEventHandler(async (event) => {
             )
           }
 
+          const paths = embryo.state === 'GROWING' ? parsed.paths : []
+          for (const path of paths) {
+            dbOps.push(
+              prisma.agentNote.create({
+                data: {
+                  embryoId: id,
+                  type: 'PENDING_PATH',
+                  content: path,
+                },
+              }),
+            )
+          }
+          if (paths.length > 0) {
+            dbOps.push(
+              prisma.embryoEvent.create({
+                data: {
+                  embryoId: id,
+                  type: 'AGENT_SUGGESTION',
+                  initiatedBy: 'AGENT',
+                  payload: { kind: 'paths', paths },
+                },
+              }),
+            )
+          }
+
+          const fossil = embryo.state === 'MATURE' ? parsed.fossil : null
+          if (fossil) {
+            dbOps.push(
+              prisma.agentNote.create({
+                data: {
+                  embryoId: id,
+                  type: 'PENDING_FOSSIL',
+                  content: formatFossilNote(fossil.kind, fossil.reason),
+                },
+              }),
+            )
+            dbOps.push(
+              prisma.embryoEvent.create({
+                data: {
+                  embryoId: id,
+                  type: 'FOSSIL_PROPOSED',
+                  initiatedBy: 'AGENT',
+                  payload: { kind: fossil.kind, reason: fossil.reason },
+                },
+              }),
+            )
+          }
+
           await prisma.$transaction(dbOps)
 
           controller.enqueue(encoder.encode(`data: ${JSON.stringify({
             type: 'done',
             question: parsed.question,
+            move: parsed.move,
             connections: validConnections,
+            paths,
+            fossil,
           })}\n\n`))
           controller.close()
         }

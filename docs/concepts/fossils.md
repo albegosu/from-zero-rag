@@ -43,7 +43,7 @@ Fossilization is always a dialogue. Whether initiated by the user or suggested b
 
 ### When the user initiates
 
-The agent asks why before closing. The reason the user provides becomes part of the fossil's record. This is not bureaucratic friction — it is the moment when the most valuable piece of information is captured: *why* the idea ended.
+The agent asks why before closing. The reason the user provides becomes part of the fossil's record. Closing is evaluation: was the problem ill-defined, was the path wrong, or did another idea supersede this one? This is not bureaucratic friction — it is the moment when the most valuable piece of information is captured: *why* the idea ended.
 
 ### When the agent suggests
 

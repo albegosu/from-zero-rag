@@ -1,0 +1,4 @@
+{"seed":"Add a definition-of-ready checklist to every team.","state":"LATENT","expectMove":"DEFINE","notes":"solution-shaped seed — recover the problem"}
+{"seed":"We are slow because we lack process.","state":"GERMINATING","expectMove":["PROBE","INVERT"],"notes":"assumption-laden — probe or invert, do not patch"}
+{"seed":"The one fix is a kickoff meeting.","state":"GROWING","expectMove":"VARIETY","notes":"one obvious fix — generate paths"}
+{"seed":"The garden metaphor holds; tensions have resolved.","state":"MATURE","expectMove":"SIMPLEST","notes":"ready to close — simplest or fossil"}

@@ -18,13 +18,25 @@ It is a **collaborator with its own voice** — one that has stakes in the healt
 
 The agent's primary mode of engagement is the question. Not questions to gather information for itself, but questions that push an embryo forward.
 
+The question is not generic. It follows the [lifecycle](/concepts/lifecycle) as a method:
+
+| State | Preferred move | What the question does |
+|---|---|---|
+| Latent | **DEFINE** | Names the real problem. If the seed is already a solution, recovers what it is papering over. |
+| Germinating | **PROBE** (or **INVERT**) | Tests assumptions. *What would have to be true for this to be wrong?* |
+| Growing | **VARIETY** | Opens alternative *paths* — directions, not the first clever answer. Paths are proposals the user can keep as tensions or dismiss. |
+| Mature | **SIMPLEST** | Asks whether this is the simplest effective form, and whether it is time to close. |
+| Fossil | — | No agent input. |
+
+The spoken turn is still **exactly one question**. Paths and fossil proposals are additive fields, not a second question. The move name is logged on the event; it is not shown in the UI.
+
 Good agent questions are uncomfortable. They identify the tension the embryo hasn't resolved:
 
+- *"What problem is this checklist actually solving?"*
 - *"What would have to be true for this to be wrong?"*
-- *"This assumes X — have you examined that assumption?"*
 - *"This is the same idea as the one you abandoned in March. What's different now?"*
 
-The agent does not ask questions to be helpful. It asks questions because unresolved tension is what makes an embryo alive.
+The agent does not ask questions to be helpful. It does not teach a named method. The method is how it thinks.
 
 ### Surfaces connections
 
@@ -44,7 +56,13 @@ The agent monitors the health of each embryo. It can suggest fossilization when:
 - An embryo contradicts ideas that have since matured
 - An embryo has been superseded by a newer, more developed version of the same idea
 
-When the agent suggests fossilization, it presents its case — the inactivity duration, the contradictions, the reasoning. The user decides. The agent does not fossilize silently.
+When the agent suggests fossilization, it presents its case as one of three kinds of death:
+
+- **Ill-defined problem** — the idea closed because the problem was never named
+- **Wrong path** — a simpler path existed
+- **Superseded** — another idea replaced this one
+
+The user decides. The agent does not fossilize silently.
 
 ### Records reasoning
 

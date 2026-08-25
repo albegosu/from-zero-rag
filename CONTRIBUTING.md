@@ -62,7 +62,7 @@ hypar/
 4. **Verify** before pushing (same checks as [CI](.github/workflows/ci.yml)):
 
 ```bash
-# Full pipeline (lint, typecheck, tests, eval, build)
+# Full pipeline (lint, typecheck, tests, build)
 pnpm ci:check
 ```
 

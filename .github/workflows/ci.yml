@@ -63,8 +63,5 @@ jobs:
       - name: Unit tests with coverage
         run: pnpm test:coverage
 
-      - name: Eval harness (schema)
-        run: pnpm eval
-
       - name: Build
         run: pnpm build

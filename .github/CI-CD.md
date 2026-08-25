@@ -8,7 +8,7 @@
 | **Test Frontend** | `test-frontend.yml` | Push/PR → `main` (paths: `pages/**`, `components/**`, `layouts/**`, `stores/**`, `assets/**`, `plugins/**`, `composables/**`, `i18n/**`, `app.vue`, `nuxt.config.ts`) | `pnpm install` → `vue-tsc --noEmit` → `pnpm test` → `pnpm build` |
 | **Docker Build** | `docker-build.yml` | Push to `main`, tags `v*`, PR to `main` | Build single root `Dockerfile` image and push to GHCR (PRs build only, no push) |
 | **Deploy guides to Pages** | `pages.yml` | Push to `main` (paths: `docs/**`) or manual | Build VitePress (`pnpm run docs:build`) and deploy to GitHub Pages |
-| **CI (unified)** | `ci.yml` | Push/PR → `main` | Lint, audit, typecheck, coverage tests, eval schema, build |
+| **CI (unified)** | `ci.yml` | Push/PR → `main` | Lint, audit, typecheck, coverage tests, build |
 | **Deploy (self-hosted)** | `deploy-self-hosted.yml` | Manual (`workflow_dispatch`) | SSH + `docker compose -f docker-compose.prod.yml up` (requires `SSH_*` secrets) |
 
 > The two `test-*` workflows overlap on the unified Nuxt monorepo: each runs the full Vitest suite and a Nuxt build. The split is purely about scoping triggers via path filters so unrelated changes (docs-only edits under `docs/**`, etc.) skip the app CI jobs.

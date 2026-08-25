@@ -18,7 +18,7 @@ Closes #<!-- issue number, or remove this line if none -->
 
 ## Testing Checklist
 
-- [ ] `pnpm ci:check` passes locally (lint → typecheck → tests → eval → build)
+- [ ] `pnpm ci:check` passes locally (lint → typecheck → tests → build)
 - [ ] New or updated tests cover the change (if applicable)
 - [ ] Docs updated if behavior or config changed
 

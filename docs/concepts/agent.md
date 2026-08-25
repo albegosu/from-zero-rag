@@ -6,9 +6,9 @@ It is a **collaborator with its own voice** — one that has stakes in the healt
 
 ## What the agent is not
 
-**Not a search engine.** You don't query the agent. The agent engages with your embryos — it comes to you, with context you didn't ask for, because it noticed something worth noticing.
+**Not a search engine.** You don't query the agent. The agent engages with your embryos — it comes to you, with context you didn't ask for, because you opened the idea (auto-engage) or you replied.
 
-**Not a chatbot.** General conversation is not the agent's purpose. Every interaction the agent initiates is anchored to a specific embryo or connection. The agent doesn't chat — it thinks alongside.
+**Not a chatbot.** General conversation is not the agent's purpose. Every interaction is anchored to a specific embryo. The agent doesn't chat — it thinks alongside. The UI is `ai-elements-nuxt` primitives mapped onto embryo events, not a `useAiChat` transcript.
 
 **Not an assistant.** An assistant executes instructions. The agent makes proposals. You can ignore them. But the agent has a perspective and shares it.
 
@@ -28,74 +28,71 @@ The question is not generic. It follows the [lifecycle](/concepts/lifecycle) as 
 | Mature | **SIMPLEST** | Asks whether this is the simplest effective form, and whether it is time to close. |
 | Fossil | — | No agent input. |
 
-The spoken turn is still **exactly one question**. Paths and fossil proposals are additive fields, not a second question. The move name is logged on the event; it is not shown in the UI.
+The spoken turn is still **exactly one question**. Paths and fossil proposals are additive fields, not a second question. The move name is logged on the `AGENT_QUESTION` event; it is not shown in the UI.
+
+The turn **streams**: the client previews the forming `question` field, then persists the parsed JSON on `done`.
 
 Good agent questions are uncomfortable. They identify the tension the embryo hasn't resolved:
 
 - *"What problem is this checklist actually solving?"*
 - *"What would have to be true for this to be wrong?"*
-- *"This is the same idea as the one you abandoned in March. What's different now?"*
+- *"This is the same idea as another living embryo. What's different?"*
 
 The agent does not ask questions to be helpful. It does not teach a named method. The method is how it thinks.
 
 ### Surfaces connections
 
-The agent has access to all embryos — living and fossilized. It detects:
+The agent may propose links of type `REINFORCES`, `CONTRADICTS`, or `EXTENDS` to other **living** embryos. Those proposals land as `PENDING_CONNECTION` notes. You accept (creates a confirmed connection) or dismiss.
 
-- **Reinforcement** — two embryos that support the same conclusion
-- **Contradiction** — an embryo in conflict with a mature idea or another active embryo
-- **Resurrection potential** — a fossil that has become relevant again because of a new living embryo
+The agent does not currently propose `RESURRECTS`, and it does not see fossils (see [What the agent knows](#what-the-agent-knows)).
 
-Connections are surfaced as proposals, not facts. The agent says *"these two ideas seem to be in tension"* — not *"these two ideas contradict each other."* The user decides whether the connection is real.
+Connections are surfaced as proposals, not facts. You decide whether the connection is real.
 
 ### Suggests fossilization
 
-The agent monitors the health of each embryo. It can suggest fossilization when:
+On `MATURE` embryos the agent may attach a `PENDING_FOSSIL` note with one of three kinds of death:
 
-- An embryo has been inactive for a significant period
-- An embryo contradicts ideas that have since matured
-- An embryo has been superseded by a newer, more developed version of the same idea
+- **Ill-defined problem** (`ILL_DEFINED`) — the idea closed because the problem was never named
+- **Wrong path** (`WRONG_PATH`) — a simpler path existed
+- **Superseded** (`SUPERSEDED`) — another idea replaced this one
 
-When the agent suggests fossilization, it presents its case as one of three kinds of death:
-
-- **Ill-defined problem** — the idea closed because the problem was never named
-- **Wrong path** — a simpler path existed
-- **Superseded** — another idea replaced this one
-
-The user decides. The agent does not fossilize silently.
+You accept (fossilize with that reason) or dismiss. The agent does not fossilize silently.
 
 ### Records reasoning
 
-Every agent suggestion, every question asked, every connection surfaced is logged as part of the embryo's history. The agent's participation in an embryo's development is visible and auditable.
-
-This matters because the agent's reasoning is itself a form of knowledge. *Why* the agent asked a particular question, or proposed a particular connection, is part of understanding the idea.
+Every agent question, every accepted path, every dismissed note, every reply is an event or a note. Skip (dismiss without reply) does **not** write a `USER_RESPONSE` event — only the note is dismissed.
 
 ---
 
 ## The negotiation model
 
-When fossilization is triggered — by the user or the agent — a dialogue opens. Not a confirmation modal. A real conversation anchored to the embryo.
-
 | Trigger | What happens |
 |---|---|
-| User initiates fossilization | Agent asks why before closing. The reason becomes part of the fossil. |
-| Agent suggests fossilization | Agent presents its case. User accepts, rejects, or defers. Decision is logged. |
-| User ignores agent suggestion | Logged. Agent does not repeat the suggestion immediately. |
+| User initiates fossilization | A reason form (optional kind chips + required text). Not an agent interview. |
+| Agent suggests fossilization | HITL confirm widget. Accept, or dismiss. Decision is the note + `FOSSIL_PROPOSED` / `FOSSILIZED` events. |
+| User ignores agent suggestion | Dismiss the note. The agent does not auto-repeat that turn. |
 
-In every case, a trace remains. The system's memory is symmetric: it records not just what was decided, but the context in which the decision was made.
+A trace remains for accept and for agent proposals. Fossilization cannot happen without a recorded reason.
 
 ---
 
 ## What the agent knows
 
-The agent has access to:
+Per invocation the agent receives:
 
-- All embryos in all states, including fossils
-- The full history of each embryo
-- The connections between embryos
-- The reasons previous embryos were fossilized
+- The current embryo: seed, state, unresolved tensions, last ~12 agent/user turns
+- Up to **20 other living embryos** owned by you (fossils excluded)
+- Which of those are already outgoing connection targets (so it does not re-propose them)
 
-The agent does not have access to external knowledge by default. It works within the boundaries of the wiki — the knowledge system you have built. This is intentional: the agent's role is to help you think with what you have, not to import external context that you haven't processed yourself.
+It does **not** currently have:
+
+- Fossils or fossil reasons
+- The rest of the garden beyond that cap
+- External knowledge by default
+
+This is a lab constraint, not the long-term research answer. Connection surfacing would benefit from fossils; question-asking benefits from a narrow thread. See [Open Questions](/open-questions).
+
+You can pick the Ollama model in **Settings**; the choice is a cookie sent on the next agent POST.
 
 ---
 

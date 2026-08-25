@@ -7,16 +7,15 @@ describe('validateEnv', () => {
   beforeEach(() => {
     process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test'
     process.env.BETTER_AUTH_SECRET = 'test-secret-for-validation-min-32'
-    process.env.GOOGLE_API_KEY = 'test-google-key'
+    process.env.OLLAMA_URL = 'http://localhost:11434'
     delete process.env.AUTH_SECRET
-    delete process.env.EMBEDDING_PROVIDER
   })
 
   afterEach(() => {
     process.env = { ...snapshot }
   })
 
-  it('passes with database, auth secret, and embedding provider', () => {
+  it('passes with database, auth secret, and Ollama URL', () => {
     expect(() => validateEnv()).not.toThrow()
   })
 
@@ -31,11 +30,8 @@ describe('validateEnv', () => {
     expect(() => validateEnv()).toThrow(/BETTER_AUTH_SECRET/)
   })
 
-  it('fails without any embedding provider', () => {
-    delete process.env.GOOGLE_API_KEY
-    delete process.env.OPENAI_API_KEY
-    delete process.env.VOYAGE_API_KEY
+  it('fails without OLLAMA_URL', () => {
     delete process.env.OLLAMA_URL
-    expect(() => validateEnv()).toThrow(/embedding provider/)
+    expect(() => validateEnv()).toThrow(/OLLAMA_URL/)
   })
 })

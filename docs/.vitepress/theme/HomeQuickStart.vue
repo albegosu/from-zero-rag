@@ -11,7 +11,7 @@ const active = ref<Tab>('docker')
 const dockerCommands = `git clone https://github.com/albegosu/hypar.git
 cd hypar
 cp .env.example .env
-# Edit .env — set GOOGLE_API_KEY at minimum
+# Edit .env — set BETTER_AUTH_SECRET
 docker compose --profile full up -d --build
 open http://localhost:3000`
 
@@ -19,8 +19,8 @@ const pnpmCommands = `git clone https://github.com/albegosu/hypar.git
 cd hypar
 pnpm install
 cp .env.example .env
-# Edit .env — set DATABASE_URL + GOOGLE_API_KEY
-pnpm db:migrate
+# Edit .env — DATABASE_URL + OLLAMA_URL + BETTER_AUTH_SECRET
+npx prisma migrate deploy
 pnpm dev`
 
 const dockerCopied = ref(false)

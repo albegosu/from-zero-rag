@@ -4,7 +4,7 @@ Technical documentation for hypar.
 
 ## Core docs
 
-- [`index.md`](index.md) — project overview
+- [`index.md`](index.md) — landing (VitePress home)
 - [`architecture/index.md`](architecture/index.md) — Embryo domain architecture
 - [`guide/env.md`](guide/env.md) — environment variables
 
@@ -18,6 +18,8 @@ Technical documentation for hypar.
 ## Research
 
 - [`experiments/index.md`](experiments/index.md) — experiment log
+- [`experiments/method-as-process.md`](experiments/method-as-process.md) — stance by lifecycle
+- [`experiments/ai-elements-surfaces.md`](experiments/ai-elements-surfaces.md) — headless AI UI on the collaborator
 - [`open-questions.md`](open-questions.md) — open research questions
 
 ## Guides
@@ -25,7 +27,9 @@ Technical documentation for hypar.
 - [`guide/getting-started.md`](guide/getting-started.md) — setup
 - [`guide/docker.md`](guide/docker.md) — Docker deployment
 - [`guide/auth.md`](guide/auth.md) — authentication
+- [`guide/roles-and-permissions.md`](guide/roles-and-permissions.md) — roles
 - [`guide/env.md`](guide/env.md) — environment variables
+- [`guide/production.md`](guide/production.md) — production compose
 
 ## Design history
 

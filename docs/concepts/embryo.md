@@ -8,19 +8,19 @@ It is an **embryo** — an idea that is alive, unfinished, and in motion.
 
 An embryo has four components:
 
-**A seed** — the raw, unpolished thought. A question, a contradiction, a half-formed intuition. Not yet an argument, not yet a position. The seed is captured exactly as it arrives: rough, provisional, honest.
+**A seed** — the raw, unpolished thought. A question, a contradiction, a half-formed intuition. Not yet an argument, not yet a position. The seed is captured exactly as it arrives: rough, provisional, honest. It is never edited after create.
 
 **A vital state** — a position in the [lifecycle](/concepts/lifecycle). Not a binary draft/published toggle, but a living signal of where the idea stands. The state changes as the idea develops, as tensions resolve, as the agent engages.
 
-**Open tension** — the questions the embryo hasn't resolved. Tension is what keeps an embryo alive. An embryo with no tension is ready to advance in its lifecycle. Tension can be explicit (questions you've written) or detected (contradictions the agent surfaces).
+**Open tension** — the questions the embryo hasn't resolved. Tension is what keeps an embryo alive. Tension can be explicit (questions you've written), accepted from a path the agent proposed, or created when you reply to an agent question.
 
-**A history** — every change, every agent suggestion, every user decision, every state transition is recorded. The embryo's history is part of its identity. You can always see how an idea evolved, what was challenged, what was decided.
+**A history** — every change, every agent suggestion, every user decision, every state transition is recorded as `EmbryoEvent`. You can always see how an idea evolved, what was challenged, what was decided.
 
 ## What makes an embryo different from a note
 
 A note in Obsidian or Notion is captured to be **archived**. You write it down so you don't lose it. The system stores it faithfully and retrieves it when you ask.
 
-An embryo in Hypar is captured to be **challenged**. The agent doesn't retrieve it — it confronts it. It asks what the embryo means, what would have to be true for it to be wrong, what other ideas it connects to or contradicts.
+An embryo in Hypar is captured to be **challenged**. The agent doesn't retrieve it — it confronts it. It asks what the embryo means, what would have to be true for it to be wrong, what other living ideas it connects to or contradicts.
 
 The difference is not in the content. It's in what happens after capture.
 
@@ -40,12 +40,12 @@ The system works best when embryos are atomic — one idea, one tension, one thr
 
 ## The agent's relationship to an embryo
 
-While an embryo is alive — in any state other than fossil — the agent has a relationship to it. The agent:
+While an embryo is alive — in any state other than fossil — the agent has a relationship to it. On first visit, the detail page **auto-engages**. After that, you can reply and the agent asks again. The agent:
 
-- Tracks the open tensions and asks questions that address them
-- Surfaces connections to other living embryos or to fossils
-- Monitors for contradictions with ideas that have since matured
-- Can suggest that the embryo be [fossilized](/concepts/fossils) when the conditions are right
+- Asks one question per turn, with a [stance that follows the lifecycle](/concepts/agent)
+- May propose typed links to other **living** embryos (you confirm)
+- In `GROWING`, may attach alternative **paths** you can keep as tensions
+- In `MATURE`, may propose [fossilization](/concepts/fossils) with a kind of death
 
 The agent does not manage embryos passively. It participates in their development.
 

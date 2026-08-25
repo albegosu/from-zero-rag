@@ -10,57 +10,39 @@ cp .env.example .env
 
 Edit `.env` for your machine; never commit real secrets.
 
-- **Docker Compose:** defaults for Postgres and the app are set in `docker-compose.yml`. See [Docker guide](./docker) for container-specific usage.
-- **Local `pnpm dev`:** set `DATABASE_URL`, `OLLAMA_URL` (often `http://localhost:11434`), and `WORKFLOW_LOCAL_DATA_DIR` as described in `.env.example`.
-- **First run:** configure `DATABASE_URL` and Ollama settings, then run `npx prisma migrate deploy` and `pnpm dev`.
+- **Docker Compose:** Postgres and the app get defaults from `docker-compose.yml`. Compose overrides `DATABASE_URL` to the `postgres` service. See [Docker guide](./docker).
+- **Local `pnpm dev`:** set `DATABASE_URL`, `OLLAMA_URL`, and `BETTER_AUTH_SECRET` (or `AUTH_SECRET`). Boot validation requires those three.
+- **Local vs Compose credentials:** `.env.example` uses `postgresql://hypar:hypar_local@localhost:5432/hypar`. Compose defaults are user `hypar`, password `hypar_password`, database `hypar_db`. Match them, or set `DATABASE_URL` to whatever you actually run.
 
 **Cross-links (optional):** `NUXT_PUBLIC_DOCS_SITE_URL` points the Nuxt app header to your published docs (defaults to the GitHub Pages URL).
 
 ---
 
-## Provider selection
+## Required at boot
 
-Two variables control which AI providers are active. If omitted, the runtime falls back to detecting the first present API key.
+| Variable | Description |
+|---|---|
+| `DATABASE_URL` | Full Postgres connection string. |
+| `BETTER_AUTH_SECRET` or `AUTH_SECRET` | Session secret, min 16 characters (32+ in production: `openssl rand -hex 32`). |
+| `OLLAMA_URL` | Ollama base URL. Local `http://localhost:11434` or `https://ollama.com` for cloud. |
 
-| Variable | Values | Description |
-|---|---|---|
-| `EMBEDDING_PROVIDER` | `gemini` `openai` `voyage` `ollama-local` | Explicit embedding provider. Overrides key-presence detection. |
-| `LLM_PROVIDER` | `anthropic` `openai` `mistral` `ollama-cloud` `ollama-local` | Explicit chat/LLM provider. Overrides key-presence detection. |
-
----
-
-## Embedding providers
-
-| Variable | Provider | Description |
-|---|---|---|
-| `GOOGLE_API_KEY` | Gemini | API key from [Google AI Studio](https://aistudio.google.com/app/apikey). Uses `gemini-embedding-001` by default. |
-| `OPENAI_API_KEY` | OpenAI | API key from [OpenAI](https://platform.openai.com/api-keys). Shared with OpenAI LLM if both are configured. |
-| `VOYAGE_API_KEY` | Voyage AI | API key from [Voyage AI](https://dashboard.voyageai.com/api-keys). Uses `voyage-3` by default. |
-| `OLLAMA_URL` | Ollama | Base URL, e.g. `http://localhost:11434`. Used for both embedding and LLM. |
-| `OLLAMA_MODEL` | Ollama | Embedding model name (default: `nomic-embed-text`). |
-| `EMBEDDING_MODEL` | all | Override the model for the active embedding provider. |
-| `EMBEDDING_DIMENSIONS` | all | Vector size — must match the `pgvector` column (default: `768`). |
-
-**Fallback order** (when `EMBEDDING_PROVIDER` is not set): Gemini → OpenAI → Voyage → Ollama.
+Startup fails if any of these are missing (`server/utils/env-validation.ts`).
 
 ---
 
-## LLM / chat providers
+## Ollama (agent collaborator)
 
-| Variable | Provider | Description |
-|---|---|---|
-| `ANTHROPIC_API_KEY` | Anthropic | API key from [Anthropic console](https://console.anthropic.com/settings/keys). |
-| `ANTHROPIC_MODEL` | Anthropic | Model name (default: `claude-sonnet-4-6`). |
-| `OPENAI_API_KEY` | OpenAI | Shared with embedding if both are configured. |
-| `OPENAI_LLM_MODEL` | OpenAI | Chat model name (default: `gpt-4.1-mini`). |
-| `MISTRAL_API_KEY` | Mistral | API key from [Mistral console](https://console.mistral.ai/api-keys/). |
-| `MISTRAL_MODEL` | Mistral | Model name (default: `mistral-medium-latest`). |
-| `OLLAMA_API_KEY` | Ollama Cloud | Auth key for [Ollama Cloud](https://ollama.com/settings/keys). |
-| `OLLAMA_LLM_MODEL` | Ollama | Chat model (default: `tinyllama` local / `kimi-k2.5:cloud` cloud). |
-| `OLLAMA_CHAT_TIMEOUT_MS` | Ollama | LLM response timeout in ms (default: `180000`). |
-| `OLLAMA_PLANNER_TIMEOUT_MS` | Ollama | Planner/tool step timeout in ms (default: `60000`). |
+The embryo agent talks to Ollama over the OpenAI-compatible `/v1/chat/completions` API. There is no embedding pipeline.
 
-**Fallback order** (when `LLM_PROVIDER` is not set): Anthropic → Mistral → OpenAI → Ollama.
+| Variable | Description |
+|---|---|
+| `OLLAMA_URL` | Base URL. Required. |
+| `OLLAMA_LLM_MODEL` | Chat model (example local: `llama3.2`; Compose default pull: `llama3.1:8b`). |
+| `OLLAMA_API_KEY` | Auth key for [Ollama Cloud](https://ollama.com/settings/keys). |
+| `LLM_PROVIDER` | Set `ollama-cloud` when using Ollama Cloud. |
+| `OLLAMA_CHAT_TIMEOUT_MS` | LLM response timeout in ms (default: `180000`). |
+
+Settings can override the model for the next agent turn (cookie `hypar-llm-model`, sent as `{ model }` on `POST /api/embryos/:id/agent`).
 
 ---
 
@@ -70,22 +52,32 @@ Two variables control which AI providers are active. If omitted, the runtime fal
 |---|---|
 | `DATABASE_URL` | Full Postgres connection string. Required. |
 
-**Self-hosted pgvector example:**
+**Local example** (matches `.env.example`):
+
 ```
-DATABASE_URL=postgresql://postgres:password@localhost:5432/hypar_db
+DATABASE_URL=postgresql://hypar:hypar_local@localhost:5432/hypar
 ```
 
-**Supabase Vector example (direct):**
+**Compose example** (service hostname `postgres`):
+
 ```
-DATABASE_URL=postgresql://postgres:password@db.<project-ref>.supabase.co:5432/postgres
+DATABASE_URL=postgresql://hypar:hypar_password@postgres:5432/hypar_db
 ```
 
-**Supabase Vector example (transaction pooler — recommended for serverless):**
-```
-DATABASE_URL=postgresql://postgres.<project-ref>:password@aws-0-<region>.pooler.supabase.com:6543/postgres
-```
+The schema is Prisma 7 + PostgreSQL. No `pgvector` column is required for embryos (the Compose image is still `pgvector/pgvector:pg16` for historical convenience).
 
-The setup wizard (step 2) can help you pick a **Postgres** connection style; still copy the final string into `.env` yourself.
+---
+
+## Auth
+
+| Variable | Description |
+|---|---|
+| `BETTER_AUTH_SECRET` / `AUTH_SECRET` | Session secret. |
+| `BETTER_AUTH_URL` | Public origin, e.g. `http://localhost:3000`. |
+| `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | Optional GitHub OAuth. Both required to show the button. |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Optional Google OAuth. Both required to show the button. |
+
+See [Authentication](./auth).
 
 ---
 
@@ -93,9 +85,8 @@ The setup wizard (step 2) can help you pick a **Postgres** connection style; sti
 
 | Variable | Default | Description |
 |---|---|---|
-| `MEMORY_SCOPE` | `local_per_user` | `local_per_user` / `global` / `disabled` |
-| `MEMORY_PROACTIVE` | `true` | Auto-save user facts to memory |
-| `ADMIN_API_KEY` | — | Optional key to protect admin endpoints |
-| `WORKFLOW_LOCAL_DATA_DIR` | `./data/workflow` | Durable workflow state directory |
+| `NUXT_PUBLIC_DOCS_SITE_URL` | GitHub Pages docs URL | Docs link in the app header. |
+| `PORT` | `3000` | App port (Compose). |
+| `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` | see Compose | Only used by the Postgres container. |
 
 Anything in this file is read once at boot from the environment.

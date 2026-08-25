@@ -14,13 +14,13 @@ interface Stage {
 const stages: Stage[] = [
   { num: '01', label: 'Embryo lifecycle', status: 'now' },
   { num: '02', label: 'Agent collaborator', status: 'now' },
-  { num: '03', label: 'Tensions & connections', status: 'next' },
-  { num: '04', label: 'Fossilization UX' },
-  { num: '05', label: 'Multi-agent dialogue' },
-  { num: '06', label: 'Pattern extraction' },
-  { num: '07', label: 'Interaction metrics' },
-  { num: '08', label: 'Knowledge graph' },
-  { num: '09', label: 'ai-elements-nuxt' },
+  { num: '03', label: 'Tensions & connections', status: 'now' },
+  { num: '04', label: 'Fossilization UX', status: 'now' },
+  { num: '05', label: 'Method stance', status: 'now' },
+  { num: '06', label: 'ai-elements surfaces', status: 'now' },
+  { num: '07', label: 'Fossil strata nav', status: 'next' },
+  { num: '08', label: 'Resurrection flow' },
+  { num: '09', label: 'Inferred graph edges' },
   { num: '10', label: 'New experiment' },
 ]
 
@@ -67,7 +67,7 @@ const highlightIcons = [
         <p class="hfx__eyebrow hfx__eyebrow--glyph">
           <MicroGlyph name="sectionRule" decorative class="hfx__eyebrow-rule" /> {{ t.roadmapLabel }}
         </p>
-        <a :href="withBase('/roadmap')" class="hfx__link">{{ t.viewRoadmap }}</a>
+        <a :href="withBase('/open-questions')" class="hfx__link">{{ t.viewRoadmap }}</a>
       </div>
       <div class="hfx__grid hfx__grid--5">
         <div
@@ -88,7 +88,7 @@ const highlightIcons = [
     <div class="hfx__block">
       <div class="hfx__cta-grid">
         <!-- Learner -->
-        <a :href="withBase('/guide/getting-started')" class="hfx__learner">
+        <a :href="withBase('/concepts/embryo')" class="hfx__learner">
           <span class="hfx__learner-icon">
             <MicroGlyph name="learningCap" decorative />
           </span>
@@ -130,12 +130,10 @@ const highlightIcons = [
         <div class="hfx__stats" aria-label="Project meta">
           <a
             class="hfx__stat hfx__stat--link"
-            href="https://github.com/albegosu/hypar/releases"
-            target="_blank"
-            rel="noopener"
+            :href="withBase('/history')"
           >
-            <p class="hfx__stat-value">v0.4</p>
-            <p class="hfx__stat-label">Release</p>
+            <p class="hfx__stat-value">lab</p>
+            <p class="hfx__stat-label">Current</p>
           </a>
           <a
             class="hfx__stat hfx__stat--link"

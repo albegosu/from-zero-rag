@@ -16,10 +16,9 @@ If you discover a security issue, please **do not** open a public GitHub issue.
 
 ## Security practices in this project
 
-- Session auth via **better-auth**; admin routes require `role === 'admin'` or `ADMIN_API_KEY`.
-- User API keys stored with **AES-256-GCM** in `UserSetting`; global secrets in `Setting` use the same encryption.
-- Production startup validates required env vars (`server/utils/env-validation.ts`).
-- Rate limits on chat, upload, and search endpoints (optional `REDIS_URL` for multi-instance).
+- Session auth via **better-auth**. Embryo and LLM routes call `requireSessionUserId` and filter by `userId`.
+- Production startup validates `DATABASE_URL`, auth secret, and `OLLAMA_URL` (`server/utils/env-validation.ts`).
+- In-memory rate limit on agent POST (`/api/embryos/:id/agent`). Single-instance only.
 - Run `pnpm audit` in CI; keep dependencies updated via Dependabot.
 
 ## Deployment checklist
@@ -27,4 +26,4 @@ If you discover a security issue, please **do not** open a public GitHub issue.
 - Set strong `BETTER_AUTH_SECRET` (`openssl rand -hex 32`).
 - Never commit `.env`; use `.env.example` as a template only.
 - Expose only ports 80/443 (Caddy) in production; keep PostgreSQL and Ollama on the internal Docker network.
-- Restrict `POST /api/search/inspect` to authenticated users (enforced in application code).
+- Replace the Compose dev fallback secret (`insecure-dev-docker-change-me`) before any real deployment.

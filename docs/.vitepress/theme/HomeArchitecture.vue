@@ -48,11 +48,11 @@ const t = useI18n()
           <div class="har__col-right">
             <div class="har__node har__node--db">
               <span class="har__node-name">{{ t.architecture.nodeDb }}</span>
-              <span class="har__node-sub">vector(768) · HNSW · BM25</span>
+              <span class="har__node-sub">PostgreSQL 16</span>
             </div>
             <div class="har__node har__node--providers">
               <span class="har__node-name">{{ t.architecture.nodeProviders }}</span>
-              <span class="har__node-sub">embed · generate</span>
+              <span class="har__node-sub">chat · OpenAI-compatible</span>
             </div>
           </div>
         </div>

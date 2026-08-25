@@ -1,6 +1,6 @@
 # The Lifecycle
 
-Every embryo moves through states. The lifecycle is not a progress bar — it is a signal of how alive an idea is, and what kind of engagement it needs.
+Every embryo moves through states. The lifecycle is not a progress bar — it is a signal of how alive an idea is, and what kind of engagement it needs. The lifecycle **is** the method: define, probe, generate paths, then select the simplest. States are not renamed; the stance changes.
 
 ## States
 
@@ -14,7 +14,7 @@ latent → germinating → growing → mature
 
 The embryo exists but the agent has not yet engaged with it. The seed has been captured. The tension is implicit — present but not yet surfaced.
 
-A latent embryo is waiting. It may be new, or it may be old but forgotten.
+A latent embryo is waiting. Opening it auto-engages the agent; the first successful turn advances it to germinating.
 
 ### Germinating
 
@@ -24,15 +24,13 @@ This is the most fragile state. The idea could grow into something or reveal its
 
 ### Growing
 
-Connections are forming. The embryo has survived initial questioning and is developing shape. Other embryos are linking to it, or it is linking to them. Contradictions with existing mature ideas may be surfacing.
-
-A growing embryo is productive. The agent continues to engage, but with less urgency — the idea is finding its own momentum.
+Connections are forming. The embryo has survived initial questioning and is developing shape. Other embryos may be linking to it, or it to them. The agent may propose **paths** — alternative directions, not the answer — which you can keep as tensions or dismiss.
 
 ### Mature
 
-The open tensions have resolved. The idea has a clear shape. It may have become a fossil of a bigger idea, a component of something else, or a fully independent thought that stands on its own.
+The idea has a clearer shape. Remaining work is to close or reopen. The agent asks whether this is the simplest effective form, and may propose fossilization.
 
-A mature embryo is ready to be closed — either because it has been absorbed into something else, or because it has achieved its final form. The transition out of mature is always to [fossil](/concepts/fossils).
+A mature embryo is ready to be closed — either because it has been absorbed into something else, or because it has achieved its final form. The transition out of mature is always to [fossil](/concepts/fossils), though you can still jump backward to a living state before closing.
 
 ### Fossil
 
@@ -51,27 +49,25 @@ See [Fossils & Memory](/concepts/fossils) for the full picture.
 
 ### Who advances an embryo?
 
-State transitions are primarily driven by the natural development of the idea:
-
-- The agent can **suggest** a transition when it detects the conditions are met
-- The user can **manually advance** an embryo at any point
-- The system never advances an embryo automatically without at least notifying the user
+- **First agent engage** on a `LATENT` embryo silently sets `GERMINATING` (logged as `STATE_CHANGED` initiated by `AGENT`). That is the germination trigger in the current lab.
+- **You** can jump to any other living state from the detail page at any time (including backward). There is no adjacency graph.
+- The agent does **not** suggest other lifecycle transitions. Path and fossil proposals are separate HITL notes.
 
 ### The fossilization transition
 
-Fossilization is different from other transitions. It is always a dialogue — never automatic, never silent.
+Fossilization is terminal. It always requires a reason. It is never silent.
 
 See [Fossils & Memory](/concepts/fossils) for how fossilization works.
 
 ### Reverting states
 
-An embryo can move backward in the lifecycle if new tensions emerge. A mature embryo that receives a challenge from the agent may return to growing. A fossilized embryo cannot be reverted — but it can be **resurrected** as a new embryo that references the fossil.
+An embryo can move backward in the lifecycle if new tensions emerge. A mature embryo can return to growing. A fossilized embryo cannot be reverted.
+
+**Resurrection** — a new `LATENT` embryo that references a fossil via `RESURRECTS` — is a designed connection type. There is no dedicated “resurrect” flow yet; you can draw a `RESURRECTS` link by hand.
 
 ---
 
 ## What state signals
-
-The state of an embryo tells you — and the agent — how to engage with it. The lifecycle is the method: define, probe, generate paths, then select the simplest. States are not renamed; the stance changes.
 
 | State | What it means | Agent engagement |
 |---|---|---|
@@ -79,7 +75,7 @@ The state of an embryo tells you — and the agent — how to engage with it. Th
 | Germinating | Being probed | **PROBE / INVERT** — assumptions, not patches |
 | Growing | Generating paths, not the answer | **VARIETY** — alternative directions; optional path proposals |
 | Mature | Tension resolved — close or reopen | **SIMPLEST** — remaining tension, or fossil proposal |
-| Fossil | Path closed, reason kept | Passive — surfaces when relevant |
+| Fossil | Path closed, reason kept | No agent input |
 
 ---
 

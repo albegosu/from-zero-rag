@@ -1,6 +1,31 @@
 # Changelog
 
 
+## Unreleased — embryo lab
+
+The RAG product was archived (`archive/rag-v1`, tag `v0.4-rag`). `main` is an AI interaction research lab. The entries below cover the pivot and PRs **#100–#104**. Older RAG-era notes remain under [pre-unification-snapshot...main](#pre-unificationsnapshotmain) for history.
+
+### Pivot
+
+- Reframe Hypar as an embryo garden: living ideas, fossils instead of delete, agent as collaborator
+- Purge RAG routes, evals, and docs leftovers (#99, #100)
+- Reorient the VitePress landing to the lab identity (#98, #100)
+
+### Embryo collaborator
+
+- Fossil UX, typed connections, richer garden, agent dismiss (#101)
+- Streaming agent, connection picker with search, pending-connection HITL
+- Auto-engage on first visit and reply loop (#103)
+- Method stance by lifecycle (`DEFINE` / `PROBE` / `INVERT` / `VARIETY` / `SIMPLEST`), pending paths, fossil kinds (#104)
+- `ai-elements-nuxt` surfaces: collaborator, graph, garden queue, model selector (#104)
+
+### Fixes
+
+- Drop leftover RAG eval step that failed every push (#102)
+
+---
+
+
 ## pre-unification-snapshot...main
 
 [compare changes](https://github.com/albegosu/hypar/compare/pre-unification-snapshot...main)

@@ -7,12 +7,12 @@
 ```
 ┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
 │   Nuxt 3 App    │────▶│  PostgreSQL 16   │     │     Ollama      │
-│  (app, :3000)   │     │  + pgvector      │     │  (optional,     │
-│  UI + API       │     │  (postgres,:5432)│     │   :11434)       │
+│  (app, :3000)   │     │  (postgres,:5432)│     │  (optional,     │
+│  UI + API       │     │                  │     │   :11434)       │
 └─────────────────┘     └──────────────────┘     └─────────────────┘
 ```
 
-Everything in one container — no separate frontend/backend split.
+Everything in one container — no separate frontend/backend split. Ollama is the agent collaborator, not an embedding service.
 
 ---
 
@@ -21,7 +21,7 @@ Everything in one container — no separate frontend/backend split.
 ```bash
 # 1. Configure
 cp .env.example .env
-# Edit .env — set GOOGLE_API_KEY (recommended) or OPENAI_API_KEY at minimum
+# Edit .env — set BETTER_AUTH_SECRET (openssl rand -hex 32)
 
 # 2. Start (app + database + local Ollama)
 docker compose --profile full up -d --build
@@ -31,6 +31,8 @@ open http://localhost:3000
 ```
 
 The app runs `prisma migrate deploy` automatically on startup — no manual migration step needed.
+
+Compose sets `DATABASE_URL` and `OLLAMA_URL=http://ollama:11434` on the app service. You do not need `GOOGLE_API_KEY`.
 
 ---
 
@@ -74,7 +76,7 @@ For the full variable reference, see [Environment variables](/guide/env). Below 
 | Variable | Default | Description |
 |---|---|---|
 | `PORT` | 3000 | App port |
-| `DATABASE_URL` | — | Full Postgres connection string (pgvector or Supabase) |
+| `BETTER_AUTH_SECRET` | insecure Compose fallback in **dev** compose only | Session secret — set a real value |
 
 ### PostgreSQL container (docker-compose only)
 
@@ -85,12 +87,13 @@ For the full variable reference, see [Environment variables](/guide/env). Below 
 | `POSTGRES_DB` | hypar_db | DB name |
 | `POSTGRES_PORT` | 5432 | Postgres port |
 
-### Provider selection
+### Agent
 
 | Variable | Default | Description |
 |---|---|---|
-| `EMBEDDING_PROVIDER` | auto-detect | `gemini` / `openai` / `voyage` / `ollama-local` |
-| `LLM_PROVIDER` | auto-detect | `anthropic` / `openai` / `mistral` / `ollama-cloud` / `ollama-local` |
+| `OLLAMA_URL` | `http://ollama:11434` in Compose | Agent endpoint |
+| `OLLAMA_LLM_MODEL` | `llama3.1:8b` (pulled on first start) | Chat model |
+| `LLM_PROVIDER` | — | Set `ollama-cloud` for Ollama Cloud |
 
 ---
 
@@ -124,19 +127,18 @@ docker compose exec ollama ollama pull llama3.1:8b
 |---|---|
 | `postgres_data` | PostgreSQL data files |
 | `ollama_data` | Downloaded Ollama models |
-| `workflow_data` | Durable workflow state (ingestion) |
 
 ---
 
 ## First run
 
-On first start, the Ollama container downloads the configured models. This can take several minutes depending on connection speed:
+On first start, the Ollama container downloads `OLLAMA_LLM_MODEL` (default `llama3.1:8b`). This can take several minutes:
 
 ```bash
 docker compose logs -f ollama
 ```
 
-You will see `nomic-embed-text` and `llama3.1:8b` being pulled. The app is ready to use once both are downloaded.
+The app is ready once Postgres is healthy and the app has migrated. The agent needs the model pull to finish before collaborator turns succeed.
 
 ---
 
@@ -146,10 +148,10 @@ The app exposes `GET /api/health`:
 
 ```bash
 curl http://localhost:3000/api/health
-# {"status":"ok","checks":{"db":true,"embedding":true},"ts":"..."}
+# {"status":"ok","checks":{"db":true},"ts":"..."}
 ```
 
-Docker Compose uses this endpoint to determine when the app container is healthy.
+`status` is `ok` when Postgres answers `SELECT 1`, otherwise `degraded`. Docker Compose uses this endpoint to mark the app container healthy.
 
 ---
 

@@ -2,18 +2,18 @@
 
 > **Status:** implemented (2026-08). Source of the method is the *problem-solving* workshop (Munari's project method applied to software). Hypar **embodies** it; it does not teach it. Observation of move × state in real sessions is still open — see [Open Questions](/open-questions).
 
-The garden already captures unfinished thoughts and challenges them. It does not yet *sequence* that challenge. This experiment asks whether a methodical stance — define the problem, probe it, generate paths, then choose the simplest — makes the agent a better collaborator without turning Hypar into a workshop or a wizard.
+The garden already captures unfinished thoughts and challenges them. Before this experiment it did not *sequence* that challenge. This experiment asks whether a methodical stance — define the problem, probe it, generate paths, then choose the simplest — makes the agent a better collaborator without turning Hypar into a workshop or a wizard.
 
 ---
 
 ## Problem
 
-The agent asks one uncomfortable question per turn. That constraint is right. The question itself is generic: *challenge, extend, destabilize*, regardless of whether the embryo is a raw seed, a half-formed path, or something ready to close.
+The agent asks one uncomfortable question per turn. That constraint is right. Before stance shipped, the question itself was generic: *challenge, extend, destabilize*, regardless of whether the embryo is a raw seed, a half-formed path, or something ready to close.
 
-Three failure modes follow:
+Three failure modes followed:
 
 1. **Solution-shaped seeds go unchallenged as problems.** A seed like "add a definition-of-ready checklist" is already a patch. The first move should be *what problem is this solving?*, not *how do we make the checklist better?*.
-2. **Lifecycle is a vitality meter, not a method.** `LATENT → GERMINATING → GROWING → MATURE` already maps onto define → probe → generate → select. The agent barely uses it: `buildAgentUserMessage` currently **omits** `LATENT` from the prompt.
+2. **Lifecycle is a vitality meter, not a method.** `LATENT → GERMINATING → GROWING → MATURE` already maps onto define → probe → generate → select. The agent barely used it: `buildAgentUserMessage` **omitted** `LATENT` from the prompt. Phase 1 reversed that.
 3. **Variety arrives too late, or never.** Munari's useful claim is that creativity comes from generating *paths*, not the first clever answer. The one-question rule can starve that, especially in `GROWING`.
 
 The desired outcome: the same embryo, over its life, is walked through a process. The user never sees a stepper named Munari. The process is the agent's stance.
@@ -72,7 +72,7 @@ Resurrection of a fossil starts a **new** embryo at `LATENT` — define again, i
 - Multi-user / team facilitation.
 - Turning tensions into tasks, checklists, or experiment metrics.
 - Giving the agent external knowledge (Munari's book, design history).
-- Auto-advancing lifecycle because a move was used. State changes stay user-driven (or suggested, never silent) — see [The Lifecycle](/concepts/lifecycle).
+- Auto-advancing lifecycle because a **move** was used. First successful agent turn on `LATENT` still sets `GERMINATING` (engage trigger, not a method-move). Other state changes stay user-driven — see [The Lifecycle](/concepts/lifecycle).
 - Relaxing "exactly one question" in Phase 1–2. Paths are an **additive** field later, not a second question.
 
 ---
@@ -189,7 +189,7 @@ The fossilization dialogue already asks why. Improve the agent's case (when it p
 
 - [x] User-initiated fossilize still requires a reason (unchanged).
 - [x] Agent-proposed fossil includes which of the three kinds of death it believes happened (`ILL_DEFINED` / `WRONG_PATH` / `SUPERSEDED`).
-- [x] Resurrection still creates a new `LATENT` embryo referencing the fossil — method restarts. (unchanged behaviour)
+- [ ] Resurrection as a dedicated flow (new `LATENT` + `RESURRECTS` link) is **not** implemented — only the connection type exists. Out of this experiment.
 
 **Out of this phase:** structured `fossilReason` enum. Keep free text; the agent can *ask*, not classify for the user.
 

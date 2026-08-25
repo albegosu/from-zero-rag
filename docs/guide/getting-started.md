@@ -19,7 +19,7 @@ hypar runs as a **single Nuxt 3 process** — frontend and API routes in one. Th
 git clone https://github.com/albegosu/hypar.git
 cd hypar
 cp .env.example .env
-# Edit .env — set DATABASE_URL and Ollama config
+# Edit .env — set BETTER_AUTH_SECRET
 docker compose --profile full up -d --build
 open http://localhost:3000
 ```
@@ -40,7 +40,7 @@ git clone https://github.com/albegosu/hypar.git
 cd hypar
 pnpm install
 cp .env.example .env
-# Edit .env — set DATABASE_URL and Ollama config
+# Edit .env — DATABASE_URL, OLLAMA_URL, BETTER_AUTH_SECRET
 npx prisma migrate deploy
 pnpm dev
 ```
@@ -78,6 +78,8 @@ OLLAMA_URL=https://ollama.com
 OLLAMA_API_KEY=your-key
 OLLAMA_LLM_MODEL=kimi-k2.7-code:cloud
 ```
+
+You can also pick a model in **Settings** after sign-in (cookie override for the next agent turn).
 
 ---
 

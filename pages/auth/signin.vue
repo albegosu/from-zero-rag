@@ -135,9 +135,9 @@ definePageMeta({ layout: false, middleware: [] })
 
 useSeoMeta({
   title: 'Sign In - hypar',
-  description: 'Sign in to hypar, your RAG learning platform.',
+  description: 'Sign in to hypar, an AI interaction research lab.',
   ogTitle: 'Sign In - hypar',
-  ogDescription: 'Sign in to hypar, your RAG learning platform.',
+  ogDescription: 'Sign in to hypar, an AI interaction research lab.',
   ogImage: '/hypar-chat-dark.png',
   twitterCard: 'summary_large_image',
 })

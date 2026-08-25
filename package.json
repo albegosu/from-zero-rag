@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "hypar — unified Nuxt 3 app (RAG UI + multi-user auth)",
+  "description": "hypar — AI interaction research lab built with Nuxt 3",
   "scripts": {
     "dev": "nuxt dev",
     "build": "nuxt build",
@@ -87,13 +87,12 @@
     "vue-tsc": "^3.2.7"
   },
   "keywords": [
-    "rag",
-    "learning",
-    "gamification",
-    "tutorial",
-    "embeddings",
-    "vector-database",
-    "llm"
+    "ai",
+    "research",
+    "interaction-design",
+    "nuxt",
+    "llm",
+    "embryo"
   ],
   "author": "Alberto González",
   "license": "MIT",

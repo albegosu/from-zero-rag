@@ -139,9 +139,9 @@ definePageMeta({ layout: false, middleware: [] })
 
 useSeoMeta({
   title: 'Sign Up - hypar',
-  description: 'Create your hypar account and start learning RAG.',
+  description: 'Create your hypar account and start exploring.',
   ogTitle: 'Sign Up - hypar',
-  ogDescription: 'Create your hypar account and start learning RAG.',
+  ogDescription: 'Create your hypar account and start exploring.',
   ogImage: '/hypar-chat-dark.png',
   twitterCard: 'summary_large_image',
 })

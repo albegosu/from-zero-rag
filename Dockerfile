@@ -1,4 +1,4 @@
-# Multi-stage build for unified Nuxt 3 app (RAG UI + Learning Quest + server API)
+# Multi-stage build for hypar (Nuxt 3)
 
 FROM node:20-alpine AS deps
 RUN apk add --no-cache libc6-compat python3 make g++
@@ -22,7 +22,7 @@ RUN apk add --no-cache libc6-compat dumb-init
 WORKDIR /app
 
 LABEL org.opencontainers.image.title="hypar" \
-      org.opencontainers.image.description="Unified Nuxt 3 app — RAG UI, multi-user auth, and server API" \
+      org.opencontainers.image.description="hypar — AI interaction research lab" \
       org.opencontainers.image.source="https://github.com/albegosu/hypar" \
       org.opencontainers.image.licenses="MIT"
 

@@ -4,10 +4,10 @@ type Theme = 'dark' | 'light'
 type Locale = 'en' | 'es'
 
 /** Must match `LOCALE_COOKIE` in `plugins/i18n.ts` */
-const LOCALE_KEY = 'rag-ui-locale'
-const WIZARD_LOCALE_KEY = 'rag-wizard-locale'
+const LOCALE_KEY = 'hypar-locale'
 
-/** Legacy key before theme was wired to @nuxtjs/color-mode */
+/** Legacy keys from the RAG era — migrated on first load */
+const LEGACY_LOCALE_KEYS = ['rag-ui-locale', 'rag-wizard-locale']
 const LEGACY_THEME_KEY = 'rag-ui-theme'
 
 let initialized = false
@@ -26,11 +26,12 @@ export function useTerminalPrefs() {
   const theme = computed<Theme>(() => (colorMode.value === 'light' ? 'light' : 'dark'))
 
   if (!initialized && import.meta.client) {
-    const legacy = localStorage.getItem(LEGACY_THEME_KEY)
-    if (legacy === 'light' || legacy === 'dark') {
-      colorMode.preference = legacy
+    const legacyTheme = localStorage.getItem(LEGACY_THEME_KEY)
+    if (legacyTheme === 'light' || legacyTheme === 'dark') {
+      colorMode.preference = legacyTheme
       localStorage.removeItem(LEGACY_THEME_KEY)
     }
+    for (const k of LEGACY_LOCALE_KEYS) localStorage.removeItem(k)
 
     initialized = true
   }
@@ -46,7 +47,6 @@ export function useTerminalPrefs() {
       document.documentElement.lang = value
       try {
         localStorage.setItem(LOCALE_KEY, value)
-        localStorage.setItem(WIZARD_LOCALE_KEY, value)
       } catch {
         /* private mode */
       }

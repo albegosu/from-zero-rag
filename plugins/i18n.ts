@@ -3,18 +3,21 @@ import en from '~/i18n/locales/en.json'
 import es from '~/i18n/locales/es.json'
 
 /** Must match `LOCALE_KEY` in `composables/useTerminalPrefs.ts` */
-const LOCALE_COOKIE = 'rag-ui-locale'
-const LOCALE_STORAGE = 'rag-ui-locale'
-const WIZARD_LOCALE_STORAGE = 'rag-wizard-locale'
+const LOCALE_COOKIE = 'hypar-locale'
+const LOCALE_STORAGE = 'hypar-locale'
+
+const LEGACY_KEYS = ['rag-ui-locale', 'rag-wizard-locale']
 
 type Locale = 'en' | 'es'
 
 function readLocaleFromStorage(): Locale | null {
   if (!import.meta.client) return null
-  const a = localStorage.getItem(LOCALE_STORAGE)
-  if (a === 'es' || a === 'en') return a
-  const b = localStorage.getItem(WIZARD_LOCALE_STORAGE)
-  if (b === 'es' || b === 'en') return b
+  const v = localStorage.getItem(LOCALE_STORAGE)
+  if (v === 'es' || v === 'en') return v
+  for (const k of LEGACY_KEYS) {
+    const legacy = localStorage.getItem(k)
+    if (legacy === 'es' || legacy === 'en') return legacy
+  }
   return null
 }
 
@@ -52,7 +55,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     document.documentElement.lang = initial
     try {
       localStorage.setItem(LOCALE_STORAGE, initial)
-      localStorage.setItem(WIZARD_LOCALE_STORAGE, initial)
+      for (const k of LEGACY_KEYS) localStorage.removeItem(k)
     } catch {
       /* private mode / blocked */
     }

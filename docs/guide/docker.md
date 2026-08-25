@@ -80,9 +80,9 @@ For the full variable reference, see [Environment variables](/guide/env). Below 
 
 | Variable | Default | Description |
 |---|---|---|
-| `POSTGRES_USER` | rag | DB user |
-| `POSTGRES_PASSWORD` | rag_password | DB password |
-| `POSTGRES_DB` | rag_db | DB name |
+| `POSTGRES_USER` | hypar | DB user |
+| `POSTGRES_PASSWORD` | hypar_password | DB password |
+| `POSTGRES_DB` | hypar_db | DB name |
 | `POSTGRES_PORT` | 5432 | Postgres port |
 
 ### Provider selection
@@ -104,7 +104,7 @@ docker compose logs -f ollama
 
 # Shell access
 docker compose exec app sh
-docker compose exec postgres psql -U rag -d rag_db
+docker compose exec postgres psql -U hypar -d hypar_db
 
 # Rebuild after code changes
 docker compose --profile full up -d --build
@@ -157,7 +157,7 @@ Docker Compose uses this endpoint to determine when the app container is healthy
 
 **App cannot reach database:**
 ```bash
-docker compose exec postgres pg_isready -U rag
+docker compose exec postgres pg_isready -U hypar
 docker compose logs postgres
 ```
 
@@ -173,7 +173,7 @@ docker compose --profile full up -d --build
 
 **Backup database:**
 ```bash
-docker compose exec postgres pg_dump -U rag rag_db > backup_$(date +%Y%m%d).sql
+docker compose exec postgres pg_dump -U hypar hypar_db > backup_$(date +%Y%m%d).sql
 ```
 
 ---

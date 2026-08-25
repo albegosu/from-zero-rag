@@ -2,29 +2,29 @@ services:
   # PostgreSQL with pgvector extension
   postgres:
     image: pgvector/pgvector:pg16
-    container_name: rag-postgres
+    container_name: hypar-postgres
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-rag}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rag_password}
-      POSTGRES_DB: ${POSTGRES_DB:-rag_db}
+      POSTGRES_USER: ${POSTGRES_USER:-hypar}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hypar_password}
+      POSTGRES_DB: ${POSTGRES_DB:-hypar_db}
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init-scripts:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-rag} -d ${POSTGRES_DB:-rag_db}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-hypar} -d ${POSTGRES_DB:-hypar_db}"]
       interval: 5s
       timeout: 5s
       retries: 5
     networks:
-      - rag-network
+      - hypar-network
     profiles: ["full", "api", "all"]
 
   # Ollama for local embeddings
   ollama:
     image: ollama/ollama:latest
-    container_name: rag-ollama
+    container_name: hypar-ollama
     ports:
       - "${OLLAMA_PORT:-11434}:11434"
     volumes:
@@ -45,7 +45,7 @@ services:
       retries: 20
       start_period: 120s
     networks:
-      - rag-network
+      - hypar-network
     profiles: ["full", "api", "all"]
 
   # hypar app
@@ -53,12 +53,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: rag-app
+    container_name: hypar-app
     env_file: .env
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgresql://${POSTGRES_USER:-rag}:${POSTGRES_PASSWORD:-rag_password}@postgres:5432/${POSTGRES_DB:-rag_db}
-      NUXT_DATABASE_URL: postgresql://${POSTGRES_USER:-rag}:${POSTGRES_PASSWORD:-rag_password}@postgres:5432/${POSTGRES_DB:-rag_db}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-hypar}:${POSTGRES_PASSWORD:-hypar_password}@postgres:5432/${POSTGRES_DB:-hypar_db}
+      NUXT_DATABASE_URL: postgresql://${POSTGRES_USER:-hypar}:${POSTGRES_PASSWORD:-hypar_password}@postgres:5432/${POSTGRES_DB:-hypar_db}
       OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434}
       NUXT_OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-nomic-embed-text}
@@ -114,7 +114,7 @@ services:
       postgres:
         condition: service_healthy
     networks:
-      - rag-network
+      - hypar-network
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/health | grep -q '\"status\":\"ok\"' || exit 1"]
@@ -127,14 +127,14 @@ services:
   # pgAdmin for visual database management
   pgadmin:
     image: dpage/pgadmin4
-    container_name: rag-pgadmin
+    container_name: hypar-pgadmin
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@example.com}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
     ports:
       - "${PGADMIN_PORT:-5050}:80"
     networks:
-      - rag-network
+      - hypar-network
     depends_on:
       postgres:
         condition: service_healthy
@@ -146,5 +146,5 @@ volumes:
   workflow_data:
 
 networks:
-  rag-network:
+  hypar-network:
     driver: bridge

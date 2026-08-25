@@ -6,7 +6,7 @@
           <span class="wz-accent">$</span>
           <span class="wz-label">ls --documents</span>
         </div>
-        <span class="wz-faint text-[10px]">{{ store.documents.length }} entries</span>
+        <span class="wz-faint text-[11px]">{{ store.documents.length }} entries</span>
       </div>
       <div class="p-4 flex items-end justify-between gap-3">
         <div>
@@ -100,6 +100,7 @@
 <script setup>
 import { useI18n } from 'vue-i18n'
 
+useHead({ title: 'Documents - hypar' })
 const { t } = useI18n()
 const store = useDocumentsStore()
 const toast = useToast()

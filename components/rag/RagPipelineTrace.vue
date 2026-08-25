@@ -52,7 +52,7 @@
       </div>
 
       <!-- Separator -->
-      <div class="wz-faint text-[10px]">{{ separator }}</div>
+      <div class="wz-faint text-[11px]">{{ separator }}</div>
 
       <!-- Retrieved chunks with score bars -->
       <div v-if="sources.length" class="space-y-1.5">
@@ -70,7 +70,7 @@
       </div>
 
       <!-- Separator -->
-      <div class="wz-faint text-[10px]">{{ separator }}</div>
+      <div class="wz-faint text-[11px]">{{ separator }}</div>
 
       <!-- LLM step -->
       <RagPipelineStepRow

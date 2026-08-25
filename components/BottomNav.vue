@@ -1,5 +1,5 @@
 <template>
-  <nav class="fixed bottom-0 left-0 right-0 z-50 glass hairline-t pb-safe">
+  <nav aria-label="Main navigation" class="fixed bottom-0 left-0 right-0 z-50 glass hairline-t pb-safe">
     <div class="max-w-3xl mx-auto px-4">
       <div class="flex justify-around py-2">
         <NuxtLink
@@ -10,6 +10,7 @@
           :class="[
             isActive(item.path) ? 'nav-active-pill wz-strong' : 'wz-muted hover:text-[color:var(--term-text-strong)]'
           ]"
+          :aria-current="isActive(item.path) ? 'page' : undefined"
         >
           <UIcon :name="item.icon" class="w-5 h-5 relative" />
           <span class="text-[11px] font-medium relative">{{ t(item.label) }}</span>

@@ -26,7 +26,7 @@ const { t } = useI18n()
     <div class="max-w-[90%] min-w-0 flex flex-col gap-1">
       <AiMessage v-bind="msg.aiProps">
         <template v-if="msg.role === 'user'" #content>
-          <div class="wz-faint text-[10px] mb-1 font-mono space-y-0.5">
+          <div class="wz-faint text-[11px] mb-1 font-mono space-y-0.5">
             <div>&gt; user</div>
             <div v-if="msg.userMetrics" class="flex flex-wrap gap-x-2 gap-y-0.5">
               <span>{{ t('chat.userMetricsMode', { mode: msg.userMetrics.searchMode }) }}</span>
@@ -58,14 +58,14 @@ const { t } = useI18n()
             <template #header="{ toolCall, statusLabel }">
               <div data-ai-tool-header class="flex items-center gap-2">
                 <span data-ai-tool-name>{{ toolCall.name }}</span>
-                <span class="wz-faint text-[10px]">{{ statusLabel }}</span>
+                <span class="wz-faint text-[11px]">{{ statusLabel }}</span>
               </div>
             </template>
           </AiTool>
         </template>
 
         <template v-if="msg.role === 'assistant'" #content="{ content, isStreaming: streaming }">
-          <div class="wz-faint text-[10px] mb-1 font-mono flex items-center gap-2">
+          <div class="wz-faint text-[11px] mb-1 font-mono flex items-center gap-2">
             <span>&lt; agent</span>
             <span v-if="msg.searched === true" class="wz-pill" :title="t('chat.searchedHint')">{{ t('chat.searched') }}</span>
             <span v-else-if="msg.searched === false" class="wz-pill wz-pill-dashed" :title="t('chat.notSearchedHint')">{{ t('chat.notSearched') }}</span>
@@ -128,7 +128,7 @@ const { t } = useI18n()
             :key="r.chunkId"
             class="text-xs wz-panel p-2"
           >
-            <div class="flex items-center justify-between text-[10px] wz-faint mb-1 font-mono">
+            <div class="flex items-center justify-between text-[11px] wz-faint mb-1 font-mono">
               <span>#{{ i + 1 }} · {{ r.documentTitle }}</span>
               <span class="wz-accent">{{ t('chat.score') }} {{ r.score.toFixed(3) }}</span>
             </div>

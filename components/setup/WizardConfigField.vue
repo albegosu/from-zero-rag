@@ -2,7 +2,7 @@
   <!-- Label cell -->
   <label :for="fieldId" class="wz-label flex items-center gap-2 text-xs">
     <span>{{ field.label }}</span>
-    <span v-if="field.required" class="text-[10px]" style="color: var(--term-warn)">*</span>
+    <span v-if="field.required" class="text-[11px]" style="color: var(--term-warn)">*</span>
   </label>
 
   <!-- Value cell -->
@@ -16,6 +16,9 @@
           :type="inputType"
           :placeholder="textPlaceholder"
           :value="value ?? ''"
+          :aria-invalid="!!error"
+          :aria-describedby="error ? `${fieldId}-error` : undefined"
+          :aria-required="field.required"
           @input="emitValue(($event.target as HTMLInputElement).value)"
         />
         <button
@@ -49,6 +52,8 @@
           :max="field.max"
           :step="field.step"
           :value="displayScalar"
+          :aria-invalid="!!error"
+          :aria-describedby="error ? `${fieldId}-error` : undefined"
           @input="emitValue(parseNumber(($event.target as HTMLInputElement).value))"
         />
         <span v-if="field.unit || field.min !== undefined" class="wz-faint text-xs">
@@ -85,6 +90,8 @@
         :id="fieldId"
         class="wz-select"
         :value="displayScalar"
+        :aria-invalid="!!error"
+        :aria-describedby="error ? `${fieldId}-error` : undefined"
         @change="emitValue(($event.target as HTMLSelectElement).value)"
       >
         <option
@@ -128,6 +135,8 @@
         :rows="field.rows ?? 4"
         :placeholder="textPlaceholder"
         :value="value ?? ''"
+        :aria-invalid="!!error"
+        :aria-describedby="error ? `${fieldId}-error` : undefined"
         @input="emitValue(($event.target as HTMLTextAreaElement).value)"
       ></textarea>
     </template>
@@ -151,7 +160,7 @@
       </div>
     </template>
 
-    <p v-if="error" class="mt-1 text-xs" style="color: var(--term-danger)">{{ error }}</p>
+    <p v-if="error" :id="`${fieldId}-error`" role="alert" class="mt-1 text-xs" style="color: var(--term-danger)">{{ error }}</p>
     <p
       v-else-if="useSystemHint && systemHintText && isEmptyValue && field.type !== 'checkbox'"
       class="mt-1 wz-faint text-[11px]"

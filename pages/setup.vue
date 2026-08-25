@@ -8,7 +8,7 @@
           <span class="wz-accent">$</span>
           <span class="wz-label">{{ t('wizard.intro.title') }}</span>
         </div>
-        <span class="wz-faint text-[10px]">{{ t('wizard.intro.subtitle') }}</span>
+        <span class="wz-faint text-[11px]">{{ t('wizard.intro.subtitle') }}</span>
       </div>
     </section>
 
@@ -45,7 +45,7 @@
             <span class="wz-accent">$</span>
             <span class="wz-label">{{ t('wizard.chrome.configCommand', { stepId: currentStepData.id }) }}</span>
           </div>
-          <span class="wz-faint text-[10px]">{{ t('wizard.chrome.storageInfo') }}</span>
+          <span class="wz-faint text-[11px]">{{ t('wizard.chrome.storageInfo') }}</span>
         </div>
         <div class="p-5">
           <h2 class="text-2xl font-bold wz-strong">// {{ tr(currentStepData.title) }}</h2>
@@ -56,12 +56,12 @@
       <!-- what / why -->
       <div class="grid md:grid-cols-2 gap-4 mb-6 text-sm">
         <div class="wz-panel p-4">
-          <div class="text-[10px] uppercase tracking-widest wz-accent mb-2">// {{ t('wizard.chrome.what') }}</div>
+          <div class="text-[11px] uppercase tracking-widest wz-accent mb-2">// {{ t('wizard.chrome.what') }}</div>
           <!-- eslint-disable-next-line vue/no-v-html -->
           <div class="wz-muted leading-relaxed prose-terminal" v-html="renderMarkdown(tr(currentStepData.whatWeAreBbuilding))" />
         </div>
         <div class="wz-panel p-4">
-          <div class="text-[10px] uppercase tracking-widest wz-accent mb-2">// {{ t('wizard.chrome.why') }}</div>
+          <div class="text-[11px] uppercase tracking-widest wz-accent mb-2">// {{ t('wizard.chrome.why') }}</div>
           <!-- eslint-disable-next-line vue/no-v-html -->
           <div class="wz-muted leading-relaxed prose-terminal" v-html="renderMarkdown(tr(currentStepData.whyWeNeedThis))" />
         </div>
@@ -106,7 +106,7 @@
       <section v-if="envPreview" class="wz-panel mb-6">
         <div class="wz-panel-header flex items-center justify-between">
           <span class="wz-label">▾ {{ t('wizard.chrome.previewEnv') }}</span>
-          <button type="button" class="wz-btn-ghost text-[10px]" @click="copyEnv">
+          <button type="button" class="wz-btn-ghost text-[11px]" @click="copyEnv">
             {{ envCopied ? `✓ ${t('wizard.chrome.copied')}` : `📋 ${t('wizard.chrome.copy')}` }}
           </button>
         </div>
@@ -117,7 +117,7 @@
       <section v-if="currentStepData.hasCodePreview && currentStepData.codeSnippet?.code" class="wz-panel mb-6">
         <div class="wz-panel-header flex items-center justify-between">
           <span class="wz-label">▾ {{ currentStepData.codeSnippet.filename }}</span>
-          <span class="wz-faint text-[10px]">{{ currentStepData.codeSnippet.language }}</span>
+          <span class="wz-faint text-[11px]">{{ currentStepData.codeSnippet.language }}</span>
         </div>
         <pre class="p-4 text-[12px] leading-relaxed overflow-x-auto wz-muted">{{ currentStepData.codeSnippet.code }}</pre>
         <p v-if="currentStepData.codeSnippet.explanation" class="px-4 pb-4 wz-faint text-xs italic">
@@ -135,15 +135,15 @@
       </div>
       <form class="p-6 space-y-4" @submit.prevent="submitSetup">
         <div class="space-y-1.5">
-          <label class="text-[10px] uppercase tracking-widest wz-label">name</label>
+          <label class="text-[11px] uppercase tracking-widest wz-label">name</label>
           <input v-model="adminName" type="text" class="wz-input" placeholder="Admin User" required />
         </div>
         <div class="space-y-1.5">
-          <label class="text-[10px] uppercase tracking-widest wz-label">email</label>
+          <label class="text-[11px] uppercase tracking-widest wz-label">email</label>
           <input v-model="adminEmail" type="email" class="wz-input" placeholder="admin@example.com" autocomplete="email" required />
         </div>
         <div class="space-y-1.5">
-          <label class="text-[10px] uppercase tracking-widest wz-label">password</label>
+          <label class="text-[11px] uppercase tracking-widest wz-label">password</label>
           <input v-model="adminPassword" type="password" class="wz-input" placeholder="min. 8 characters" autocomplete="new-password" required minlength="8" />
         </div>
         <div
@@ -160,7 +160,7 @@
     <section v-if="currentStep === wizardSteps.length - 1" class="wz-panel mb-6">
       <div class="wz-panel-header flex items-center justify-between">
         <span class="wz-label">▾ {{ t('wizard.chrome.nextStepsTitle') }}</span>
-        <button type="button" class="wz-btn-ghost text-[10px]" @click="copySetupCommands">
+        <button type="button" class="wz-btn-ghost text-[11px]" @click="copySetupCommands">
           {{ setupCopied ? `✓ ${t('wizard.chrome.setupCopied')}` : `📋 ${t('wizard.chrome.copySetup')}` }}
         </button>
       </div>
@@ -206,7 +206,7 @@
         ← {{ t('wizard.chrome.prev') }}
       </button>
 
-      <div class="wz-faint text-[10px]">
+      <div class="wz-faint text-[11px]">
         <span v-if="currentStep >= wizardSteps.length && !isCurrentValid">⚠ {{ t('wizard.chrome.requiredMissing') }}</span>
         <span v-else>✓ {{ t('wizard.chrome.ready') }}</span>
       </div>
@@ -261,6 +261,7 @@ import type { WizardConfig, WizardStep } from '~/utils/setup'
 import { useConfigRepository } from '~/composables/useConfigRepository'
 
 definePageMeta({ middleware: [] })
+useHead({ title: 'Setup - hypar' })
 
 const { t, te } = useI18n()
 const repo = useConfigRepository()

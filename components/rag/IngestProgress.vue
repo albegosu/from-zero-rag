@@ -5,7 +5,7 @@
         <span class="wz-accent">$</span>
         <span class="wz-label">ingest --pipeline --doc {{ documentId.slice(0, 8) }}</span>
       </div>
-      <span class="wz-faint text-[10px] font-mono">{{ elapsedDisplay }}</span>
+      <span class="wz-faint text-[11px] font-mono">{{ elapsedDisplay }}</span>
     </div>
 
     <div class="p-3 space-y-3">
@@ -17,7 +17,7 @@
           label="TEXT EXTRACTED"
           :detail="stepStatus(0) === 'done' ? 'raw text · ready to split' : undefined"
         />
-        <p v-if="stepStatus(0) === 'active'" class="ml-7 text-[10px] wz-faint font-mono">
+        <p v-if="stepStatus(0) === 'active'" class="ml-7 text-[11px] wz-faint font-mono">
           reading file content and extracting plain text
         </p>
       </div>
@@ -29,10 +29,10 @@
           label="CHUNKING"
           :detail="chunkDetail"
         />
-        <p v-if="stepStatus(1) === 'active'" class="ml-7 text-[10px] wz-faint font-mono">
+        <p v-if="stepStatus(1) === 'active'" class="ml-7 text-[11px] wz-faint font-mono">
           sentence-aware · target {{ chunkSize }} tokens/chunk · {{ chunkOverlap }} overlap
         </p>
-        <p v-if="stepStatus(1) === 'active'" class="ml-7 text-[10px] wz-faint font-mono">
+        <p v-if="stepStatus(1) === 'active'" class="ml-7 text-[11px] wz-faint font-mono">
           splitting without breaking sentences so each chunk stays coherent
         </p>
       </div>
@@ -44,10 +44,10 @@
           label="EMBEDDING"
           :detail="embedDetail"
         />
-        <p v-if="stepStatus(2) === 'active'" class="ml-7 text-[10px] wz-faint font-mono">
+        <p v-if="stepStatus(2) === 'active'" class="ml-7 text-[11px] wz-faint font-mono">
           {{ embeddingDims }}-dim · provider: {{ embeddingProvider }}
         </p>
-        <p v-if="stepStatus(2) === 'active'" class="ml-7 text-[10px] wz-faint font-mono">
+        <p v-if="stepStatus(2) === 'active'" class="ml-7 text-[11px] wz-faint font-mono">
           each chunk → a vector that captures its semantic meaning
         </p>
       </div>
@@ -59,10 +59,10 @@
           label="PERSIST → pgvector"
           :detail="stepStatus(3) === 'done' ? 'HNSW index · cosine distance' : undefined"
         />
-        <p v-if="stepStatus(3) === 'active'" class="ml-7 text-[10px] wz-faint font-mono">
+        <p v-if="stepStatus(3) === 'active'" class="ml-7 text-[11px] wz-faint font-mono">
           writing vectors to postgresql · cosine similarity index
         </p>
-        <p v-if="stepStatus(3) === 'active'" class="ml-7 text-[10px] wz-faint font-mono">
+        <p v-if="stepStatus(3) === 'active'" class="ml-7 text-[11px] wz-faint font-mono">
           pgvector stores embeddings as native vector type for fast ANN search
         </p>
       </div>
@@ -74,7 +74,7 @@
           label="MARK READY"
           :detail="finalDetail"
         />
-        <p v-if="finalStep === 'active'" class="ml-7 text-[10px] wz-faint font-mono">
+        <p v-if="finalStep === 'active'" class="ml-7 text-[11px] wz-faint font-mono">
           marking document as searchable in the knowledge base
         </p>
       </div>
@@ -82,7 +82,7 @@
       <!-- Summary on completion -->
       <div
         v-if="finalStatus === 'ready'"
-        class="mt-1 pt-2 border-t font-mono text-[10px] space-y-0.5"
+        class="mt-1 pt-2 border-t font-mono text-[11px] space-y-0.5"
         style="border-color: var(--term-accent-faint)"
       >
         <div class="wz-accent">// ingestion complete</div>
@@ -100,7 +100,7 @@
       </div>
 
       <!-- Progress indicator -->
-      <div class="pt-1 font-mono text-[10px] wz-faint flex items-center justify-between">
+      <div class="pt-1 font-mono text-[11px] wz-faint flex items-center justify-between">
         <span>step {{ Math.min(currentStep + 1, 5) }}/5</span>
         <span v-if="finalStatus === 'polling'">
           <span class="wz-accent animate-pulse">▌</span> processing

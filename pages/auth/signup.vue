@@ -51,48 +51,56 @@
 
                 <div class="flex items-center gap-3">
                   <div class="flex-1 h-px" style="background: var(--term-accent-line)" />
-                  <span class="text-[10px] wz-faint">── or ──</span>
+                  <span class="text-[11px] wz-faint">── or ──</span>
                   <div class="flex-1 h-px" style="background: var(--term-accent-line)" />
                 </div>
               </template>
 
               <form class="space-y-4" @submit.prevent="registerWithEmail">
                 <div class="space-y-1.5">
-                  <label class="text-[10px] uppercase tracking-widest wz-label">name</label>
+                  <label for="signup-name" class="text-[11px] uppercase tracking-widest wz-label">name</label>
                   <input
+                    id="signup-name"
                     v-model="name"
                     type="text"
                     class="wz-input"
                     placeholder="Your name"
                     autocomplete="name"
                     required
+                    aria-required="true"
                   />
                 </div>
                 <div class="space-y-1.5">
-                  <label class="text-[10px] uppercase tracking-widest wz-label">email</label>
+                  <label for="signup-email" class="text-[11px] uppercase tracking-widest wz-label">email</label>
                   <input
+                    id="signup-email"
                     v-model="email"
                     type="email"
                     class="wz-input"
                     placeholder="you@example.com"
                     autocomplete="email"
                     required
+                    aria-required="true"
                   />
                 </div>
                 <div class="space-y-1.5">
-                  <label class="text-[10px] uppercase tracking-widest wz-label">password</label>
+                  <label for="signup-password" class="text-[11px] uppercase tracking-widest wz-label">password</label>
                   <input
+                    id="signup-password"
                     v-model="password"
                     type="password"
                     class="wz-input"
                     placeholder="Min. 8 characters"
                     autocomplete="new-password"
                     required
+                    aria-required="true"
                   />
                 </div>
 
                 <div
                   v-if="error"
+                  role="alert"
+                  aria-live="assertive"
                   class="text-xs px-3 py-2 rounded font-mono"
                   style="color: var(--term-danger); background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.25)"
                 >
@@ -128,6 +136,15 @@
 import { signUp, signIn } from '~/utils/auth-client'
 
 definePageMeta({ layout: false, middleware: [] })
+
+useSeoMeta({
+  title: 'Sign Up - hypar',
+  description: 'Create your hypar account and start learning RAG.',
+  ogTitle: 'Sign Up - hypar',
+  ogDescription: 'Create your hypar account and start learning RAG.',
+  ogImage: '/hypar-chat-dark.png',
+  twitterCard: 'summary_large_image',
+})
 
 const { theme, toggleTheme } = useTerminalPrefs()
 

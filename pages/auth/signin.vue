@@ -60,37 +60,43 @@
 
                 <div class="flex items-center gap-3">
                   <div class="flex-1 h-px" style="background: var(--term-accent-line)" />
-                  <span class="text-[10px] wz-faint">── or ──</span>
+                  <span class="text-[11px] wz-faint">── or ──</span>
                   <div class="flex-1 h-px" style="background: var(--term-accent-line)" />
                 </div>
               </template>
 
               <form class="space-y-4" @submit.prevent="loginWithEmail">
                 <div class="space-y-1.5">
-                  <label class="text-[10px] uppercase tracking-widest wz-label">email</label>
+                  <label for="signin-email" class="text-[11px] uppercase tracking-widest wz-label">email</label>
                   <input
+                    id="signin-email"
                     v-model="email"
                     type="email"
                     class="wz-input"
                     placeholder="you@example.com"
                     autocomplete="email"
                     required
+                    aria-required="true"
                   />
                 </div>
                 <div class="space-y-1.5">
-                  <label class="text-[10px] uppercase tracking-widest wz-label">password</label>
+                  <label for="signin-password" class="text-[11px] uppercase tracking-widest wz-label">password</label>
                   <input
+                    id="signin-password"
                     v-model="password"
                     type="password"
                     class="wz-input"
                     placeholder="••••••••"
                     autocomplete="current-password"
                     required
+                    aria-required="true"
                   />
                 </div>
 
                 <div
                   v-if="error"
+                  role="alert"
+                  aria-live="assertive"
                   class="text-xs px-3 py-2 rounded font-mono"
                   style="color: var(--term-danger); background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.25)"
                 >
@@ -126,6 +132,15 @@
 import { signIn } from '~/utils/auth-client'
 
 definePageMeta({ layout: false, middleware: [] })
+
+useSeoMeta({
+  title: 'Sign In - hypar',
+  description: 'Sign in to hypar, your RAG learning platform.',
+  ogTitle: 'Sign In - hypar',
+  ogDescription: 'Sign in to hypar, your RAG learning platform.',
+  ogImage: '/hypar-chat-dark.png',
+  twitterCard: 'summary_large_image',
+})
 
 const { theme, toggleTheme } = useTerminalPrefs()
 

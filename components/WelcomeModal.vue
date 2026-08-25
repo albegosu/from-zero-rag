@@ -26,7 +26,7 @@
                 <span class="wz-label truncate">{{ t('welcomeModal.cmd') }}</span>
               </div>
               <span
-                class="shrink-0 text-[9px] uppercase tracking-widest px-2 py-0.5 rounded border"
+                class="shrink-0 text-[11px] uppercase tracking-widest px-2 py-0.5 rounded border"
                 style="border-color: var(--term-accent-line); color: var(--term-accent-strong); background: var(--term-accent-soft)"
               >
                 {{ t('welcomeModal.badge') }}
@@ -44,14 +44,14 @@
               </div>
 
               <div class="space-y-2">
-                <p class="text-[10px] uppercase tracking-widest wz-label">
+                <p class="text-[11px] uppercase tracking-widest wz-label">
                   {{ t('welcomeModal.stepsLabel') }}
                 </p>
                 <div class="flex flex-wrap gap-1.5">
                   <span
                     v-for="(tag, i) in stepTags"
                     :key="i"
-                    class="inline-flex items-center gap-1 rounded px-2 py-1 text-[10px] font-mono tabular-nums border"
+                    class="inline-flex items-center gap-1 rounded px-2 py-1 text-[11px] font-mono tabular-nums border"
                     style="border-color: var(--term-accent-faint); background: var(--term-bg-soft); color: var(--term-text-muted)"
                   >
                     <span class="wz-accent opacity-80">{{ String(i + 1).padStart(2, '0') }}</span>

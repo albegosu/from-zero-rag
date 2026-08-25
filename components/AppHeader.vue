@@ -13,7 +13,7 @@
         href="https://resiz.es"
         target="_blank"
         rel="noopener noreferrer"
-        class="hidden md:inline-flex items-center gap-1.5 shrink-0 ml-2 text-[10px] wz-faint hover:opacity-100 transition-opacity opacity-80"
+        class="hidden md:inline-flex items-center gap-1.5 shrink-0 ml-2 text-[11px] wz-faint hover:opacity-100 transition-opacity opacity-80"
         aria-label="Resizes"
         title="Resizes"
       >
@@ -35,15 +35,29 @@
         :title="t('nav.docsSiteTitle')"
       >
         <MicroGlyph name="tutorial" decorative class="w-4 h-4 wz-accent" />
-        <span class="hidden sm:inline text-[10px] wz-faint">{{ t('nav.docsSiteLabel') }}</span>
+        <span class="hidden sm:inline text-[11px] wz-faint">{{ t('nav.docsSiteLabel') }}</span>
       </NuxtLink>
 
       <div class="flex flex-1 items-center gap-1 min-w-0 ml-auto justify-end">
+        <!-- mobile menu toggle -->
+        <button
+          v-if="user"
+          type="button"
+          class="md:hidden wz-btn-ghost text-[11px] shrink-0"
+          :aria-expanded="mobileMenuOpen"
+          aria-label="Menu"
+          @click="mobileMenuOpen = !mobileMenuOpen"
+        >
+          {{ mobileMenuOpen ? '✕' : '☰' }}
+        </button>
+
         <!-- workspace selector (custom dropdown) -->
-        <div v-if="user && workspaces.length" ref="wsDropdownRef" class="relative hidden sm:block shrink-0 mr-1">
+        <div v-if="user && workspaces.length" ref="wsDropdownRef" class="relative hidden md:block shrink-0 mr-1">
           <button
             type="button"
-            class="wz-btn-ghost text-[10px] flex items-center gap-1"
+            class="wz-btn-ghost text-[11px] flex items-center gap-1"
+            :aria-expanded="wsOpen"
+            aria-haspopup="listbox"
             @click="wsOpen = !wsOpen"
           >
             <span class="wz-faint shrink-0">ws/</span>
@@ -59,7 +73,7 @@
               v-for="ws in workspaces"
               :key="ws.id"
               type="button"
-              class="w-full text-left px-3 py-1.5 text-[10px] flex items-center gap-2 hover:bg-[var(--wz-hover)] transition-colors"
+              class="w-full text-left px-3 py-1.5 text-[11px] flex items-center gap-2 hover:bg-[var(--wz-hover)] transition-colors"
               :class="ws.id === activeWorkspaceId ? 'wz-strong' : 'wz-muted'"
               :disabled="ws.id === activeWorkspaceId"
               @click="selectWorkspace(ws.id)"
@@ -71,7 +85,7 @@
             <div class="hairline-t mt-1 pt-1">
               <NuxtLink
                 to="/workspaces"
-                class="block px-3 py-1.5 text-[10px] wz-faint hover:wz-muted transition-colors"
+                class="block px-3 py-1.5 text-[11px] wz-faint hover:wz-muted transition-colors"
                 @click="wsOpen = false"
               >
                 + manage workspaces
@@ -83,7 +97,7 @@
         <NuxtLink
           v-if="user && !isAdmin"
           to="/settings"
-          class="wz-btn-ghost text-[10px] shrink-0"
+          class="hidden md:inline-flex wz-btn-ghost text-[11px] shrink-0"
         >
           [ settings ]
         </NuxtLink>
@@ -91,24 +105,28 @@
         <NuxtLink
           v-if="user && isAdmin"
           to="/admin"
-          class="wz-btn-ghost text-[10px] shrink-0"
+          class="hidden md:inline-flex wz-btn-ghost text-[11px] shrink-0"
         >
           [ admin ]
         </NuxtLink>
 
         <button
           type="button"
-          class="wz-btn-ghost text-[10px] shrink-0"
+          class="hidden md:inline-flex wz-btn-ghost text-[11px] shrink-0"
           :class="{ 'opacity-50': locale !== 'en' }"
+          :aria-pressed="locale === 'en'"
+          aria-label="Switch to English"
           @click="setLocale('en')"
         >
           EN
         </button>
-        <span class="wz-faint shrink-0">/</span>
+        <span class="hidden md:inline wz-faint shrink-0">/</span>
         <button
           type="button"
-          class="wz-btn-ghost text-[10px] shrink-0"
+          class="hidden md:inline-flex wz-btn-ghost text-[11px] shrink-0"
           :class="{ 'opacity-50': locale !== 'es' }"
+          :aria-pressed="locale === 'es'"
+          aria-label="Switch to Spanish"
           @click="setLocale('es')"
         >
           ES
@@ -117,12 +135,13 @@
         <button
           type="button"
           class="wz-btn-ghost wz-theme-toggle ml-1 shrink-0"
+          aria-label="Toggle theme"
           @click="toggleTheme"
         >
           {{ theme === 'light' ? '[ light ]' : '[ dark ]' }}
         </button>
 
-        <div v-if="user" class="hidden sm:flex items-center gap-1 ml-1 min-w-0 shrink-0">
+        <div v-if="user" class="hidden md:flex items-center gap-1 ml-1 min-w-0 shrink-0">
           <span class="wz-faint shrink-0">@</span>
           <span class="wz-muted truncate max-w-[120px]">{{ userLabel }}</span>
         </div>
@@ -131,23 +150,79 @@
           <button
             v-if="!confirmLogout"
             type="button"
-            class="wz-btn-ghost text-[10px] ml-1 shrink-0"
+            class="hidden md:inline-flex wz-btn-ghost text-[11px] ml-1 shrink-0"
             @click="confirmLogout = true"
           >
             [ logout ]
           </button>
-          <div v-else class="flex items-center gap-1 ml-1 shrink-0">
-            <span class="wz-faint text-[10px]">sure?</span>
-            <button type="button" class="wz-btn-ghost text-[10px]" :disabled="loggingOut" @click="logout">
+          <div v-else class="hidden md:flex items-center gap-1 ml-1 shrink-0">
+            <span class="wz-faint text-[11px]">sure?</span>
+            <button type="button" class="wz-btn-ghost text-[11px]" :disabled="loggingOut" @click="logout">
               {{ loggingOut ? '…' : 'yes' }}
             </button>
-            <button type="button" class="wz-btn-ghost text-[10px]" @click="confirmLogout = false">
+            <button type="button" class="wz-btn-ghost text-[11px]" @click="confirmLogout = false">
               no
             </button>
           </div>
         </template>
       </div>
 
+    </div>
+
+    <!-- Mobile slide-out menu -->
+    <div
+      v-if="user && mobileMenuOpen"
+      class="md:hidden glass hairline-b px-4 py-3 space-y-2 text-xs"
+    >
+      <div v-if="workspaces.length" class="flex items-center gap-2 mb-2">
+        <span class="wz-faint shrink-0">ws/</span>
+        <select
+          class="wz-select text-[11px] flex-1"
+          :value="activeWorkspaceId"
+          @change="selectWorkspace(($event.target as HTMLSelectElement).value)"
+        >
+          <option v-for="ws in workspaces" :key="ws.id" :value="ws.id">{{ ws.name }}</option>
+        </select>
+      </div>
+
+      <div class="flex flex-wrap gap-1">
+        <NuxtLink
+          v-if="!isAdmin"
+          to="/settings"
+          class="wz-btn-ghost text-[11px]"
+          @click="mobileMenuOpen = false"
+        >[ settings ]</NuxtLink>
+        <NuxtLink
+          v-if="isAdmin"
+          to="/admin"
+          class="wz-btn-ghost text-[11px]"
+          @click="mobileMenuOpen = false"
+        >[ admin ]</NuxtLink>
+
+        <button
+          type="button"
+          class="wz-btn-ghost text-[11px]"
+          :class="{ 'opacity-50': locale !== 'en' }"
+          @click="setLocale('en')"
+        >EN</button>
+        <span class="wz-faint">/</span>
+        <button
+          type="button"
+          class="wz-btn-ghost text-[11px]"
+          :class="{ 'opacity-50': locale !== 'es' }"
+          @click="setLocale('es')"
+        >ES</button>
+      </div>
+
+      <div class="flex items-center justify-between pt-1 hairline-t">
+        <span class="wz-muted">@{{ userLabel }}</span>
+        <button
+          type="button"
+          class="wz-btn-ghost text-[11px]"
+          :disabled="loggingOut"
+          @click="logout"
+        >[ logout ]</button>
+      </div>
     </div>
   </header>
 </template>
@@ -209,6 +284,7 @@ const docsSiteUrl = computed(() => {
   return typeof u === 'string' && u.trim() ? u.trim() : ''
 })
 
+const mobileMenuOpen = ref(false)
 const loggingOut = ref(false)
 const confirmLogout = ref(false)
 

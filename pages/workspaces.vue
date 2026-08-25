@@ -13,7 +13,7 @@
         <button
           v-if="!ws.active"
           type="button"
-          class="wz-btn-ghost text-[10px] shrink-0 whitespace-nowrap"
+          class="wz-btn-ghost text-[11px] shrink-0 whitespace-nowrap"
           :disabled="activating === ws.id"
           @click="activate(ws.id)"
         >
@@ -23,20 +23,20 @@
 
       <!-- allowed formats -->
       <div class="mt-3 space-y-2">
-        <p v-if="ws.effectiveFormats" class="wz-faint text-[10px]">
+        <p v-if="ws.effectiveFormats" class="wz-faint text-[11px]">
           {{ t('workspaces.allowedFormatsEffective', { formats: ws.effectiveFormats }) }}
         </p>
         <template v-if="ws.role === 'owner' || ws.role === 'editor'">
-          <label class="wz-label text-[10px] block">{{ t('workspaces.allowedFormatsLabel') }}</label>
+          <label class="wz-label text-[11px] block">{{ t('workspaces.allowedFormatsLabel') }}</label>
           <input
             v-model="formatsInput[ws.id]"
-            class="wz-input w-full text-[10px] h-7"
+            class="wz-input w-full text-[11px] h-7"
             placeholder="pdf,md,txt,xls,xlsx"
           />
           <div class="flex gap-2">
             <button
               type="button"
-              class="wz-btn-ghost text-[10px]"
+              class="wz-btn-ghost text-[11px]"
               :disabled="savingFormats === ws.id"
               @click="saveFormats(ws.id)"
             >
@@ -44,7 +44,7 @@
             </button>
             <button
               type="button"
-              class="wz-btn-ghost text-[10px]"
+              class="wz-btn-ghost text-[11px]"
               :disabled="savingFormats === ws.id"
               @click="clearFormats(ws.id)"
             >
@@ -52,42 +52,42 @@
             </button>
           </div>
         </template>
-        <p v-else-if="ws.effectiveFormats" class="wz-faint text-[10px]">
+        <p v-else-if="ws.effectiveFormats" class="wz-faint text-[11px]">
           {{ t('workspaces.allowedFormatsViewer', { formats: ws.effectiveFormats }) }}
         </p>
-        <p v-if="formatsError[ws.id]" class="text-red-500 text-[10px]">{{ formatsError[ws.id] }}</p>
+        <p v-if="formatsError[ws.id]" class="text-red-500 text-[11px]">{{ formatsError[ws.id] }}</p>
       </div>
 
       <!-- invite (owners only) -->
       <div v-if="ws.role === 'owner'" class="mt-3 flex gap-2">
         <input
           v-model="inviteEmail[ws.id]"
-          class="wz-input flex-1 text-[10px] h-7"
+          class="wz-input flex-1 text-[11px] h-7"
           placeholder="email to invite"
           type="email"
         />
         <button
           type="button"
-          class="wz-btn-ghost text-[10px] shrink-0 whitespace-nowrap"
+          class="wz-btn-ghost text-[11px] shrink-0 whitespace-nowrap"
           :disabled="inviting === ws.id"
           @click="invite(ws.id)"
         >
           {{ inviting === ws.id ? '…' : '[ invite ]' }}
         </button>
       </div>
-      <p v-if="inviteError[ws.id]" class="mt-1 text-red-500 text-[10px]">{{ inviteError[ws.id] }}</p>
+      <p v-if="inviteError[ws.id]" class="mt-1 text-red-500 text-[11px]">{{ inviteError[ws.id] }}</p>
     </div>
 
     <!-- create new -->
     <div class="mt-6 border border-[var(--wz-border)] rounded p-3">
       <p class="wz-faint mb-2">create workspace</p>
       <div class="flex gap-2">
-        <input v-model="newName" class="wz-input flex-1 text-[10px] h-7" placeholder="workspace name" />
-        <button type="button" class="wz-btn-ghost text-[10px] shrink-0 whitespace-nowrap" :disabled="creating" @click="create">
+        <input v-model="newName" class="wz-input flex-1 text-[11px] h-7" placeholder="workspace name" />
+        <button type="button" class="wz-btn-ghost text-[11px] shrink-0 whitespace-nowrap" :disabled="creating" @click="create">
           {{ creating ? '…' : '[ create ]' }}
         </button>
       </div>
-      <p v-if="createError" class="mt-1 text-red-500 text-[10px]">{{ createError }}</p>
+      <p v-if="createError" class="mt-1 text-red-500 text-[11px]">{{ createError }}</p>
     </div>
   </div>
 </template>
@@ -96,6 +96,7 @@
 import { useI18n } from 'vue-i18n'
 import { formatsToDisplay } from '~/utils/allowed-formats'
 
+useHead({ title: 'Workspaces - hypar' })
 const { t } = useI18n()
 
 interface Workspace {

@@ -22,7 +22,7 @@
             <span class="wz-accent">$</span>
             <span class="wz-label">cat ./{{ documentId }}</span>
           </div>
-          <span class="wz-faint text-[10px]">{{ formatDate(doc.createdAt) }}</span>
+          <span class="wz-faint text-[11px]">{{ formatDate(doc.createdAt) }}</span>
         </div>
         <div class="p-4">
           <div class="flex items-start justify-between gap-3">
@@ -73,7 +73,7 @@
       />
 
       <section>
-        <h2 class="text-[10px] uppercase tracking-widest wz-label mb-3 flex items-center gap-2">
+        <h2 class="text-[11px] uppercase tracking-widest wz-label mb-3 flex items-center gap-2">
           // {{ t('document.chunksTitle') }}
           <span class="wz-faint normal-case tracking-normal">{{ t('document.chunksHint') }}</span>
         </h2>
@@ -101,7 +101,7 @@
       </section>
 
       <section>
-        <h2 class="text-[10px] uppercase tracking-widest wz-label mb-3">
+        <h2 class="text-[11px] uppercase tracking-widest wz-label mb-3">
           // {{ t('document.originalContent') }}
         </h2>
         <div class="wz-panel p-3">
@@ -126,6 +126,7 @@
 import { useI18n } from 'vue-i18n'
 import type { DocumentDetail } from '~/stores/documents'
 
+useHead({ title: 'Document - hypar' })
 const { t } = useI18n()
 const route = useRoute()
 const store = useDocumentsStore()

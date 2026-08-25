@@ -50,7 +50,7 @@ defineExpose({
             :placeholder="placeholder"
             :disabled="disabled || loading"
             rows="1"
-            class="wz-input flex-1 border-0 bg-transparent !p-0 focus:!shadow-none min-h-[1.5rem] resize-none"
+            class="wz-input flex-1 border-0 bg-transparent !p-0 min-h-[1.5rem] resize-none"
             style="background: transparent; border: 0;"
             autocomplete="off"
             @input="handleInput"
@@ -102,7 +102,7 @@ defineExpose({
       <button
         v-if="hasMessages"
         type="button"
-        class="wz-btn-ghost text-[10px]"
+        class="wz-btn-ghost text-[11px]"
         @click="emit('clear')"
       >
         ✕ {{ t('chat.clear') }}

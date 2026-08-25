@@ -43,6 +43,7 @@ export function useTerminalPrefs() {
     locale.value = value
     localeCookie.value = value
     if (import.meta.client) {
+      document.documentElement.lang = value
       try {
         localStorage.setItem(LOCALE_KEY, value)
         localStorage.setItem(WIZARD_LOCALE_KEY, value)

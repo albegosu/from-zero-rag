@@ -70,6 +70,7 @@ import {
 } from '~/composables/useSettingsTabs'
 import { buildWizardDefaults, getStepFields, parseFieldValue } from '~/utils/settings-form'
 definePageMeta({ middleware: ['admin'] })
+useHead({ title: 'Admin Settings - hypar' })
 
 const { t } = useI18n()
 

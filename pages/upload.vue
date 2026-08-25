@@ -106,7 +106,7 @@
         <div v-if="uploadError" class="wz-panel px-3 py-2 text-xs flex items-start gap-2" style="border-color: var(--term-error, #f87171);">
           <span style="color: var(--term-error, #f87171);">⚠</span>
           <span class="wz-muted flex-1">{{ uploadError }}</span>
-          <button type="button" class="wz-btn-ghost text-[10px]" @click="uploadError = null">✕</button>
+          <button type="button" class="wz-btn-ghost text-[11px]" @click="uploadError = null">✕</button>
         </div>
 
         <button
@@ -163,7 +163,7 @@
         <div v-if="uploadError" class="wz-panel px-3 py-2 text-xs flex items-start gap-2" style="border-color: var(--term-error, #f87171);">
           <span style="color: var(--term-error, #f87171);">⚠</span>
           <span class="wz-muted flex-1">{{ uploadError }}</span>
-          <button type="button" class="wz-btn-ghost text-[10px]" @click="uploadError = null">✕</button>
+          <button type="button" class="wz-btn-ghost text-[11px]" @click="uploadError = null">✕</button>
         </div>
 
         <button
@@ -183,6 +183,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 
+useHead({ title: 'Upload - hypar' })
 const { t } = useI18n()
 const store = useDocumentsStore()
 

@@ -39,7 +39,7 @@ function selectSearchMode(mode: SearchMode) {
     <div ref="searchModeRef" class="relative">
       <button
         type="button"
-        class="font-mono text-[10px] flex items-center gap-1 cursor-pointer select-none wz-faint hover:wz-accent"
+        class="font-mono text-[11px] flex items-center gap-1 cursor-pointer select-none wz-faint hover:wz-accent"
         :class="selectedSearchMode !== 'auto' ? 'wz-accent' : ''"
         :title="`search mode: ${selectedSearchMode}`"
         @click="searchModeMenuOpen = !searchModeMenuOpen"
@@ -52,7 +52,7 @@ function selectSearchMode(mode: SearchMode) {
         v-if="searchModeMenuOpen"
         class="absolute bottom-full right-0 mb-2 w-56 z-10 rounded border border-[color:var(--term-accent-line)] bg-[color:var(--term-bg)] shadow-xl"
       >
-        <div class="px-3 py-1.5 text-[9px] wz-faint uppercase tracking-widest border-b border-[color:var(--term-accent-line)]">// search mode</div>
+        <div class="px-3 py-1.5 text-[11px] wz-faint uppercase tracking-widest border-b border-[color:var(--term-accent-line)]">// search mode</div>
         <button
           v-for="m in SEARCH_MODES"
           :key="m.value"
@@ -65,9 +65,9 @@ function selectSearchMode(mode: SearchMode) {
         >
           <div class="flex items-center justify-between">
             <span class="font-mono text-[11px]">{{ m.label }}</span>
-            <span v-if="m.value === selectedSearchMode" class="text-[9px] opacity-40">✓</span>
+            <span v-if="m.value === selectedSearchMode" class="text-[11px] opacity-40">✓</span>
           </div>
-          <span class="text-[9px] wz-faint opacity-60">{{ m.description }}</span>
+          <span class="text-[11px] wz-faint opacity-60">{{ m.description }}</span>
         </button>
       </div>
     </div>
@@ -81,7 +81,7 @@ function selectSearchMode(mode: SearchMode) {
       <template #trigger="{ selected, toggle, isOpen }">
         <button
           type="button"
-          class="font-mono text-[10px] flex items-center gap-1 cursor-pointer select-none wz-faint hover:wz-accent"
+          class="font-mono text-[11px] flex items-center gap-1 cursor-pointer select-none wz-faint hover:wz-accent"
           :title="`${llmProvider} · click to change model`"
           @click.stop="toggle"
         >
@@ -96,7 +96,7 @@ function selectSearchMode(mode: SearchMode) {
           :class="selected ? 'wz-accent' : ''"
         >
           <span class="truncate">{{ model.name }}</span>
-          <span v-if="selected" class="text-[9px] opacity-40 ml-2 shrink-0">✓</span>
+          <span v-if="selected" class="text-[11px] opacity-40 ml-2 shrink-0">✓</span>
         </span>
       </template>
     </AiModelSelector>

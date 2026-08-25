@@ -1,160 +1,140 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["postgresqlExtensions"]
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider   = "postgresql"
-  extensions = [vector(map: "pgvector")]
+  provider = "postgresql"
 }
 
-// Document = original uploaded file or note
-model Document {
-  id           String   @id @default(uuid())
-  title        String
-  content      String   // Full original content
-  sourceType   String   // 'text', 'markdown', 'pdf', 'web'
-  workspaceId  String
-  metadata     Json?    // Flexible metadata
-  ingestStatus String   @default("pending") // 'pending' | 'processing' | 'ready' | 'failed'
-  ingestError  String?
-  chunkCount   Int      @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+// ── Embryo domain ─────────────────────────────────────────────
 
-  chunks       Chunk[]
-  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-
-  @@index([workspaceId])
-  @@index([ingestStatus])
+enum EmbryoState {
+  LATENT
+  GERMINATING
+  GROWING
+  MATURE
+  FOSSIL
 }
 
-// Chunk = split pieces of document for embedding
-model Chunk {
-  id           String   @id @default(uuid())
-  documentId   String
-  content      String   // The actual text chunk
-  embedding    Unsupported("vector(768)")  // NOT NULL — chunks without vectors are bugs
-  index        Int      // Position in document
-  tokenCount   Int?     // Token count
-
-  // For citations
-  startChar    Int?
-  endChar      Int?
-
-  createdAt    DateTime @default(now())
-
-  document     Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
-
-  @@index([documentId])
+enum EventType {
+  CREATED
+  STATE_CHANGED
+  TENSION_ADDED
+  TENSION_RESOLVED
+  CONNECTION_MADE
+  AGENT_QUESTION
+  AGENT_SUGGESTION
+  USER_RESPONSE
+  FOSSIL_PROPOSED
+  FOSSILIZED
 }
 
-// Conversation = a chat session, optionally per user
-model Conversation {
-  id          String    @id @default(uuid())
-  workspaceId String
-  title       String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  messages    Message[]
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-
-  @@index([workspaceId, updatedAt])
+enum EventInitiator {
+  USER
+  AGENT
+  SYSTEM
 }
 
-// Message = one turn in a conversation. Persists Vercel AI SDK UIMessage parts.
-model Message {
-  id             String       @id @default(uuid())
-  conversationId String
-  role           String       // 'user' | 'assistant' | 'system' | 'tool'
-  content        String       // Plain-text rendering for quick listing
-  parts          Json?        // Full UIMessage.parts (text + tool calls + tool results)
-  sources        Json?        // [{chunkId, documentId, documentTitle, score}] when role='assistant'
-  errorMessage   String?      // Set if the assistant turn failed mid-stream
-  createdAt      DateTime     @default(now())
-
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-
-  @@index([conversationId, createdAt])
+enum ConnectionType {
+  REINFORCES
+  CONTRADICTS
+  EXTENDS
+  RESURRECTS
 }
 
-// Workspace = shared scope for documents and conversations
-model Workspace {
-  id            String            @id @default(cuid())
-  name          String
-  ownerId       String
-  createdAt     DateTime          @default(now())
-
-  owner         User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  members       WorkspaceMember[]
-  documents     Document[]
-  conversations Conversation[]
-  settings      WorkspaceSetting[]
-
-  @@index([ownerId])
+enum AgentNoteType {
+  OBSERVATION
+  PENDING_QUESTION
+  PENDING_CONNECTION
+  PENDING_FOSSIL
 }
 
-// WorkspaceMember = user ↔ workspace membership
-model WorkspaceMember {
-  workspaceId String
-  userId      String
-  role        String   @default("editor") // owner | editor | viewer
-  createdAt   DateTime @default(now())
-
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@id([workspaceId, userId])
-  @@index([userId])
+enum FossilTrigger {
+  USER
+  AGENT
 }
 
-// Runtime-editable configuration. Overrides env vars when set.
-// category is one of: embeddings | chunking | search | rag
-model Setting {
-  key       String   @id
-  value     String
-  category  String   @default("general")
-  encrypted Boolean  @default(false)
-  updatedAt DateTime @updatedAt
+model Embryo {
+  id           String      @id @default(cuid())
+  userId       String
+  seed         String      // Raw original thought — never edited after creation
+  state        EmbryoState @default(LATENT)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  fossilizedAt DateTime?
+  fossilReason String?     // Required when fossilizing
+  fossilBy     FossilTrigger?
 
-  @@index([category])
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  events       EmbryoEvent[]
+  tensions     Tension[]
+  connections  Connection[]  @relation("ConnectionSource")
+  connectedTo  Connection[]  @relation("ConnectionTarget")
+  agentNotes   AgentNote[]
+
+  @@index([userId, state])
+  @@index([userId, createdAt])
 }
 
-// Per-workspace settings overrides (e.g. ALLOWED_FORMATS). Workspace wins over user/global for uploads.
-model WorkspaceSetting {
-  workspaceId String
-  key         String
-  value       String
-  category    String   @default("general")
-  updatedAt   DateTime @updatedAt
+model EmbryoEvent {
+  id          String         @id @default(cuid())
+  embryoId    String
+  type        EventType
+  initiatedBy EventInitiator
+  payload     Json?          // Type-specific data (e.g. old/new state, tension id)
+  createdAt   DateTime       @default(now())
 
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  embryo      Embryo         @relation(fields: [embryoId], references: [id], onDelete: Cascade)
 
-  @@id([workspaceId, key])
-  @@index([workspaceId, category])
+  @@index([embryoId, createdAt])
 }
 
-// Per-user settings overrides. Resolution order: UserSetting → Setting → env.
-// Secret values (API keys) are AES-256-GCM encrypted at rest.
-model UserSetting {
-  userId    String
-  key       String
-  value     String
-  category  String   @default("general")
-  encrypted Boolean  @default(false)
-  updatedAt DateTime @updatedAt
+model Tension {
+  id         String         @id @default(cuid())
+  embryoId   String
+  question   String
+  resolved   Boolean        @default(false)
+  raisedBy   EventInitiator
+  resolvedAt DateTime?
+  createdAt  DateTime       @default(now())
 
-  @@id([userId, key])
-  @@index([userId, category])
+  embryo     Embryo         @relation(fields: [embryoId], references: [id], onDelete: Cascade)
+
+  @@index([embryoId, resolved])
+}
+
+model Connection {
+  id              String         @id @default(cuid())
+  sourceId        String
+  targetId        String
+  type            ConnectionType
+  detectedBy      EventInitiator
+  confirmedByUser Boolean        @default(false) // Agent-detected connections need user confirmation
+  note            String?
+  createdAt       DateTime       @default(now())
+
+  source          Embryo         @relation("ConnectionSource", fields: [sourceId], references: [id], onDelete: Cascade)
+  target          Embryo         @relation("ConnectionTarget", fields: [targetId], references: [id], onDelete: Cascade)
+
+  @@unique([sourceId, targetId])
+  @@index([sourceId])
+  @@index([targetId])
+}
+
+model AgentNote {
+  id        String        @id @default(cuid())
+  embryoId  String
+  type      AgentNoteType
+  content   String
+  dismissed Boolean       @default(false)
+  createdAt DateTime      @default(now())
+
+  embryo    Embryo        @relation(fields: [embryoId], references: [id], onDelete: Cascade)
+
+  @@index([embryoId, type])
 }
 
 // ── better-auth tables ────────────────────────────────────────
-// Tables are created by migration 20260512000000_add_auth (raw SQL).
-// Models defined here so the Prisma client is aware of them.
 
 model User {
   id            String    @id
@@ -169,10 +149,9 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  sessions          Session[]
-  accounts          Account[]
-  ownedWorkspaces   Workspace[]
-  workspaceMemberships WorkspaceMember[]
+  sessions  Session[]
+  accounts  Account[]
+  embryos   Embryo[]
 }
 
 model Session {
@@ -214,20 +193,4 @@ model Verification {
   expiresAt  DateTime
   createdAt  DateTime? @default(now())
   updatedAt  DateTime?
-}
-
-// Query history for analytics
-model Query {
-  id             String   @id @default(uuid())
-  queryText      String
-  responseText   String?
-  sources        Json?    // Array of {chunkId, score, content}
-  latencyMs      Int?     // Response time
-  userId         String?
-  conversationId String?
-  toolCalled     Boolean  @default(false)
-  createdAt      DateTime @default(now())
-
-  @@index([createdAt])
-  @@index([userId, createdAt])
 }

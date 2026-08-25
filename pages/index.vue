@@ -1,172 +1,142 @@
-<template>
-  <WelcomeModal />
-  <div
-    class="max-w-5xl mx-auto px-4 pt-4 lg:pt-6 flex flex-col h-[calc(100dvh-3rem-6rem)] max-h-[calc(100dvh-3rem-6rem)] overflow-hidden min-h-0"
-  >
-    <section class="wz-panel mb-4 lg:mb-5 shrink-0">
-      <div class="wz-panel-header flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <span class="wz-accent">$</span>
-          <span class="wz-label">chat --mode={{ selectedSearchMode }} --stream</span>
-        </div>
-        <span class="wz-faint text-[10px]">{{ store.documents.length }} docs · ctx</span>
-      </div>
-      <div class="p-4">
-        <h1 class="text-lg font-semibold wz-strong">// {{ t('chat.title') }}</h1>
-        <p class="wz-muted text-xs mt-1">{{ t('chat.subtitle') }}</p>
-      </div>
-    </section>
-
-    <div class="flex-1 min-h-0 flex flex-col lg:flex-row gap-4 lg:gap-6">
-      <div class="flex-[3] min-w-0 min-h-0 flex flex-col lg:flex-1 basis-0">
-        <ChatHyparChatThread
-          ref="threadRef"
-          :messages="displayMessages"
-          :expanded-set="expandedSet"
-          :search-params="searchParams"
-          :is-waiting="isWaiting"
-          :is-searching="isSearching"
-          :is-loading="conversationLoading"
-          :empty-suggestions="emptySuggestions"
-          :visible-error="!!visibleChatError"
-          :error-message="chatErrorMessage"
-          :is-app-rate-limit="isAppRateLimitError"
-          :is-provider-quota="isProviderQuotaError"
-          @toggle-expand="toggleExpand"
-          @dismiss-error="dismissError"
-          @suggestion-select="onSuggestionSelect"
-        />
-
-        <ChatHyparChatInput
-          ref="inputRef"
-          v-model="input"
-          :is-busy="isBusy"
-          :show-command-help="showCommandHelp"
-          :filtered-commands="filteredCommands"
-          :selected-command-idx="selectedCommandIdx"
-          :has-messages="!!displayMessages.length"
-          @send="send"
-          @stop="chat.stop()"
-          @clear="clearChat"
-          @select-command="selectCommand"
-          @keydown="onChatInputKeydown"
-        >
-          <template #controls>
-            <ChatHyparChatControls
-              v-model:search-mode="selectedSearchMode"
-              v-model:model="selectedModel"
-              :llm-provider="llmConfig?.provider"
-              :model-options="llmModelOptions"
-              :show-model-selector="!!(llmConfig && llmConfig.models.length > 1)"
-            />
-          </template>
-        </ChatHyparChatInput>
-      </div>
-
-      <ChatHyparChatSidebar
-        :threads="conversationThreads"
-        :active-id="conversationId"
-        :documents="store.documents"
-        :documents-loading="store.loading"
-        @select-conversation="loadConversation"
-        @new-conversation="newConversation"
-        @delete-conversation="deleteConversation"
-        @open-document="(id: string) => navigateTo(`/documents/${id}`)"
-      />
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-const {
-  t,
-  store,
-  chat,
-  input,
-  scrollRef,
-  expandedSet,
-  conversationLoading,
-  conversationId,
-  conversationThreads,
-  llmConfig,
-  selectedModel,
-  selectedSearchMode,
-  llmModelOptions,
-  searchParams,
-  displayMessages,
-  emptySuggestions,
-  isBusy,
-  isWaiting,
-  isSearching,
-  visibleChatError,
-  chatErrorMessage,
-  isAppRateLimitError,
-  isProviderQuotaError,
-  showCommandHelp,
-  filteredCommands,
-  selectedCommandIdx,
-  send,
-  clearChat,
-  dismissError,
-  toggleExpand,
-  selectCommand,
-  onSuggestionSelect,
-  loadConversation,
-  newConversation,
-  deleteConversation,
-  initChatPage,
-  scrollToBottom,
-} = useHyparChat()
+import { useEmbryoStore, type EmbryoState } from '~/stores/embryos'
 
-const threadRef = ref<{ scrollRef: HTMLElement | null } | null>(null)
-const inputRef = ref<{ focus: () => void } | null>(null)
+const store = useEmbryoStore()
 
-watchEffect(() => {
-  const el = threadRef.value?.scrollRef
-  if (el) scrollRef.value = el
+const seedInput = ref('')
+const creating = ref(false)
+const activeFilter = ref<EmbryoState | 'ALL'>('ALL')
+
+const LIFECYCLE: Array<{ state: EmbryoState; label: string; glyph: string }> = [
+  { state: 'LATENT',      label: 'latent',      glyph: '◌' },
+  { state: 'GERMINATING', label: 'germinating',  glyph: '◎' },
+  { state: 'GROWING',     label: 'growing',      glyph: '●' },
+  { state: 'MATURE',      label: 'mature',       glyph: '◉' },
+  { state: 'FOSSIL',      label: 'fossil',       glyph: '◈' },
+]
+
+const visible = computed(() => {
+  if (activeFilter.value === 'ALL') return store.embryos
+  return store.embryos.filter(e => e.state === activeFilter.value)
 })
 
-function onChatInputKeydown(e: KeyboardEvent) {
-  if (isBusy.value) {
-    const k = e.key
-    if (k.length === 1 || k === 'Enter' || k === 'Backspace' || k === 'Delete') {
-      e.preventDefault()
-    }
-    return
-  }
-  if (showCommandHelp.value && filteredCommands.value.length) {
-    if (e.key === 'ArrowDown') {
-      e.preventDefault()
-      selectedCommandIdx.value = (selectedCommandIdx.value + 1) % filteredCommands.value.length
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault()
-      selectedCommandIdx.value = selectedCommandIdx.value <= 0
-        ? filteredCommands.value.length - 1
-        : selectedCommandIdx.value - 1
-    } else if (e.key === 'Enter' && selectedCommandIdx.value >= 0) {
-      e.preventDefault()
-      selectCommand(filteredCommands.value[selectedCommandIdx.value])
-    } else if (e.key === 'Escape') {
-      input.value = ''
-    }
-  }
+async function submitSeed() {
+  const seed = seedInput.value.trim()
+  if (!seed) return
+  creating.value = true
+  const embryo = await store.create(seed)
+  if (embryo) seedInput.value = ''
+  creating.value = false
 }
 
-watch(
-  () => isBusy.value,
-  (busy, wasBusy) => {
-    if (wasBusy === true && busy === false) {
-      nextTick(() => inputRef.value?.focus())
-    }
-  },
-)
+function stateColor(state: EmbryoState) {
+  return {
+    LATENT:      'text-[var(--term-text-faint)]',
+    GERMINATING: 'text-[var(--term-accent)]',
+    GROWING:     'text-[var(--term-accent-strong)]',
+    MATURE:      'text-[var(--term-text-strong)]',
+    FOSSIL:      'text-[var(--term-text-dim)]',
+  }[state]
+}
 
-onMounted(() => {
-  initChatPage()
-})
-
-watch(
-  () => displayMessages.value.length,
-  () => scrollToBottom(),
-)
+onMounted(() => store.fetchAll())
 </script>
+
+<template>
+  <div class="max-w-3xl mx-auto px-4 pt-6 pb-24 flex flex-col gap-6">
+
+    <!-- header -->
+    <div class="wz-panel">
+      <div class="wz-panel-header flex items-center justify-between">
+        <span class="wz-faint text-[11px]">hypar // embryo garden</span>
+        <span class="wz-faint text-[11px]">{{ store.alive.length }} alive · {{ store.byState.FOSSIL.length }} fossil</span>
+      </div>
+      <div class="px-4 pt-3 pb-4">
+        <p class="wz-muted text-xs">capture a raw thought — unfinished, uncertain, alive</p>
+      </div>
+    </div>
+
+    <!-- seed capture -->
+    <div class="wz-panel">
+      <div class="wz-panel-header">
+        <span class="wz-accent">$</span>
+        <span class="wz-label ml-2">embryo.create --capture</span>
+      </div>
+      <div class="p-4 flex gap-3">
+        <textarea
+          v-model="seedInput"
+          rows="3"
+          placeholder="drop the seed..."
+          class="flex-1 bg-transparent resize-none text-sm wz-strong placeholder:wz-faint focus:outline-none font-mono"
+          @keydown.meta.enter="submitSeed"
+        />
+        <button
+          class="self-end px-3 py-1.5 text-xs wz-accent border border-[var(--term-accent-line)] hover:bg-[var(--term-accent-soft)] transition-colors disabled:opacity-40"
+          :disabled="!seedInput.trim() || creating"
+          @click="submitSeed"
+        >
+          {{ creating ? '...' : '+ seed' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- filter bar -->
+    <div class="flex gap-2 flex-wrap">
+      <button
+        v-for="f in ['ALL', ...LIFECYCLE.map(l => l.state)]"
+        :key="f"
+        class="text-[11px] px-2 py-0.5 border transition-colors"
+        :class="activeFilter === f
+          ? 'border-[var(--term-accent)] wz-accent bg-[var(--term-accent-soft)]'
+          : 'border-[var(--term-accent-faint)] wz-faint hover:border-[var(--term-accent-line)]'"
+        @click="activeFilter = f as any"
+      >
+        {{ f === 'ALL' ? 'all' : LIFECYCLE.find(l => l.state === f)!.glyph + ' ' + f.toLowerCase() }}
+        <span class="opacity-50 ml-1">
+          {{ f === 'ALL' ? store.embryos.length : store.byState[f as EmbryoState].length }}
+        </span>
+      </button>
+    </div>
+
+    <!-- loading -->
+    <div v-if="store.loading" class="wz-faint text-xs text-center py-8">scanning strata...</div>
+
+    <!-- error -->
+    <div v-else-if="store.error" class="text-[var(--term-danger)] text-xs p-3 border border-[var(--term-danger)]">
+      error: {{ store.error }}
+    </div>
+
+    <!-- empty -->
+    <div v-else-if="visible.length === 0" class="wz-faint text-xs text-center py-12">
+      {{ store.embryos.length === 0 ? 'no embryos yet — plant the first seed' : 'no embryos in this state' }}
+    </div>
+
+    <!-- embryo list -->
+    <div v-else class="flex flex-col gap-3">
+      <NuxtLink
+        v-for="e in visible"
+        :key="e.id"
+        :to="`/embryo/${e.id}`"
+        class="wz-panel group block hover:border-[var(--term-accent-line)] transition-colors"
+      >
+        <div class="wz-panel-header flex items-center justify-between">
+          <span :class="['text-xs font-mono', stateColor(e.state)]">
+            {{ LIFECYCLE.find(l => l.state === e.state)!.glyph }}
+            {{ e.state.toLowerCase() }}
+          </span>
+          <div class="flex items-center gap-3 wz-faint text-[10px]">
+            <span v-if="e.tensions.length">⚡ {{ e.tensions.length }} open</span>
+            <span>{{ new Date(e.createdAt).toLocaleDateString() }}</span>
+          </div>
+        </div>
+        <div class="p-4">
+          <p class="text-sm wz-strong leading-relaxed line-clamp-3">{{ e.seed }}</p>
+          <div v-if="e.agentNotes.length" class="mt-2 text-[11px] wz-accent opacity-70">
+            ↳ {{ e.agentNotes.length }} agent note{{ e.agentNotes.length > 1 ? 's' : '' }}
+          </div>
+        </div>
+      </NuxtLink>
+    </div>
+
+  </div>
+</template>

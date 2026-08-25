@@ -63,7 +63,7 @@ function isExpanded(idx: number) {
       @toggle-expand="emit('toggleExpand', $event)"
     />
 
-    <div v-if="isWaiting" class="flex justify-start">
+    <div v-if="isWaiting" class="flex justify-start" role="status" aria-live="polite">
       <div data-ai-message data-role="assistant" class="bubble-assistant">
         <span class="inline-flex gap-1 mr-2">
           <span class="w-1.5 h-1.5 rounded-full animate-pulse" style="background: var(--term-accent)" />
@@ -85,7 +85,7 @@ function isExpanded(idx: number) {
         <div class="flex items-center gap-2 font-mono text-[11px]" style="color: var(--term-danger, #f87171);">
           <span>⚠</span>
           <span>{{ t('chat.errorTitle') }}</span>
-          <button type="button" class="ml-auto wz-btn-ghost text-[10px]" @click="emit('dismissError')">✕</button>
+          <button type="button" class="ml-auto wz-btn-ghost text-[11px]" @click="emit('dismissError')">✕</button>
         </div>
         <p data-ai-error-boundary-message class="wz-muted text-xs">{{ errorMessage }}</p>
         <NuxtLink

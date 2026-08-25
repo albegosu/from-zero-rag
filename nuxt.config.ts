@@ -15,6 +15,8 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
     'workflow/nuxt',
     './modules/copy-workflow-bundles',
+    '@nuxtjs/robots',
+    '@nuxtjs/sitemap',
   ],
 
   aiElements: {
@@ -31,13 +33,27 @@ export default defineNuxtConfig({
     preference: 'light',
   },
 
+  robots: {
+    disallow: ['/'],
+    allow: ['/auth/signin', '/auth/signup'],
+  },
+
+  sitemap: {
+    urls: ['/auth/signin', '/auth/signup'],
+  },
+
   app: {
     head: {
+      htmlAttrs: { lang: 'en' },
       title: 'hypar',
       meta: [
         { charset: 'utf-8' },
-        { name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         { name: 'description', content: 'Learn and use RAG (Retrieval-Augmented Generation) — from zero to production.' },
+        { property: 'og:type', content: 'website' },
+        { property: 'og:site_name', content: 'hypar' },
+        { property: 'og:image', content: '/hypar-chat-dark.png' },
+        { name: 'twitter:card', content: 'summary_large_image' },
       ],
       link: [
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },

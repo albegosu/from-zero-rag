@@ -23,6 +23,8 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 
+const sidebarOpen = ref(false)
+
 function getIconForType(type: string) {
   const icons: Record<string, string> = {
     text: 'i-heroicons-document-text',
@@ -35,8 +37,19 @@ function getIconForType(type: string) {
 </script>
 
 <template>
+  <div class="lg:hidden mt-2 shrink-0">
+    <button
+      type="button"
+      class="wz-btn-ghost text-[11px] w-full text-center"
+      :aria-expanded="sidebarOpen"
+      @click="sidebarOpen = !sidebarOpen"
+    >
+      {{ sidebarOpen ? '▾ hide sidebar' : '▸ conversations & docs' }}
+    </button>
+  </div>
   <section
-    class="mt-4 pt-4 hairline-t min-h-0 flex flex-col flex-[2] gap-4 lg:flex-none lg:flex-col lg:gap-6 lg:mt-0 lg:pt-0 lg:pl-6 lg:border-t-0 lg:w-80 w-full"
+    class="mt-4 pt-4 hairline-t min-h-0 flex-col flex-[2] gap-4 lg:flex-none lg:flex-col lg:gap-6 lg:mt-0 lg:pt-0 lg:pl-6 lg:border-t-0 lg:w-80 w-full"
+    :class="sidebarOpen ? 'flex' : 'hidden lg:flex'"
   >
     <div class="flex flex-col min-h-0 flex-1 basis-0 lg:flex-[1_1_0]">
       <AiConversation
@@ -48,10 +61,10 @@ function getIconForType(type: string) {
       >
         <template #header>
           <div class="flex items-center justify-between mb-3 shrink-0">
-            <h2 class="text-[10px] uppercase tracking-widest wz-label">
+            <h2 class="text-[11px] uppercase tracking-widest wz-label">
               // {{ t('chat.conversations') }}
             </h2>
-            <button type="button" class="wz-btn-ghost text-[10px]" @click="emit('newConversation')">
+            <button type="button" class="wz-btn-ghost text-[11px]" @click="emit('newConversation')">
               {{ t('chat.newConversation') }}
             </button>
           </div>
@@ -67,11 +80,11 @@ function getIconForType(type: string) {
             >
               <div class="flex-1 min-w-0">
                 <div class="text-xs wz-strong truncate">{{ thread.title }}</div>
-                <div class="text-[10px] wz-faint">{{ thread.messageCount }} msg</div>
+                <div class="text-[11px] wz-faint">{{ thread.messageCount }} msg</div>
               </div>
               <button
                 type="button"
-                class="wz-btn-ghost text-[10px]"
+                class="wz-btn-ghost text-[11px]"
                 :title="t('chat.deleteTitle')"
                 @click.stop="emit('deleteConversation', thread.id)"
               >✕</button>
@@ -85,7 +98,7 @@ function getIconForType(type: string) {
     </div>
 
     <div class="flex flex-col min-h-0 flex-1 basis-0 lg:flex-[1_1_0]">
-      <h2 class="text-[10px] uppercase tracking-widest wz-label mb-3 shrink-0">
+      <h2 class="text-[11px] uppercase tracking-widest wz-label mb-3 shrink-0">
         // {{ t('chat.recentDocs') }}
       </h2>
       <div

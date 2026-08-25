@@ -2,7 +2,7 @@
   <section v-if="fields.length > 0" class="wz-panel">
     <header class="wz-panel-header flex items-center justify-between">
       <span class="wz-label">▾ config.{{ stepId }}</span>
-      <span class="wz-faint text-[10px]">
+      <span class="wz-faint text-[11px]">
         {{ basicFields.length }} {{ t('wizard.chrome.basic') }}
         <span v-if="advancedFields.length"> · {{ advancedFields.length }} {{ t('wizard.chrome.advanced') }}</span>
       </span>

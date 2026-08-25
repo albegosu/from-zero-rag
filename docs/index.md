@@ -1,35 +1,57 @@
----
-layout: home
+# Experiments
 
-hero:
-  name: 'hypar<span class="home-hero-name__caret" aria-hidden="true"></span>'
-  text: Production RAG you can read like a tutorial.
-  tagline: Open-source Nuxt 3 + pgvector reference for teams shipping RAG — and a learning track for devs starting from zero.
-  actions:
-    - theme: brand
-      text: Try the demo
-      link: https://hypar.up.railway.app/
-    - theme: alt
-      text: Run locally
-      link: '#quick-start'
-    - theme: alt
-      text: Tutorial
-      link: /guide/getting-started
-    - theme: alt
-      text: GitHub
-      link: https://github.com/albegosu/hypar
+Hypar is a research project. Each experiment is a question with a prototype as the answer.
 
-features:
-  - title: Library
-    icon:
-      svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5"/><path d="M12 12v9"/><path d="M12 12L4 7.5"/></svg>'
-    details: Drop-in patterns — hybrid search + MMR + HyDE, durable ingest, streaming citations. Production-ready today.
-  - title: Tutorial
-    icon:
-      svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 4h-9a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h10z"/><path d="M19 4v16"/><path d="M9 8h6"/><path d="M9 12h4"/></svg>'
-    details: VitePress docs as a full RAG-from-zero curriculum. Small named files, every step documented. EN + ES.
-  - title: Portfolio
-    icon:
-      svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>'
-    details: Built in the open — 10-stage roadmap, admin dashboard, runtime settings, Vitest coverage. v0.4 live today.
+Experiments are published here as they are completed. Each one documents:
+
+- The question it was asking
+- The prototypes built to answer it
+- What worked, what didn't, and why
+- The component or pattern that emerged (if any) — and how it landed in [`ai-elements-nuxt`](https://github.com/albegosu/ai-elements-nuxt)
+
 ---
+
+## Active experiments
+
+*None published yet — the first experiments are in progress.*
+
+---
+
+## Upcoming questions
+
+These are the questions we plan to explore first, in rough priority order:
+
+**How should a tool call in progress look?**
+The agent is doing something. How does the UI communicate what, without overwhelming the user? What's the difference between "the agent is thinking" and "the agent is acting"?
+
+**How does an agent surface a contradiction?**
+The agent has detected that two of your ideas conflict. What does the notification look like? How much context does it provide? At what point does surfacing a contradiction become noise?
+
+**What does a fossil feel like to navigate?**
+Fossils are the system's long-term memory. How do you navigate them? What visual language distinguishes a fossil from a living embryo? How do you communicate depth — the geological strata — without building a filing system?
+
+**What is the right UI for the negotiation surface?**
+When the agent suggests fossilization and the user needs to decide — what does that conversation look like? It's not a modal. It's not a chat window. What is it?
+
+---
+
+## How experiments are structured
+
+Each experiment lives in its own page and follows a consistent format:
+
+```
+# Experiment N — [Question]
+
+Status: [In progress / Published]
+Started: [Date]
+Components: [links to ai-elements-nuxt if applicable]
+
+## The question
+## The prototypes
+## Findings
+## What we built
+```
+
+---
+
+*Experiments are published as they are completed, not before.*

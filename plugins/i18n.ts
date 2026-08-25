@@ -49,6 +49,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.vueApp.use(i18n)
 
   if (import.meta.client) {
+    document.documentElement.lang = initial
     try {
       localStorage.setItem(LOCALE_STORAGE, initial)
       localStorage.setItem(WIZARD_LOCALE_STORAGE, initial)

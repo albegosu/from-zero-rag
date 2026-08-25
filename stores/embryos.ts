@@ -206,6 +206,58 @@ export const useEmbryoStore = defineStore('embryos', () => {
     }
   }
 
+  async function connect(id: string, targetId: string, type: ConnectionType, note?: string) {
+    try {
+      const connection = await $fetch(`/api/embryos/${id}`, {
+        method: 'PATCH',
+        body: { action: 'connect', targetId, type, note },
+      })
+      if (current.value?.id === id) {
+        current.value.connections.push(connection as any)
+      }
+      return connection
+    }
+    catch (e: any) {
+      error.value = e?.data?.statusMessage ?? 'Failed to create connection'
+      return null
+    }
+  }
+
+  async function confirmConnection(embryoId: string, connectionId: string) {
+    try {
+      await $fetch(`/api/embryos/${embryoId}`, {
+        method: 'PATCH',
+        body: { action: 'confirm_connection', connectionId },
+      })
+      if (current.value?.id === embryoId) {
+        const c = current.value.connections.find(c => c.id === connectionId)
+        if (c) c.confirmedByUser = true
+      }
+    }
+    catch (e: any) {
+      error.value = e?.data?.statusMessage ?? 'Failed to confirm connection'
+    }
+  }
+
+  async function dismissNote(embryoId: string, noteId: string) {
+    try {
+      await $fetch(`/api/embryos/${embryoId}`, {
+        method: 'PATCH',
+        body: { action: 'dismiss_note', noteId },
+      })
+      if (current.value?.id === embryoId) {
+        current.value.agentNotes = current.value.agentNotes.filter(n => n.id !== noteId)
+      }
+      const idx = embryos.value.findIndex(e => e.id === embryoId)
+      if (idx !== -1) {
+        embryos.value[idx]!.agentNotes = embryos.value[idx]!.agentNotes.filter(n => n.id !== noteId)
+      }
+    }
+    catch (e: any) {
+      error.value = e?.data?.statusMessage ?? 'Failed to dismiss note'
+    }
+  }
+
   return {
     embryos,
     current,
@@ -220,5 +272,8 @@ export const useEmbryoStore = defineStore('embryos', () => {
     addTension,
     resolveTension,
     fossilize,
+    connect,
+    confirmConnection,
+    dismissNote,
   }
 })

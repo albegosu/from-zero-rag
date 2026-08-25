@@ -21,7 +21,7 @@ services:
       - hypar-network
     profiles: ["full", "api", "all"]
 
-  # Ollama for local embeddings
+  # Ollama for the agent collaborator
   ollama:
     image: ollama/ollama:latest
     container_name: hypar-ollama
@@ -29,12 +29,11 @@ services:
       - "${OLLAMA_PORT:-11434}:11434"
     volumes:
       - ollama_data:/root/.ollama
-    # Pull models on startup
+    # Pull the chat model on startup
     entrypoint: >
       sh -c "
         ollama serve &
         until ollama list >/dev/null 2>&1; do sleep 2; done
-        ollama pull ${OLLAMA_MODEL:-nomic-embed-text}
         ollama pull ${OLLAMA_LLM_MODEL:-llama3.1:8b}
         tail -f /dev/null
       "

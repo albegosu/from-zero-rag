@@ -27,7 +27,7 @@ pnpm install
 pnpm typecheck
 pnpm build
 
-# Tests (chunking, text utils, agent commands, search)
+# Tests (embryo agent/method, session, rate-limit, env)
 pnpm test
 
 # VitePress docs (when docs/** changes)
@@ -82,6 +82,6 @@ See [Docker guide](../docs/DOCKER.md) for the full guide.
 **Required env vars for cloud:**
 
 - `DATABASE_URL`
-- `GOOGLE_API_KEY` or `OPENAI_API_KEY`
-- `OLLAMA_URL` + `OLLAMA_API_KEY` (if using Ollama Cloud)
+- `BETTER_AUTH_SECRET`
+- `OLLAMA_URL` (and `OLLAMA_API_KEY` if using Ollama Cloud)
 - `OLLAMA_LLM_MODEL`

@@ -15,15 +15,15 @@ hero:
 
 features:
   - title: Living ideas
-    details: Embryos have a lifecycle — latent, germinating, growing, mature, fossil. No static notes.
+    details: Embryos have a lifecycle — latent, germinating, growing, mature, fossil. The stance changes with the state.
   - title: No delete
-    details: Dead ideas persist as fossils with the reasoning for why they died.
+    details: Dead ideas persist as fossils with a required reason — ill-defined, wrong path, or superseded.
   - title: Agent as collaborator
-    details: Challenges ideas with questions, surfaces contradictions. Never validates.
-  - title: Tensions
-    details: Open questions attached to embryos — raised by user or agent, resolved explicitly.
-  - title: Terminal aesthetic
-    details: Micrographic UI with custom CSS properties. Designed to feel like a research tool.
+    details: Streams one challenging question per turn. Auto-engages. Never validates.
+  - title: Tensions and paths
+    details: Open questions plus alternative directions you accept as tensions or dismiss.
+  - title: Typed connections
+    details: Reinforce, contradict, extend, or (later) resurrect. Graph on the embryo page.
   - title: Experiment-driven
     details: Each feature is a research question. Findings are documented, patterns extracted.
 ---

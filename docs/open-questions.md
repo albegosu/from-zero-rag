@@ -10,14 +10,16 @@ This page is updated as questions are resolved or new ones emerge.
 
 A connection between two embryos can be:
 
-- **Explicit** — drawn by the user intentionally
-- **Inferred** — detected by the agent based on content similarity, contradiction, or thematic overlap
+- **Explicit** — drawn by the user intentionally (`detectedBy: USER`, confirmed)
+- **Inferred** — detected by the agent based on contradiction, reinforcement, or overlap
 
 The question is whether these should be visually distinct, and if so, how. An explicit connection carries the user's intent. An inferred connection carries the agent's hypothesis. Treating them the same risks elevating agent speculation to the level of user decision.
 
-The [ai-elements surfaces](/experiments/ai-elements-surfaces) experiment draws this on a canvas: **solid** edges for explicit or confirmed links, **dashed / animated** edges for agent-inferred unconfirmed links. Whether that distinction is enough is still an observation, not a finding.
+The [ai-elements surfaces](/experiments/ai-elements-surfaces) experiment draws this on a canvas: **solid** edges for explicit or confirmed links, **dashed / animated** edges for agent-inferred unconfirmed links.
 
-*Status: in experiment — graph surface mounted; visual language still under review.*
+**Current runtime:** the agent writes `PENDING_CONNECTION` notes. Accepting them creates a **user-confirmed** `Connection` row. Unconfirmed `detectedBy: AGENT` rows are never written, so dashed inferred edges do not appear in practice. The visual language is still under review; the data path is incomplete.
+
+*Status: in experiment — graph surface mounted; inferred-as-data still missing.*
 
 ---
 
@@ -25,15 +27,11 @@ The [ai-elements surfaces](/experiments/ai-elements-surfaces) experiment draws t
 
 An embryo starts as latent. What moves it to germinating?
 
-Option A: the agent decides when to begin engaging — based on recency, connections to active embryos, or some other signal. The user doesn't trigger it.
+**Current runtime (option mixed):** opening a `LATENT` embryo auto-engages the agent. The first successful agent turn **silently** sets `GERMINATING`. You can also jump state by hand.
 
-Option B: the user manually advances an embryo to germinating. The agent begins engaging only when invited.
+Still open: should that auto-advance be visible? Should the agent wait to be invited? Should forgotten latent embryos germinate without a visit?
 
-Option C: both — the agent can suggest germination, the user can initiate it.
-
-Option B feels safer but may create too much friction. Option A feels natural but gives the agent a lot of initiative on something the user may not be ready for. Option C is the likely answer but needs a UI design that makes the distinction clear.
-
-*Status: unresolved.*
+*Status: partially answered — first engage is the trigger; UX of the silent advance is still an observation.*
 
 ---
 
@@ -41,25 +39,21 @@ Option B feels safer but may create too much friction. Option A feels natural bu
 
 Does the agent have access to all embryos in all states simultaneously, or does it operate with a narrower context?
 
-Full access means the agent can surface connections across the entire wiki — but it may also mean the agent's suggestions become overwhelming or unfocused.
+**Current runtime:** current embryo + up to 20 **living** peers. Fossils excluded. No external knowledge.
 
-Local context means the agent works well within a thread of related ideas — but may miss connections that span different areas of the wiki.
+Full access would let the agent surface resurrection and old contradictions — and may overwhelm. Local context is better for questions and worse for memory.
 
-The answer likely depends on the specific operation: connection surfacing benefits from full access, while question-asking benefits from local context.
-
-*Status: unresolved — depends on implementation and observed behavior.*
+*Status: implemented as local living context — whether that is the right bound is still open.*
 
 ---
 
 ## Is Hypar single-user by design?
 
-The current architecture assumes a single user. The agent has a relationship with *your* embryos — your history, your decisions, your fossils.
+The current architecture assumes a single user per garden. The agent has a relationship with *your* embryos — your history, your decisions, your fossils. Auth is multi-account (email/password, optional OAuth); data is isolated by `userId`. There is no shared garden.
 
 Multi-user collaboration would change this fundamentally. Whose fossil takes precedence? How does the agent navigate contradictions between two users' ideas? Who can initiate fossilization?
 
-These are not impossible to answer, but they require a different model. For now, Hypar is intentionally single-user. Collaboration is a future question, not a current constraint.
-
-*Status: deferred — single-user first.*
+*Status: deferred — single garden per user first.*
 
 ---
 
@@ -69,7 +63,7 @@ Fossils exist in strata. The navigation metaphor is excavation, not browsing. Bu
 
 Scroll depth? A separate view? A toggle between "surface" and "strata"? A search that surfaces fossils alongside living embryos when relevant?
 
-This is one of the first UI experiments planned.
+Today fossils are just another lifecycle filter in the garden.
 
 *Status: unresolved — pending experiment.*
 
@@ -77,11 +71,11 @@ This is one of the first UI experiments planned.
 
 ## Does the agent’s question depend on lifecycle state?
 
-Today the agent is told to challenge, extend, or destabilize, regardless of state. `LATENT` is not even included in the user message. The [method-as-process experiment](/experiments/method-as-process) proposes a stance per state: define → probe → generate paths → select the simplest.
+The [method-as-process experiment](/experiments/method-as-process) shipped stance per state: define → probe → generate paths → select the simplest. `LATENT` is included in the prompt. The move is logged on the event, not shown in the UI.
 
-The risk is theatre: we add stance text and the questions do not change. Phase 2 of that experiment logs a named *move* without showing it in the UI. If move × state is random, prompt-only failed.
+The remaining risk is theatre: we added stance text and the questions do not change. Count `payload.move` on `AGENT_QUESTION` events against embryo state. If `GROWING` is still 90% `PROBE`, the prompt failed.
 
-*Status: implemented, awaiting observation — count `payload.move` on `AGENT_QUESTION` events against embryo state.*
+*Status: implemented, awaiting observation.*
 
 ---
 
@@ -89,7 +83,7 @@ The risk is theatre: we add stance text and the questions do not change. Phase 2
 
 Munari’s useful claim is that creativity needs alternative *paths*, not the first clever answer. Hypar’s useful constraint is one question per invocation.
 
-These can coexist (one question that forces a choice) or they cannot (growing embryos need an explicit `paths[]` field). Phase 3 shipped option A: pending paths the user accepts as tensions. Whether the model actually fills `paths` in `GROWING` is still an observation.
+Phase 3 shipped option A: pending paths the user accepts as tensions. Whether the model actually fills `paths` in `GROWING` is still an observation.
 
 *Status: implemented (option A), awaiting observation — [method as process](/experiments/method-as-process).*
 

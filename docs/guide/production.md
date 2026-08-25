@@ -38,15 +38,15 @@ POSTGRES_DB=hypar_db
 # Caddy — your public domain
 DOMAIN=hypar.yourdomain.com
 
-# LLM — llama3.1:8b supports tool calling
+# Auth
+BETTER_AUTH_SECRET=   # openssl rand -hex 32
+BETTER_AUTH_URL=https://hypar.yourdomain.com
+
+# Agent — llama3.1:8b is pulled by the Ollama service
 OLLAMA_LLM_MODEL=llama3.1:8b
-
-# Embeddings — Google is free, recommended
-GOOGLE_API_KEY=your_google_api_key
-
-# Admin API — protects /api/admin/* endpoints
-ADMIN_API_KEY=a_different_random_secret
 ```
+
+There is no embedding key and no `ADMIN_API_KEY`. Optional OAuth: set both GitHub or Google client id **and** secret.
 
 ### 2. Start
 
@@ -54,14 +54,14 @@ ADMIN_API_KEY=a_different_random_secret
 docker compose -f docker-compose.prod.yml up -d --build
 ```
 
-Caddy will automatically obtain a TLS certificate for your domain. The first start takes a couple of minutes while Caddy negotiates with Let's Encrypt and Ollama downloads its models.
+Caddy will automatically obtain a TLS certificate for your domain. The first start takes a couple of minutes while Caddy negotiates with Let's Encrypt and Ollama downloads its chat model.
 
 ### 3. Verify
 
 ```bash
 # App is up and database is reachable
 curl https://hypar.yourdomain.com/api/health
-# → {"status":"ok","checks":{"db":true,"embedding":true},"ts":"..."}
+# → {"status":"ok","checks":{"db":true},"ts":"..."}
 
 # Container health
 docker compose -f docker-compose.prod.yml ps
@@ -136,11 +136,6 @@ Edit `Caddyfile` to add rate limiting, basic auth, or a custom error page:
 {$DOMAIN} {
   reverse_proxy app:3000
   encode gzip
-
-  # Example: basic auth on admin endpoints
-  # basicauth /api/admin/* {
-  #   admin JDJhJDE0...
-  # }
 }
 ```
 

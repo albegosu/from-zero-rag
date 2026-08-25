@@ -16,13 +16,13 @@ A playground for exploring how humans and AI agents collaborate on knowledge wor
 
 The first research focus is the **Embryo** — a living unit of knowledge that replaces the static note.
 
-- **Seed** — a raw thought captured in one sentence
-- **Lifecycle** — `LATENT → GERMINATING → GROWING → MATURE → FOSSIL`
-- **No delete** — dead ideas persist as fossils with the reasoning for why they died
-- **Agent as collaborator** — challenges ideas with questions, surfaces contradictions, can propose fossilization
-- **Tensions** — open questions attached to an embryo, raised by user or agent
+- **Seed** — a raw thought captured in one sentence (immutable after create)
+- **Lifecycle** — `LATENT → GERMINATING → GROWING → MATURE → FOSSIL` (method stance: define → probe → paths → simplest)
+- **No delete** — dead ideas persist as fossils with a required reason (and optional kind: ill-defined / wrong path / superseded)
+- **Agent as collaborator** — streams one challenging question per turn; auto-engages on first visit; you can reply
+- **Tensions, paths, connections** — open questions, alternative directions, typed links (`REINFORCES` / `CONTRADICTS` / `EXTENDS` / `RESURRECTS`)
 
-The agent is constrained: one challenging question per invocation. No summaries, no validation, no comfort.
+The agent is constrained: one challenging question per invocation. No summaries, no validation, no comfort. Path and fossil proposals are additive HITL notes, not a second question.
 
 ---
 
@@ -38,7 +38,7 @@ The agent is constrained: one challenging question per invocation. No summaries,
 | LLM | Ollama (local or cloud) via OpenAI-compatible API |
 | AI SDK | Vercel AI SDK (`ai`, `@ai-sdk/openai`) |
 | AI UI | [`ai-elements-nuxt`](https://github.com/albegosu/ai-elements-nuxt) (headless `Ai*` components) |
-| Auth | better-auth (email + password, sessions, roles) |
+| Auth | better-auth (email + password, sessions, optional GitHub/Google OAuth) |
 
 ---
 
@@ -48,7 +48,7 @@ The agent is constrained: one challenging question per invocation. No summaries,
 git clone https://github.com/albegosu/hypar.git
 cd hypar
 pnpm install
-cp .env.example .env    # configure DATABASE_URL + Ollama
+cp .env.example .env    # DATABASE_URL, OLLAMA_URL, BETTER_AUTH_SECRET
 npx prisma migrate deploy
 pnpm dev
 ```
@@ -67,20 +67,19 @@ docker compose --profile full up -d --build
 
 ```
 hypar/
-├── prisma/schema.prisma       # Embryo domain + auth models
+├── prisma/schema.prisma              # Embryo domain + auth models
 ├── pages/
-│   ├── index.vue              # embryo garden
-│   ├── embryo/[id].vue        # detail + agent + tensions
-│   ├── auth/                  # signin / signup
-│   ├── settings.vue           # stub
-│   └── admin/                 # users
-├── components/
-│   ├── AppHeader.vue
-│   ├── BottomNav.vue
-│   └── micro/                 # micrographic glyphs
-├── stores/embryos.ts          # Pinia store
-├── server/api/embryos/        # CRUD + state + agent
-├── docs/                      # VitePress site
+│   ├── index.vue                     # embryo garden + pending queue
+│   ├── embryo/[id].vue               # detail + agent + tensions + graph
+│   ├── settings.vue                  # Ollama model selector
+│   ├── auth/                         # signin / signup
+│   └── admin/                        # stubs
+├── components/embryo/                # AgentCollaborate, ConnectionGraph
+├── components/garden/                # PendingQueue
+├── utils/embryo-method.ts            # stance, fossil kinds
+├── stores/embryos.ts
+├── server/api/embryos/               # CRUD + state + agent SSE
+├── docs/                             # VitePress site
 └── .env.example
 ```
 

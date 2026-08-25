@@ -17,6 +17,7 @@ export default defineConfig({
     logo: null,
 
     nav: [
+      { text: 'Guide', link: '/guide/getting-started' },
       { text: 'Concepts', link: '/concepts/embryo' },
       { text: 'Architecture', link: '/architecture' },
       { text: 'Experiments', link: '/experiments/' },
@@ -29,6 +30,17 @@ export default defineConfig({
     ],
 
     sidebar: [
+      {
+        text: 'Guide',
+        items: [
+          { text: 'Getting started', link: '/guide/getting-started' },
+          { text: 'Authentication', link: '/guide/auth' },
+          { text: 'Roles', link: '/guide/roles-and-permissions' },
+          { text: 'Environment', link: '/guide/env' },
+          { text: 'Docker', link: '/guide/docker' },
+          { text: 'Production', link: '/guide/production' },
+        ],
+      },
       {
         text: 'Concepts',
         items: [

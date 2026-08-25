@@ -49,11 +49,11 @@ const strings = {
       },
       {
         title: 'Agent as collaborator',
-        details: 'Challenges ideas with questions, surfaces contradictions. Never validates.',
+        details: 'Challenges ideas with one streamed question per turn. Stance follows lifecycle. Never validates.',
       },
       {
         title: 'Tensions',
-        details: 'Open questions attached to embryos — raised by user or agent, resolved explicitly.',
+        details: 'Open questions plus agent paths you keep as tensions or dismiss.',
       },
       {
         title: 'Terminal aesthetic',
@@ -126,11 +126,11 @@ const strings = {
       },
       {
         title: 'Agente como colaborador',
-        details: 'Desafía ideas con preguntas, surfea contradicciones. Nunca valida.',
+        details: 'Desafía ideas con una pregunta por turno (stream). La postura sigue el ciclo. Nunca valida.',
       },
       {
         title: 'Tensiones',
-        details: 'Preguntas abiertas adjuntas a embriones — planteadas por usuario o agente, resueltas explícitamente.',
+        details: 'Preguntas abiertas más caminos del agente que guardas como tensiones o descartas.',
       },
       {
         title: 'Estética terminal',

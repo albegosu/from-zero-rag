@@ -2,7 +2,7 @@
 
 # Authentication
 
-hypar uses [better-auth](https://www.better-auth.com/) with a Prisma adapter. Every request to a non-public route requires a signed-in session; admin routes additionally require `role === 'admin'`.
+hypar uses [better-auth](https://www.better-auth.com/) with a Prisma adapter. Embryo and LLM API routes require a signed-in session via `requireSessionUserId`.
 
 ## Sign-in / sign-up
 
@@ -10,9 +10,10 @@ hypar uses [better-auth](https://www.better-auth.com/) with a Prisma adapter. Ev
 | --- | --- | --- |
 | `/auth/signin` | `pages/auth/signin.vue` | Email + password sign-in. Social buttons appear when the corresponding env vars are set. |
 | `/auth/signup` | `pages/auth/signup.vue` | Email + password account creation. New users are created with `role = 'user'`. |
-| `/setup` | `pages/setup.vue` | First-run wizard. See [First-run setup](#first-run-setup). |
 
-The minimum password length is **8 characters** ([server/lib/auth.ts](server/lib/auth.ts)).
+The minimum password length is **8 characters** (`server/lib/auth.ts`).
+
+There is **no** `/setup` wizard and no `Setting` / `app.configured` flag. First signup is a normal user.
 
 ### Providers
 
@@ -44,17 +45,23 @@ The browser client lives in `utils/auth-client.ts` and exposes `signIn`, `signUp
 
 ## Route protection
 
-A global route middleware redirects unauthenticated visitors to `/auth/signin` for every page except `PUBLIC_ROUTES` (`/setup`, `/auth/signin`, `/auth/signup`). See `middleware/auth.global.ts`.
+A global **client** route middleware redirects unauthenticated visitors to `/auth/signin` for every page except `PUBLIC_ROUTES` (`/auth/signin`, `/auth/signup`; `/setup` is listed but has no page). See `middleware/auth.global.ts`.
 
-API routes that return user-scoped data call `requireSessionUserId(event)` and use that id in their Prisma `where` clauses, so user A can never read user B's documents, conversations or queries.
+API routes that return user-scoped data call `requireSessionUserId(event)` and filter Prisma by that `userId`, so user A cannot read user B's embryos.
 
-## First-run setup
+`GET /api/health` is unauthenticated (Compose healthcheck). `POST /api/vitals` and `POST /api/client-errors` are also unauthenticated telemetry sinks.
 
-On a fresh database, the first user to sign up at `/auth/signup` becomes the admin.
+## Admin
 
-The account created by the wizard is the **first admin** (`role = 'admin'`). After completion the app writes `Setting { key: 'app.configured', value: 'true' }` and subsequent users that sign up at `/auth/signup` get the default `user` role.
+`User.role` is `'user'` or `'admin'`. Signup always creates `'user'`. There is no first-user-becomes-admin hook.
 
-See [Environment variables → First-run setup](./env) for what gets written to the DB versus to `.env`.
+`/admin` and `/admin/users` are **stubs** (“coming soon”). There is no `/api/admin/*` and no `ADMIN_API_KEY`. Promote someone with Prisma Studio or SQL:
+
+```sql
+UPDATE "User" SET role = 'admin' WHERE email = 'you@example.com';
+```
+
+The header hides the admin link for non-admins. The admin route middleware exists but is **not** applied on those pages yet.
 
 ## Next steps
 

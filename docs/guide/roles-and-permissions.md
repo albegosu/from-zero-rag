@@ -6,29 +6,27 @@ hypar uses a single role axis on the `User` model — `user` or `admin`.
 
 ## Application role
 
-Stored as `User.role` (default `'user'`). Set by the better-auth `admin` plugin and by the first-run setup.
+Stored as `User.role` (default `'user'`). Set on signup; there is no first-run promotion.
 
 | Role | What it unlocks |
 | --- | --- |
-| `user` | Default for every signup. Can use the embryo garden and manage their own settings. |
-| `admin` | Everything above, plus full access to the `/admin/*` pages and `/api/admin/*` endpoints. |
+| `user` | Default for every signup. Own embryos, settings (model selector), garden. |
+| `admin` | Same, plus the `/admin/*` nav link. Those pages are stubs today. |
 
-The server-side check is `requireAdmin(event)` in `server/utils/admin-auth.ts`. It also accepts a fallback `Authorization: Bearer <ADMIN_API_KEY>` (or `x-admin-key`) header for CI scripts when `ADMIN_API_KEY` is set.
+There is no `requireAdmin` helper in the API, no `/api/admin/*`, and no `ADMIN_API_KEY`. Embryo APIs are owner-scoped for every signed-in user.
 
-Client-side, `useAuth()` exposes `isAdmin`, and `middleware/admin.ts` gates admin pages.
+Client-side, `useAuth()` exposes `isAdmin`. `middleware/admin.ts` exists but admin pages do not declare it.
 
 ### Promoting / demoting
 
-From `/admin/users` or via the API:
+Use Prisma Studio (`pnpm db:studio`) or SQL:
 
-```bash
-curl -X PATCH http://localhost:3000/api/admin/users/<USER_ID> \
-  -H 'Content-Type: application/json' \
-  -H "x-admin-key: $ADMIN_API_KEY" \
-  -d '{"role":"admin"}'
+```sql
+UPDATE "User" SET role = 'admin' WHERE email = 'you@example.com';
+UPDATE "User" SET role = 'user'  WHERE email = 'you@example.com';
 ```
 
-`PATCH /api/admin/users/:id` also accepts `{ banned: true|false }` to disable an account without deleting it.
+`User.banned` exists on the schema (better-auth admin plugin fields) but there is no UI or API to toggle it.
 
 ## Next steps
 

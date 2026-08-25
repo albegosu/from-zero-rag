@@ -24,3 +24,9 @@ Hypar became the place to explore that question. The RAG implementation was arch
 ## What carried over
 
 The infrastructure built for the RAG implementation — Nuxt 3, Tailwind v4, the visual system, the deployment setup — continues to serve the new project. The code changed; the foundation remained.
+
+## What shipped after the pivot (August 2026)
+
+On `main`: embryo garden and detail, fossil UX with kinds, typed connections and a graph surface, streaming collaborator with auto-engage and reply loop, method stance by lifecycle (define / probe / variety / simplest), pending paths, garden question queue, and Ollama model selector. RAG eval CI, embedding docs, and the old chat/document routes are gone.
+
+Research write-ups: [method as process](/experiments/method-as-process), [ai-elements surfaces](/experiments/ai-elements-surfaces). Open tensions: [Open Questions](/open-questions).

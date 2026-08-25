@@ -12,9 +12,9 @@ Edit `.env` for your machine; never commit real secrets.
 
 - **Docker Compose:** defaults for Postgres and the app are set in `docker-compose.yml`. See [Docker guide](./docker) for container-specific usage.
 - **Local `pnpm dev`:** set `DATABASE_URL`, `OLLAMA_URL` (often `http://localhost:11434`), and `WORKFLOW_LOCAL_DATA_DIR` as described in `.env.example`.
-- **Onboarding / first run:** open **`/setup`** in the app. The wizard (DB-backed + provider steps) configures keys and creates the first admin; it does **not** write `.env` for you — keep using root **`.env.example`** as the template and sync values manually if needed.
+- **First run:** configure `DATABASE_URL` and Ollama settings, then run `npx prisma migrate deploy` and `pnpm dev`.
 
-**Cross-links (optional):** `NUXT_PUBLIC_DOCS_SITE_URL` points the Nuxt app header to your published docs (defaults to the GitHub Pages URL). For the VitePress build, `VITEPRESS_DEMO_URL` sets the hosted chat URL used in the nav and social icon; the default lives in `docs/.vitepress/demo-app-url.ts` and should match the **Try demo** hero link in `docs/index.md`. In GitHub Actions you can set repository variable `VITEPRESS_DEMO_URL` (see `.github/workflows/pages.yml`).
+**Cross-links (optional):** `NUXT_PUBLIC_DOCS_SITE_URL` points the Nuxt app header to your published docs (defaults to the GitHub Pages URL).
 
 ---
 
@@ -72,7 +72,7 @@ Two variables control which AI providers are active. If omitted, the runtime fal
 
 **Self-hosted pgvector example:**
 ```
-DATABASE_URL=postgresql://postgres:password@localhost:5432/rag_db
+DATABASE_URL=postgresql://postgres:password@localhost:5432/hypar_db
 ```
 
 **Supabase Vector example (direct):**

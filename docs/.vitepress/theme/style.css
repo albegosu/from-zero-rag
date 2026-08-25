@@ -1,4 +1,15 @@
+/* Hero / nav typography: Google Fonts + Fontshare Switzer (see docs/.vitepress/config.ts head) */
 :root {
+  --hpp-font-display: 'Cormorant', Georgia, 'Times New Roman', serif;
+  --hpp-font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --hpp-font-sans: 'IBM Plex Sans', var(--vp-font-family-base);
+  /* Home hero headline (Fontshare Switzer linked in docs/.vitepress/config.ts head) */
+  --hpp-font-hero-text: 'Switzer', 'Switzer Placeholder', sans-serif;
+  /* Micrographic hero: hairline stroke, almost-no fill (minimal read) */
+  --hpp-micro-line: color-mix(in srgb, var(--vp-c-brand-1) 26%, var(--vp-c-divider));
+  --hpp-micro-fill: color-mix(in srgb, var(--vp-c-bg) 97%, var(--vp-c-brand-soft));
+
+  /* Accent: teal (neutral eng tone; replaces default blue-violet) */
   --vp-c-brand-1: #0f766e;
   --vp-c-brand-2: #115e59;
   --vp-c-brand-3: #ccfbf1;
@@ -12,6 +23,7 @@ html.dark {
   --vp-c-brand-soft: color-mix(in srgb, #2dd4bf 16%, transparent);
 }
 
+/* Keyboard focus ring uses accent (skip custom widgets that manage focus themselves). */
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
@@ -20,4 +32,413 @@ select:focus-visible,
 summary:focus-visible {
   outline: 2px solid color-mix(in srgb, var(--vp-c-brand-1) 88%, transparent);
   outline-offset: 2px;
+}
+
+/* Theme footer strip: micrographic — dense, monospaced, single horizontal line */
+.VPFooter {
+  padding: 14px 24px !important;
+  border-top: 1px solid var(--vp-c-divider) !important;
+}
+@media (min-width: 768px) {
+  .VPFooter {
+    padding: 16px 32px !important;
+  }
+}
+.VPFooter .container {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px 14px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+.VPFooter .message,
+.VPFooter .copyright {
+  font-family: var(--hpp-font-mono) !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  line-height: 1.4 !important;
+  letter-spacing: 0.04em;
+  color: var(--vp-c-text-3) !important;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+.VPFooter .vpf-pair {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.VPFooter .vpf-key {
+  color: var(--vp-c-text-3);
+  text-transform: lowercase;
+}
+.VPFooter .vpf-sep {
+  color: color-mix(in srgb, var(--vp-c-text-3) 55%, transparent);
+}
+.VPFooter .vpf-val {
+  color: var(--vp-c-text-2);
+  text-decoration: none;
+  border-bottom: 1px dotted color-mix(in srgb, var(--vp-c-text-3) 50%, transparent);
+  transition: color .15s, border-color .15s;
+}
+.VPFooter .vpf-val:hover {
+  color: var(--vp-c-brand-1);
+  border-bottom-color: var(--vp-c-brand-1);
+}
+.VPFooter .vpf-val--brand {
+  font-family: var(--hpp-font-display);
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--vp-c-text-1);
+  border-bottom-color: color-mix(in srgb, var(--vp-c-brand-1) 60%, transparent);
+}
+.VPFooter .vpf-brand {
+  display: inline-flex;
+  align-items: center;
+  line-height: 0;
+  opacity: 0.85;
+  transition: opacity .15s;
+}
+.VPFooter .vpf-brand:hover { opacity: 1; }
+.VPFooter .vpf-brand-img {
+  height: 14px;
+  width: auto;
+  display: block;
+}
+.VPFooter .vpf-brand-img--dark { display: none; }
+html.dark .VPFooter .vpf-brand-img--light { display: none; }
+html.dark .VPFooter .vpf-brand-img--dark { display: block; }
+.VPFooter .vpf-dot {
+  color: color-mix(in srgb, var(--vp-c-text-3) 45%, transparent);
+  font-size: 11px;
+  user-select: none;
+}
+
+/* ── Navbar: match hero .name typography for site title ── */
+.VPNavBarTitle .title {
+  font-family: var(--hpp-font-display);
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.22em;
+}
+
+/* Align VPHomeFeatures/VPFeatures with VPHomeContent: same max-width + padding-in-one-box.
+   Theme puts horizontal padding on .VPFeatures and max-width on inner .container (1152px), so
+   the grid never lines up with .vp-doc.container — drop outer inset and mirror doc padding.
+   Scoped theme rules win on specificity; padding-inline/max-width need !important. */
+.VPHome .VPFeatures {
+  padding-inline: 0 !important;
+}
+
+.VPHome .VPFeatures .container {
+  box-sizing: border-box;
+  max-width: 1280px !important;
+  width: 100%;
+  margin-inline: auto;
+  margin-top: 50px;
+  padding-inline: 24px !important;
+}
+
+@media (min-width: 640px) {
+  .VPHome .VPFeatures .container {
+    padding-inline: 48px !important;
+  }
+}
+
+@media (min-width: 960px) {
+  .VPHome .VPFeatures .container {
+    padding-inline: 64px !important;
+  }
+}
+
+/* Tighten gap between native features grid and home-features-after slot */
+.VPHome .VPFeatures + div > section[class^='hfx'] { margin-top: -32px; }
+
+/* ── Hero: centered Vercel-style layout ── */
+.VPHomeHero {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  margin-top: calc(var(--vp-nav-height, 64px) * -1);
+  min-height: 100vh;
+  min-height: 100svh;
+  overflow: hidden;
+  padding-top: calc(96px + var(--vp-nav-height, 64px));
+  padding-bottom: 96px;
+}
+
+/* Soft radial glow — centered, minimal */
+.VPHomeHero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 58% 52% at 50% 42%, color-mix(in srgb, var(--vp-c-brand-1) 6%, transparent) 0%, transparent 68%),
+    radial-gradient(ellipse 38% 28% at 50% 0%, color-mix(in srgb, var(--vp-c-brand-2) 5%, transparent) 0%, transparent 62%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.VPHomeHero .container {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* Center all hero content; min-width 0 avoids flex blow-out past the viewport */
+.VPHomeHero .main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding-inline: 24px;
+}
+
+@media (min-width: 640px) {
+  .VPHomeHero .main {
+    padding-inline: 48px;
+  }
+}
+
+@media (min-width: 960px) {
+  .VPHomeHero .main {
+    padding-inline: 64px;
+  }
+}
+
+/* Wireframe (.hpp) + HUD stamp (.hpp-hud) sit under headings/actions */
+.VPHomeHero .main > :not(.hpp):not(.hpp-hud) {
+  position: relative;
+  z-index: 1;
+}
+
+.VPHomeHero .heading {
+  align-items: center;
+  width: 100%;
+  max-width: min(720px, 100%);
+  margin-inline: auto;
+  box-sizing: border-box;
+  gap: 0;
+}
+
+/* ── "hypar" eyebrow: slash + blinking typing caret (command-line feel) ── */
+.VPHomeHero .name {
+  align-self: center;
+  text-align: center;
+  width: 100%;
+  font-family: var(--hpp-font-display);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.26em;
+  color: color-mix(in srgb, var(--vp-c-text-1) 82%, var(--vp-c-brand-1) 18%);
+}
+
+.VPHomeHero .name .home-hero-name__caret {
+  display: inline-block;
+  width: 2px;
+  height: 1.05em;
+  margin-left: 0.1em;
+  vertical-align: -0.1em;
+  border-radius: 1px;
+  background-color: var(--vp-c-brand-1);
+  animation: home-hero-name-caret-blink 1.05s step-end infinite;
+}
+
+@keyframes home-hero-name-caret-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .VPHomeHero .name .home-hero-name__caret {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* ── Main heading: hairline frame, maximum negative space ── */
+.VPHomeHero .text {
+  box-sizing: border-box;
+  position: relative;
+  max-width: none;
+  margin: 0;
+  margin-top: 12px;
+  padding: 24px 16px 0 16px;
+  font-family: var(--hpp-font-hero-text);
+  font-size: clamp(1.6rem, 4.8vw + 0.85rem, 2.85rem);
+  line-height: 1.12;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  text-align: center;
+  text-wrap: balance;
+  color: var(--vp-c-text-1);
+}
+
+.VPHomeHero .text::before {
+  content: 'RESIZ.ES · LAB';
+  position: absolute;
+  top: 11px;
+  left: 14px;
+  margin: 0;
+  font-family: var(--hpp-font-mono);
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: 0.32em;
+  color: color-mix(in srgb, var(--vp-c-brand-1) 42%, var(--vp-c-text-3));
+  text-transform: uppercase;
+  opacity: 0.92;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* ── Tagline: same frame, single hairline top (no double border read) ── */
+.VPHomeHero .tagline {
+  box-sizing: border-box;
+  position: relative;
+  margin: 0;
+  margin-top: 0;
+  font-family: var(--hpp-font-mono);
+  font-size: clamp(9px, 1.9vw, 10px);
+  font-weight: 500;
+  line-height: 1.65;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--vp-c-text-2) 92%, var(--vp-c-brand-1) 8%);
+  text-align: center;
+  text-wrap: balance;
+}
+
+/* ── Actions centered ── */
+.VPHomeHero .actions {
+  position: relative;
+  width: 100%;
+  max-width: min(560px, 100%);
+  min-width: 0;
+  box-sizing: border-box;
+  margin-top: 12px !important;
+  padding-top: 18px !important;
+  justify-content: center !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+}
+
+/* Stack CTAs on narrow layouts so labels like “View on GitHub” never clip */
+@media (max-width: 639px) {
+  .VPHomeHero .actions {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .VPHomeHero .actions .action {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .VPHomeHero .actions .action .VPButton {
+    width: 100% !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+  }
+}
+
+/* ── Buttons: thin-outline pills, minimal hover glow ── */
+.VPHomeHero .VPButton {
+  border-radius: 999px !important;
+  font-family: var(--hpp-font-mono) !important;
+  font-weight: 500 !important;
+  font-size: 10px !important;
+  letter-spacing: 0.18em !important;
+  text-transform: uppercase !important;
+  padding: 0 16px !important;
+  height: auto !important;
+  min-height: 34px !important;
+  line-height: 1.2 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.2s ease,
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease !important;
+}
+
+.VPHomeHero .VPButton.brand {
+  background: color-mix(in srgb, var(--vp-c-brand-1) 8%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--vp-c-brand-1) 58%, var(--hpp-micro-line)) !important;
+  color: color-mix(in srgb, var(--vp-c-text-1) 94%, var(--vp-c-brand-1)) !important;
+  box-shadow: none !important;
+}
+.VPHomeHero .VPButton.brand:hover {
+  background: color-mix(in srgb, var(--vp-c-brand-1) 15%, transparent) !important;
+  border-color: color-mix(in srgb, var(--vp-c-brand-1) 78%, var(--hpp-micro-line)) !important;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--vp-c-brand-1) 12%, transparent) !important;
+  transform: translateY(-1px);
+}
+.VPHomeHero .VPButton.brand:active { transform: translateY(0); }
+
+.VPHomeHero .VPButton.alt {
+  background: transparent !important;
+  border: 1px solid color-mix(in srgb, var(--hpp-micro-line) 94%, transparent) !important;
+  color: var(--vp-c-text-1) !important;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  box-shadow: none !important;
+}
+.VPHomeHero .VPButton.alt:hover {
+  background: color-mix(in srgb, var(--vp-c-brand-1) 6%, transparent) !important;
+  border-color: color-mix(in srgb, var(--vp-c-brand-1) 42%, var(--hpp-micro-line)) !important;
+  box-shadow: none !important;
+  transform: translateY(-1px);
+}
+.VPHomeHero .VPButton.alt:active { transform: translateY(0); }
+
+/* Light hero: faint fill on pills so strokes read on paper-white */
+html:not(.dark) .VPHomeHero .VPButton.brand {
+  background: color-mix(in srgb, var(--vp-c-brand-soft) 45%, transparent) !important;
+  color: color-mix(in srgb, var(--vp-c-text-1) 96%, var(--vp-c-brand-2)) !important;
+  box-shadow: none !important;
+}
+html:not(.dark) .VPHomeHero .VPButton.alt {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+html:not(.dark) .VPHomeHero .VPButton.alt:hover {
+  background: color-mix(in srgb, var(--vp-c-brand-soft) 55%, transparent) !important;
+  border-color: color-mix(in srgb, var(--vp-c-brand-1) 36%, var(--vp-c-divider)) !important;
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .VPHomeHero .VPButton,
+  .VPHomeHero .VPButton.brand,
+  .VPHomeHero .VPButton.alt { transition: none !important; }
 }

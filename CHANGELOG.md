@@ -18,6 +18,7 @@ The RAG product was archived (`archive/rag-v1`, tag `v0.4-rag`). `main` is an AI
 - Auto-engage on first visit and reply loop (#103)
 - Method stance by lifecycle (`DEFINE` / `PROBE` / `INVERT` / `VARIETY` / `SIMPLEST`), pending paths, fossil kinds (#104)
 - `ai-elements-nuxt` surfaces: collaborator, graph, garden queue, model selector (#104)
+- Inferred agent connections (unconfirmed rows + dashed graph), resurrection, garden strata, visible first-engage germination
 
 ### Fixes
 

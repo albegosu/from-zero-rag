@@ -18,8 +18,7 @@ export function isAppRateLimitError(errorOrMessage: unknown): boolean {
   const msg = typeof errorOrMessage === 'string'
     ? errorOrMessage
     : errorMessageFromUnknown(errorOrMessage)
-  return /rate limit exceeded\. max \d+ requests per minute/i.test(msg)
-    || /add your own api key in settings to remove this limit/i.test(msg)
+  return /rate limit exceeded/i.test(msg)
 }
 
 /** Provider quota / RPM (e.g. Gemini free tier, OpenAI 429 with quota text). */
@@ -109,5 +108,5 @@ export function formatProviderQuotaMessage(retryAfterSeconds: number | null): st
 }
 
 export function formatAppRateLimitMessage(): string {
-  return 'Rate limit exceeded. Add your own API key in Settings to remove this limit.'
+  return 'Rate limit exceeded. Please slow down.'
 }

@@ -30,6 +30,7 @@ describe('isProviderQuotaError', () => {
 
 describe('isAppRateLimitError', () => {
   it('detects app-enforced limit message', () => {
+    expect(isAppRateLimitError('Rate limit exceeded. Please slow down.')).toBe(true)
     expect(
       isAppRateLimitError('Rate limit exceeded. Max 30 requests per minute. Add your own API key in Settings to remove this limit.'),
     ).toBe(true)
@@ -56,7 +57,7 @@ describe('classifyLlmError', () => {
 
   it('classifies app rate limit separately', () => {
     const c = classifyLlmError(
-      new Error('Rate limit exceeded. Max 30 requests per minute. Add your own API key in Settings to remove this limit.'),
+      new Error('Rate limit exceeded. Please slow down.'),
     )
     expect(c.kind).toBe('app_rate_limit')
   })

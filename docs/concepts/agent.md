@@ -42,9 +42,7 @@ The agent does not ask questions to be helpful. It does not teach a named method
 
 ### Surfaces connections
 
-The agent may propose links of type `REINFORCES`, `CONTRADICTS`, or `EXTENDS` to other **living** embryos. Those proposals land as `PENDING_CONNECTION` notes. You accept (creates a confirmed connection) or dismiss.
-
-The agent does not currently propose `RESURRECTS`, and it does not see fossils (see [What the agent knows](#what-the-agent-knows)).
+The agent may propose links of type `REINFORCES`, `CONTRADICTS`, `EXTENDS`, or `RESURRECTS` (fossils only). Those proposals create **unconfirmed** `Connection` rows (`detectedBy: AGENT`) so the graph can draw dashed inferred edges, plus a `PENDING_CONNECTION` note. You accept (confirms the row) or dismiss (deletes the unconfirmed row).
 
 Connections are surfaced as proposals, not facts. You decide whether the connection is real.
 
@@ -81,12 +79,11 @@ A trace remains for accept and for agent proposals. Fossilization cannot happen 
 Per invocation the agent receives:
 
 - The current embryo: seed, state, unresolved tensions, last ~12 agent/user turns
-- Up to **20 other living embryos** owned by you (fossils excluded)
+- Up to **15 other living embryos** and **5 fossils** owned by you
 - Which of those are already outgoing connection targets (so it does not re-propose them)
 
 It does **not** currently have:
 
-- Fossils or fossil reasons
 - The rest of the garden beyond that cap
 - External knowledge by default
 

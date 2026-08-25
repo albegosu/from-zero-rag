@@ -54,7 +54,10 @@ describe('parseAgentResponse', () => {
     expect(bad.fossil).toBeNull()
   })
 
-  it('strips markdown fences and coerces unknown connection types', () => {
+  it('keeps RESURRECTS and coerces unknown connection types', () => {
+    const resurrect = parseAgentResponse('{"question":"Why now?","connections":[{"targetId":"x","type":"RESURRECTS","reason":"old idea"}]}')
+    expect(resurrect.connections[0]?.type).toBe('RESURRECTS')
+
     const parsed = parseAgentResponse('```json\n{"question":"Why?","connections":[{"targetId":"x","type":"NOPE","reason":"guess"}]}\n```')
     expect(parsed.question).toBe('Why?')
     expect(parsed.connections[0]?.type).toBe('EXTENDS')

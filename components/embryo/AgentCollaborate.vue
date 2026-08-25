@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { AiConfirmationData, AiContextItem, AiMessageProps, AiSuggestion } from 'ai-elements-nuxt/types'
-import { useEmbryoStore, type ConnectionType } from '~/stores/embryos'
 import { extractPartialQuestion } from '~/utils/embryo-stream'
 import { FOSSIL_KIND_COPY, parseFossilNote } from '~/utils/embryo-method'
 import { appendTranscript, parseConnectionNote } from '~/utils/embryo-display'
@@ -20,6 +19,7 @@ const streamPreview = ref('')
 const replyInput = ref('')
 const replying = ref(false)
 const autoEngagedFor = ref<string | null>(null)
+const germinatedNotice = ref(false)
 
 const embryo = computed(() => store.current)
 const isFossil = computed(() => embryo.value?.state === 'FOSSIL')
@@ -170,6 +170,7 @@ async function askAgent() {
           }
           else if (data.type === 'done') {
             streamPreview.value = ''
+            germinatedNotice.value = Boolean(data.germinated)
             await store.fetchOne(props.embryoId, { silent: true })
           }
         }
@@ -222,11 +223,8 @@ function onSuggestion(suggestion: AiSuggestion) {
   }
 }
 
-async function acceptConnection(noteId: string, content: string) {
-  const parsed = parseConnectionNote(content)
-  if (!parsed) return
-  await store.connect(props.embryoId, parsed.targetId, parsed.type as ConnectionType, parsed.reason)
-  await store.dismissNote(props.embryoId, noteId)
+async function acceptConnection(noteId: string) {
+  await store.acceptConnection(props.embryoId, noteId)
 }
 
 function connectionConfirmation(note: { id: string; content: string }): AiConfirmationData {
@@ -269,6 +267,7 @@ const fossilConfirmation = computed<AiConfirmationData | null>(() => {
 
 watch(() => props.embryoId, () => {
   autoEngagedFor.value = null
+  germinatedNotice.value = false
   replyInput.value = ''
   agentError.value = null
   streamPreview.value = ''
@@ -302,6 +301,13 @@ watch(
       <span v-else-if="askingAgent" class="text-[11px] wz-accent">thinking...</span>
     </div>
 
+    <div
+      v-if="germinatedNotice && !isFossil"
+      class="px-4 py-2 text-[11px] wz-accent border-b border-[var(--term-accent-faint)] font-mono"
+    >
+      state → germinating · first engage
+    </div>
+
     <AiErrorBoundary
       v-if="agentError"
       :error="agentError"
@@ -319,7 +325,7 @@ watch(
           v-for="note in pendingConnections"
           :key="note.id"
           :confirmation="connectionConfirmation(note)"
-          @confirm="acceptConnection(note.id, note.content)"
+          @confirm="acceptConnection(note.id)"
           @deny="store.dismissNote(embryoId, note.id)"
         />
       </div>

@@ -60,30 +60,14 @@ services:
       NUXT_DATABASE_URL: postgresql://${POSTGRES_USER:-hypar}:${POSTGRES_PASSWORD:-hypar_password}@postgres:5432/${POSTGRES_DB:-hypar_db}
       OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434}
       NUXT_OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434}
-      OLLAMA_MODEL: ${OLLAMA_MODEL:-nomic-embed-text}
-      NUXT_OLLAMA_MODEL: ${OLLAMA_MODEL:-nomic-embed-text}
       OLLAMA_LLM_MODEL: ${OLLAMA_LLM_MODEL:-llama3.1:8b}
       NUXT_OLLAMA_LLM_MODEL: ${OLLAMA_LLM_MODEL:-llama3.1:8b}
       OLLAMA_CHAT_TIMEOUT_MS: ${OLLAMA_CHAT_TIMEOUT_MS:-180000}
       NUXT_OLLAMA_CHAT_TIMEOUT_MS: ${OLLAMA_CHAT_TIMEOUT_MS:-180000}
-      OLLAMA_PLANNER_TIMEOUT_MS: ${OLLAMA_PLANNER_TIMEOUT_MS:-60000}
-      NUXT_OLLAMA_PLANNER_TIMEOUT_MS: ${OLLAMA_PLANNER_TIMEOUT_MS:-60000}
       OLLAMA_API_KEY: ${OLLAMA_API_KEY:-}
       NUXT_OLLAMA_API_KEY: ${OLLAMA_API_KEY:-}
-      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
-      NUXT_GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      NUXT_OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      EMBEDDING_DIMENSIONS: ${EMBEDDING_DIMENSIONS:-768}
-      NUXT_EMBEDDING_DIMENSIONS: ${EMBEDDING_DIMENSIONS:-768}
-      MEMORY_SCOPE: ${MEMORY_SCOPE:-local_per_user}
-      NUXT_MEMORY_SCOPE: ${MEMORY_SCOPE:-local_per_user}
-      MEMORY_PROACTIVE: ${MEMORY_PROACTIVE:-true}
-      NUXT_MEMORY_PROACTIVE: ${MEMORY_PROACTIVE:-true}
-      ADMIN_API_KEY: ${ADMIN_API_KEY:-}
-      NUXT_ADMIN_API_KEY: ${ADMIN_API_KEY:-}
-      # Auth (better-auth). Use BETTER_AUTH_SECRET or AUTH_SECRET from .env; if both are unset,
-      # this dev-only default lets the stack boot (replace in .env before any real deployment).
+      LLM_PROVIDER: ${LLM_PROVIDER:-}
+      NUXT_LLM_PROVIDER: ${LLM_PROVIDER:-}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-${AUTH_SECRET:-insecure-dev-docker-change-me}}
       AUTH_SECRET: ${AUTH_SECRET:-}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
@@ -91,24 +75,10 @@ services:
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
       GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
       GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
-      # Additional LLM/embedding providers
-      VOYAGE_API_KEY: ${VOYAGE_API_KEY:-}
-      NUXT_VOYAGE_API_KEY: ${VOYAGE_API_KEY:-}
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      NUXT_ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      MISTRAL_API_KEY: ${MISTRAL_API_KEY:-}
-      NUXT_MISTRAL_API_KEY: ${MISTRAL_API_KEY:-}
-      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-}
-      NUXT_EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-}
-      LLM_PROVIDER: ${LLM_PROVIDER:-}
-      NUXT_LLM_PROVIDER: ${LLM_PROVIDER:-}
-      WORKFLOW_LOCAL_DATA_DIR: /app/data/workflow
       NUXT_HOST: 0.0.0.0
       NUXT_PORT: 3000
     ports:
       - "${PORT:-3000}:3000"
-    volumes:
-      - workflow_data:/app/data/workflow
     depends_on:
       postgres:
         condition: service_healthy
@@ -142,7 +112,6 @@ services:
 volumes:
   postgres_data:
   ollama_data:
-  workflow_data:
 
 networks:
   hypar-network:

@@ -18,23 +18,18 @@ interface Rule {
 
 const RULES: Rule[] = [
   {
-    label: 'chat',
-    test: (p, m) =>
-      m === 'POST' && (p.startsWith('/api/chat') || /\/api\/embryos\/[^/]+\/agent$/.test(p)),
-    capacity: 30,
-    refillPerSec: 30 / 60, // 30 req/min
-  },
-  {
-    label: 'upload',
-    test: (p, m) => m === 'POST' && p.startsWith('/api/documents/upload'),
-    capacity: 10,
-    refillPerSec: 10 / 60, // 10 req/min
-  },
-  {
-    label: 'documents-write',
-    test: (p, m) => (m === 'POST' || m === 'DELETE') && p.startsWith('/api/documents'),
+    label: 'agent',
+    test: (p, m) => m === 'POST' && /\/api\/embryos\/[^/]+\/agent$/.test(p),
     capacity: 30,
     refillPerSec: 30 / 60,
+  },
+  {
+    label: 'embryo-write',
+    test: (p, m) =>
+      (m === 'POST' || m === 'PATCH')
+      && (p === '/api/embryos' || /^\/api\/embryos\/[^/]+(\/(fossilize|resurrect))?$/.test(p)),
+    capacity: 60,
+    refillPerSec: 60 / 60,
   },
 ]
 
@@ -69,7 +64,7 @@ export default defineEventHandler((event) => {
   const method = event.method ?? 'GET'
   if (!path.startsWith('/api/')) return
 
-  const matched = RULES.find((r) => r.test(path, method))
+  const matched = RULES.find(r => r.test(path, method))
   if (!matched) return
 
   const ok = take(matched, clientKey(event))

@@ -57,10 +57,10 @@ The agent's spoken turn is constrained: **exactly one challenging question**. St
 Context the agent actually receives:
 
 - The current embryo (seed, state, unresolved tensions, recent dialogue)
-- Up to **20 other living embryos** (fossils are excluded)
+- Up to **15 other living embryos** and **5 fossils**
 - Outgoing connection targets already linked from this embryo
 
-Agent-detected links are stored as `PENDING_CONNECTION` notes until the user accepts them as user-confirmed `Connection` rows. The graph can draw dashed “inferred” edges, but that path is unused until the agent writes unconfirmed `Connection` records.
+Agent-detected links are stored as unconfirmed `Connection` rows (`detectedBy: AGENT`) plus a HITL note. Accept confirms; dismiss deletes the unconfirmed row. The graph draws dashed inferred edges.
 
 ---
 

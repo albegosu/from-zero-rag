@@ -15,7 +15,7 @@ Stored as `User.role` (default `'user'`). Set on signup; there is no first-run p
 
 There is no `requireAdmin` helper in the API, no `/api/admin/*`, and no `ADMIN_API_KEY`. Embryo APIs are owner-scoped for every signed-in user.
 
-Client-side, `useAuth()` exposes `isAdmin`. `middleware/admin.ts` exists but admin pages do not declare it.
+Client-side, `useAuth()` exposes `isAdmin`. `middleware/admin.ts` gates `/admin` and `/admin/users`.
 
 ### Promoting / demoting
 

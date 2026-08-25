@@ -1,3 +1,7 @@
+<script setup lang="ts">
+definePageMeta({ middleware: 'admin' })
+</script>
+
 <template>
   <div class="max-w-3xl mx-auto px-4 pt-6">
     <div class="wz-panel">

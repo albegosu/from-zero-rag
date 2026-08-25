@@ -49,7 +49,7 @@ See [Fossils & Memory](/concepts/fossils) for the full picture.
 
 ### Who advances an embryo?
 
-- **First agent engage** on a `LATENT` embryo silently sets `GERMINATING` (logged as `STATE_CHANGED` initiated by `AGENT`). That is the germination trigger in the current lab.
+- **First agent engage** on a `LATENT` embryo sets `GERMINATING` (logged as `STATE_CHANGED` initiated by `AGENT`). The collaborator panel shows **state → germinating · first engage**. That is the germination trigger in the current lab.
 - **You** can jump to any other living state from the detail page at any time (including backward). There is no adjacency graph.
 - The agent does **not** suggest other lifecycle transitions. Path and fossil proposals are separate HITL notes.
 
@@ -63,7 +63,7 @@ See [Fossils & Memory](/concepts/fossils) for how fossilization works.
 
 An embryo can move backward in the lifecycle if new tensions emerge. A mature embryo can return to growing. A fossilized embryo cannot be reverted.
 
-**Resurrection** — a new `LATENT` embryo that references a fossil via `RESURRECTS` — is a designed connection type. There is no dedicated “resurrect” flow yet; you can draw a `RESURRECTS` link by hand.
+**Resurrection** — `↺ resurrect` on a fossil creates a new `LATENT` embryo with a confirmed `RESURRECTS` link back to the fossil. The agent may also propose `RESURRECTS` to a fossil in context.
 
 ---
 

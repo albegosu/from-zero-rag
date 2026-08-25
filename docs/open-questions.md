@@ -17,9 +17,9 @@ The question is whether these should be visually distinct, and if so, how. An ex
 
 The [ai-elements surfaces](/experiments/ai-elements-surfaces) experiment draws this on a canvas: **solid** edges for explicit or confirmed links, **dashed / animated** edges for agent-inferred unconfirmed links.
 
-**Current runtime:** the agent writes `PENDING_CONNECTION` notes. Accepting them creates a **user-confirmed** `Connection` row. Unconfirmed `detectedBy: AGENT` rows are never written, so dashed inferred edges do not appear in practice. The visual language is still under review; the data path is incomplete.
+**Current runtime:** the agent writes unconfirmed `Connection` rows (`detectedBy: AGENT`) plus a HITL note. Accept confirms the row; dismiss deletes it. The graph draws **dashed** edges for unconfirmed agent links.
 
-*Status: in experiment — graph surface mounted; inferred-as-data still missing.*
+*Status: in experiment — data path and graph surface mounted; whether the visual language is enough is still an observation.*
 
 ---
 
@@ -27,7 +27,7 @@ The [ai-elements surfaces](/experiments/ai-elements-surfaces) experiment draws t
 
 An embryo starts as latent. What moves it to germinating?
 
-**Current runtime (option mixed):** opening a `LATENT` embryo auto-engages the agent. The first successful agent turn **silently** sets `GERMINATING`. You can also jump state by hand.
+**Current runtime (option mixed):** opening a `LATENT` embryo auto-engages the agent. The first successful agent turn sets `GERMINATING` and the collaborator shows **state → germinating · first engage**. You can also jump state by hand.
 
 Still open: should that auto-advance be visible? Should the agent wait to be invited? Should forgotten latent embryos germinate without a visit?
 
@@ -39,7 +39,7 @@ Still open: should that auto-advance be visible? Should the agent wait to be inv
 
 Does the agent have access to all embryos in all states simultaneously, or does it operate with a narrower context?
 
-**Current runtime:** current embryo + up to 20 **living** peers. Fossils excluded. No external knowledge.
+**Current runtime:** current embryo + up to 15 living peers and 5 fossils. No external knowledge.
 
 Full access would let the agent surface resurrection and old contradictions — and may overwhelm. Local context is better for questions and worse for memory.
 
@@ -63,9 +63,9 @@ Fossils exist in strata. The navigation metaphor is excavation, not browsing. Bu
 
 Scroll depth? A separate view? A toggle between "surface" and "strata"? A search that surfaces fossils alongside living embryos when relevant?
 
-Today fossils are just another lifecycle filter in the garden.
+Today fossils are grouped in the garden **strata** view by age (week / month / older). Whether that is enough excavation is still an observation.
 
-*Status: unresolved — pending experiment.*
+*Status: in experiment — strata filter shipped; metaphor still under review.*
 
 ---
 

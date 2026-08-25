@@ -18,7 +18,7 @@ If you discover a security issue, please **do not** open a public GitHub issue.
 
 - Session auth via **better-auth**. Embryo and LLM routes call `requireSessionUserId` and filter by `userId`.
 - Production startup validates `DATABASE_URL`, auth secret, and `OLLAMA_URL` (`server/utils/env-validation.ts`).
-- In-memory rate limit on agent POST (`/api/embryos/:id/agent`). Single-instance only.
+- In-memory rate limit on agent POST and embryo writes. Single-instance only.
 - Run `pnpm audit` in CI; keep dependencies updated via Dependabot.
 
 ## Deployment checklist

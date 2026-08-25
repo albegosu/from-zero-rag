@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { prisma } from '~/server/utils/prisma'
 import { requireSessionUserId } from '~/server/utils/session'
+import { EMBRYO_LIST_INCLUDE } from '~/utils/embryo-lab'
 
 const bodySchema = z.object({
   seed: z.string().min(1).max(10000),
@@ -21,11 +22,7 @@ export default defineEventHandler(async (event) => {
         },
       },
     },
-    include: {
-      events: true,
-      tensions: true,
-      agentNotes: true,
-    },
+    include: EMBRYO_LIST_INCLUDE,
   })
 
   return embryo

@@ -45,7 +45,7 @@ The browser client lives in `utils/auth-client.ts` and exposes `signIn`, `signUp
 
 ## Route protection
 
-A global **client** route middleware redirects unauthenticated visitors to `/auth/signin` for every page except `PUBLIC_ROUTES` (`/auth/signin`, `/auth/signup`; `/setup` is listed but has no page). See `middleware/auth.global.ts`.
+A global **client** route middleware redirects unauthenticated visitors to `/auth/signin` for every page except `PUBLIC_ROUTES` (`/auth/signin`, `/auth/signup`). See `middleware/auth.global.ts`.
 
 API routes that return user-scoped data call `requireSessionUserId(event)` and filter Prisma by that `userId`, so user A cannot read user B's embryos.
 
@@ -61,7 +61,7 @@ API routes that return user-scoped data call `requireSessionUserId(event)` and f
 UPDATE "User" SET role = 'admin' WHERE email = 'you@example.com';
 ```
 
-The header hides the admin link for non-admins. The admin route middleware exists but is **not** applied on those pages yet.
+The header hides the admin link for non-admins. Admin pages use `middleware: 'admin'` and redirect everyone else home.
 
 ## Next steps
 

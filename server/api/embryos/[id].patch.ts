@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { prisma } from '~/server/utils/prisma'
 import { requireSessionUserId } from '~/server/utils/session'
+import { parseFossilNote } from '~/utils/embryo-method'
 
 const VALID_STATES = ['LATENT', 'GERMINATING', 'GROWING', 'MATURE'] as const
 
@@ -37,6 +38,14 @@ const bodySchema = z.discriminatedUnion('action', [
     action: z.literal('reply'),
     noteId: z.string(),
     reply: z.string().min(1).max(10000),
+  }),
+  z.object({
+    action: z.literal('accept_path'),
+    noteId: z.string(),
+  }),
+  z.object({
+    action: z.literal('accept_fossil'),
+    noteId: z.string(),
   }),
 ])
 
@@ -220,6 +229,86 @@ export default defineEventHandler(async (event) => {
       })
 
       return { event, tension, noteId: note.id }
+    })
+  }
+
+  if (body.action === 'accept_path') {
+    const note = await prisma.agentNote.findFirst({
+      where: { id: body.noteId, embryoId: id, type: 'PENDING_PATH', dismissed: false },
+    })
+    if (!note) {
+      throw createError({ statusCode: 404, statusMessage: 'Pending path not found' })
+    }
+    const question = note.content.trim()
+    if (!question) {
+      throw createError({ statusCode: 400, statusMessage: 'Path is empty' })
+    }
+
+    return prisma.$transaction(async (tx) => {
+      const tension = await tx.tension.create({
+        data: {
+          embryoId: id,
+          question,
+          raisedBy: 'AGENT',
+        },
+      })
+      await tx.embryoEvent.create({
+        data: {
+          embryoId: id,
+          type: 'TENSION_ADDED',
+          initiatedBy: 'USER',
+          payload: { tensionId: tension.id, fromPath: true, noteId: note.id },
+        },
+      })
+      await tx.agentNote.update({
+        where: { id: note.id },
+        data: { dismissed: true },
+      })
+      return tension
+    })
+  }
+
+  if (body.action === 'accept_fossil') {
+    const note = await prisma.agentNote.findFirst({
+      where: { id: body.noteId, embryoId: id, type: 'PENDING_FOSSIL', dismissed: false },
+    })
+    if (!note) {
+      throw createError({ statusCode: 404, statusMessage: 'Pending fossil not found' })
+    }
+    const parsed = parseFossilNote(note.content)
+    const reason = parsed?.reason || note.content.trim()
+    if (!reason) {
+      throw createError({ statusCode: 400, statusMessage: 'Fossil reason is empty' })
+    }
+
+    return prisma.$transaction(async (tx) => {
+      const fossil = await tx.embryo.update({
+        where: { id },
+        data: {
+          state: 'FOSSIL',
+          fossilizedAt: new Date(),
+          fossilReason: reason,
+          fossilBy: 'AGENT',
+          events: {
+            create: {
+              type: 'FOSSILIZED',
+              initiatedBy: 'USER',
+              payload: {
+                reason,
+                kind: parsed?.kind,
+                previousState: embryo.state,
+                fromProposal: true,
+                noteId: note.id,
+              },
+            },
+          },
+        },
+      })
+      await tx.agentNote.update({
+        where: { id: note.id },
+        data: { dismissed: true },
+      })
+      return fossil
     })
   }
 })

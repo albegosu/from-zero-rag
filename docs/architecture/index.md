@@ -37,7 +37,7 @@ The data model centers on the **Embryo** — a unit of knowledge with a lifecycl
 | **EmbryoEvent** | Audit log: every state change, tension, agent question is an event. |
 | **Tension** | An open question attached to an embryo. Can be raised by user or agent. |
 | **Connection** | A typed link between two embryos (supports, contradicts, extends, merges_into). |
-| **AgentNote** | Agent output stored per embryo (questions, suggestions). |
+| **AgentNote** | Agent output stored per embryo (questions, suggestions, pending paths, pending fossils). |
 
 States: `LATENT → GERMINATING → GROWING → MATURE → FOSSIL`
 
@@ -47,9 +47,9 @@ No delete. Fossilization preserves the idea, the reason it died, and its full ev
 
 ## Agent integration
 
-The agent endpoint (`/api/embryos/[id]/agent`) calls Ollama via the OpenAI-compatible `/v1/chat/completions` API using `@ai-sdk/openai` with `compatibility: 'compatible'`.
+The agent endpoint (`/api/embryos/[id]/agent`) calls Ollama via the OpenAI-compatible `/v1/chat/completions` API using `@ai-sdk/openai`. The UI is **not** a chat transport: the client maps embryo events onto `ai-elements-nuxt` primitives (`AiMessage`, `AiConfirmation`, workflow canvas). See [ai-elements surfaces](/experiments/ai-elements-surfaces).
 
-The agent's role is constrained: ask one challenging question per invocation. No summaries, no validation, no preamble.
+The agent's role is constrained: ask one challenging question per invocation, with a stance that follows the embryo's lifecycle (define → probe → generate paths → select the simplest). Optional path proposals and fossil proposals are additive. No summaries, no validation, no preamble, no named methodology in the question.
 
 ---
 

@@ -23,10 +23,6 @@ export default defineNuxtConfig({
     defaultStyles: true,
   },
 
-  build: {
-    transpile: ['ai-elements-nuxt'],
-  },
-
   css: ['~/assets/css/main.css'],
 
   colorMode: {
@@ -84,6 +80,7 @@ export default defineNuxtConfig({
       docsSiteUrl:
         process.env.NUXT_PUBLIC_DOCS_SITE_URL?.trim()
         || 'https://albegosu.github.io/hypar/',
+      ollamaLlmModel: process.env.OLLAMA_LLM_MODEL ?? 'llama3.2',
     },
   },
 

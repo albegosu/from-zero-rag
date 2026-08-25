@@ -1,12 +1,28 @@
-export const AGENT_SYSTEM_PROMPT = `You are a collaborator, not an assistant. Your role is to push ideas forward, not to validate them.
+import {
+  isAgentMove,
+  isFossilKind,
+  stanceFor,
+  type AgentMove,
+  type FossilKind,
+} from '../../utils/embryo-method'
+
+export { extractPartialQuestion } from '../../utils/embryo-stream'
+export type { AgentMove, FossilKind }
+
+const BASE_PROMPT = `You are a collaborator, not an assistant. Your role is to push ideas forward, not to validate them.
 
 You are given an embryo: a raw, unfinished thought captured by the user. You may see a prior exchange where the user already answered you. You also see the user's other embryos for context.
 
 Respond with a JSON object (no markdown fences, no preamble) with these fields:
 - "question": exactly ONE question that challenges, extends, or destabilizes the idea. Be direct — no filler.
+- "move": DEFINE | PROBE | INVERT | VARIETY | SIMPLEST — the move you actually used.
 - "connections": an array of objects with "targetId", "type" (REINFORCES | CONTRADICTS | EXTENDS), and "reason" (one sentence). Only include if you see a genuine link to another embryo. Empty array if none.
+- "paths": an array of 0–3 short alternative directions (not complete solutions). Only when the state is GROWING. Empty array otherwise.
+- "fossil": null, or {"kind":"ILL_DEFINED"|"WRONG_PATH"|"SUPERSEDED","reason":"..."} only when the state is MATURE and the embryo looks ready to close. Do not propose fossil in other states.
 
 Rules:
+- Follow the stance for the current state. Prefer the preferred move named below.
+- If the seed reads as a solution, recipe, feature, checklist, or patch, DEFINE: recover the problem it is papering over. Do not help implement the first idea.
 - The question should create productive tension, not comfort.
 - If the idea has obvious blind spots, surface them.
 - If the idea contradicts something implicit, name it.
@@ -14,7 +30,21 @@ Rules:
 - Never repeat a question you already asked in this exchange.
 - If the user just replied, react to that reply — press on what they avoided, assumed, or left vague.
 - For connections, only suggest links that are non-obvious or that the user might miss.
-- Keep "reason" under 20 words.`
+- Keep "reason" under 20 words.
+- Paths are directions that lead to options, not the option itself.
+- Never name Munari, Design Thinking, or a method in the question. The method is how you think, not what you say.`
+
+export function buildAgentSystemPrompt(state: string): string {
+  const stance = stanceFor(state)
+  return `${BASE_PROMPT}
+
+Current embryo state: ${state}
+Preferred move: ${stance.move}
+Stance: ${stance.instruction}`
+}
+
+/** @deprecated Use buildAgentSystemPrompt(state). Kept for callers that have no state yet. */
+export const AGENT_SYSTEM_PROMPT = buildAgentSystemPrompt('LATENT')
 
 export interface AgentConnection {
   targetId: string
@@ -22,9 +52,17 @@ export interface AgentConnection {
   reason: string
 }
 
+export interface AgentFossilProposal {
+  kind: FossilKind
+  reason: string
+}
+
 export interface AgentResponse {
   question: string
+  move?: AgentMove
   connections: AgentConnection[]
+  paths: string[]
+  fossil: AgentFossilProposal | null
 }
 
 export interface AgentDialogueTurn {
@@ -42,12 +80,31 @@ export interface AgentPromptInput {
 
 const CONNECTION_TYPES = new Set(['REINFORCES', 'CONTRADICTS', 'EXTENDS'])
 
+function parsePaths(value: unknown): string[] {
+  if (!Array.isArray(value)) return []
+  return value
+    .map(p => String(p ?? '').trim())
+    .filter(Boolean)
+    .slice(0, 3)
+}
+
+function parseFossil(value: unknown): AgentFossilProposal | null {
+  if (!value || typeof value !== 'object') return null
+  const rec = value as Record<string, unknown>
+  const kind = rec.kind
+  const reason = String(rec.reason ?? '').trim()
+  if (!isFossilKind(kind) || !reason) return null
+  return { kind, reason: reason.slice(0, 400) }
+}
+
 export function parseAgentResponse(text: string): AgentResponse {
   const cleaned = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim()
   try {
     const parsed = JSON.parse(cleaned)
+    const moveRaw = parsed.move
     return {
       question: String(parsed.question || '').trim(),
+      move: isAgentMove(moveRaw) ? moveRaw : undefined,
       connections: Array.isArray(parsed.connections)
         ? parsed.connections
             .filter((c: { targetId?: unknown; type?: unknown; reason?: unknown }) => c.targetId && c.type && c.reason)
@@ -57,10 +114,12 @@ export function parseAgentResponse(text: string): AgentResponse {
               reason: String(c.reason).slice(0, 200),
             }))
         : [],
+      paths: parsePaths(parsed.paths),
+      fossil: parseFossil(parsed.fossil),
     }
   }
   catch {
-    return { question: text.trim(), connections: [] }
+    return { question: text.trim(), connections: [], paths: [], fossil: null }
   }
 }
 
@@ -87,7 +146,7 @@ export function dialogueFromEvents(
 export function buildAgentUserMessage(input: AgentPromptInput): string {
   const parts = [`Embryo: ${input.seed}`]
 
-  if (input.state && input.state !== 'LATENT') {
+  if (input.state) {
     parts.push(`Current state: ${input.state}`)
   }
 

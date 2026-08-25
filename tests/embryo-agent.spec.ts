@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import {
+  buildAgentSystemPrompt,
   buildAgentUserMessage,
   dialogueFromEvents,
+  extractPartialQuestion,
   parseAgentResponse,
 } from '../server/utils/embryo-agent'
 
@@ -14,9 +16,42 @@ describe('parseAgentResponse', () => {
       ],
     }))
     expect(parsed.question).toBe('What would make this false?')
+    expect(parsed.move).toBeUndefined()
+    expect(parsed.paths).toEqual([])
+    expect(parsed.fossil).toBeNull()
     expect(parsed.connections).toEqual([
       { targetId: 'abc', type: 'CONTRADICTS', reason: 'Opposite claim' },
     ])
+  })
+
+  it('keeps a valid move and drops an unknown one without failing the turn', () => {
+    expect(parseAgentResponse('{"question":"Why?","move":"DEFINE"}').move).toBe('DEFINE')
+    expect(parseAgentResponse('{"question":"Why?","move":"NOPE"}').move).toBeUndefined()
+    expect(parseAgentResponse('{"question":"Why?"}').question).toBe('Why?')
+  })
+
+  it('caps paths at three and ignores non-arrays', () => {
+    const parsed = parseAgentResponse(JSON.stringify({
+      question: 'Which path is still unnamed?',
+      move: 'VARIETY',
+      paths: ['template stories', 'definition of ready', 'pair with PM', 'fourth dropped'],
+    }))
+    expect(parsed.paths).toEqual(['template stories', 'definition of ready', 'pair with PM'])
+  })
+
+  it('parses a fossil proposal and rejects a malformed one', () => {
+    const ok = parseAgentResponse(JSON.stringify({
+      question: 'Is this the simplest form?',
+      move: 'SIMPLEST',
+      fossil: { kind: 'WRONG_PATH', reason: 'a cheaper path exists' },
+    }))
+    expect(ok.fossil).toEqual({ kind: 'WRONG_PATH', reason: 'a cheaper path exists' })
+
+    const bad = parseAgentResponse(JSON.stringify({
+      question: 'Done?',
+      fossil: { kind: 'NOPE', reason: 'x' },
+    }))
+    expect(bad.fossil).toBeNull()
   })
 
   it('strips markdown fences and coerces unknown connection types', () => {
@@ -29,6 +64,24 @@ describe('parseAgentResponse', () => {
     const parsed = parseAgentResponse('Just a question?')
     expect(parsed.question).toBe('Just a question?')
     expect(parsed.connections).toEqual([])
+    expect(parsed.paths).toEqual([])
+    expect(parsed.fossil).toBeNull()
+  })
+})
+
+describe('extractPartialQuestion', () => {
+  it('reads a complete question field from a partial object', () => {
+    expect(extractPartialQuestion('{"question":"What is the real problem?","move":')).toBe(
+      'What is the real problem?',
+    )
+  })
+
+  it('returns the in-progress string before the closing quote', () => {
+    expect(extractPartialQuestion('{"question":"What is the re')).toBe('What is the re')
+  })
+
+  it('returns null until the question key appears', () => {
+    expect(extractPartialQuestion('{"move":"DEFINE"')).toBeNull()
   })
 })
 
@@ -75,7 +128,7 @@ describe('buildAgentUserMessage', () => {
     expect(message).toContain('[e2] Fossils need strata. (GROWING)')
   })
 
-  it('omits latent state and empty optional sections', () => {
+  it('includes latent state so DEFINE can run on first capture', () => {
     const message = buildAgentUserMessage({
       seed: 'A lone seed.',
       state: 'LATENT',
@@ -83,8 +136,21 @@ describe('buildAgentUserMessage', () => {
       dialogue: [],
       otherEmbryos: [],
     })
-    expect(message).toBe('Embryo: A lone seed.')
-    expect(message).not.toContain('Current state')
+    expect(message).toContain('Embryo: A lone seed.')
+    expect(message).toContain('Current state: LATENT')
     expect(message).not.toContain('Prior exchange')
+  })
+})
+
+describe('buildAgentSystemPrompt', () => {
+  it('injects stance for the current state', () => {
+    const latent = buildAgentSystemPrompt('LATENT')
+    expect(latent).toContain('Preferred move: DEFINE')
+    expect(latent).toContain('Current embryo state: LATENT')
+    expect(latent).toMatch(/papering over/)
+
+    const growing = buildAgentSystemPrompt('GROWING')
+    expect(growing).toContain('Preferred move: VARIETY')
+    expect(growing).toMatch(/Generate paths/)
   })
 })

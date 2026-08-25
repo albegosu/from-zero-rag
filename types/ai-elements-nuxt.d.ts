@@ -2,12 +2,17 @@ declare module '#ai-elements/types' {
   export type {
     AiAttachment,
     AiCitation,
+    AiConfirmationData,
+    AiContextItem,
     AiConversationThread,
     AiMessageProps,
     AiModelOption,
+    AiQueueItem,
     AiSource,
     AiSuggestion,
     AiToolCall,
     AiToolUIPartState,
-  } from 'ai-elements-nuxt/dist/runtime/types/index'
+    AiWorkflowEdge,
+    AiWorkflowNode,
+  } from 'ai-elements-nuxt/types'
 }

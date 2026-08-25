@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 export type EmbryoState = 'LATENT' | 'GERMINATING' | 'GROWING' | 'MATURE' | 'FOSSIL'
 export type EventInitiator = 'USER' | 'AGENT' | 'SYSTEM'
 export type ConnectionType = 'REINFORCES' | 'CONTRADICTS' | 'EXTENDS' | 'RESURRECTS'
-export type AgentNoteType = 'OBSERVATION' | 'PENDING_QUESTION' | 'PENDING_CONNECTION' | 'PENDING_FOSSIL'
+export type AgentNoteType = 'OBSERVATION' | 'PENDING_QUESTION' | 'PENDING_CONNECTION' | 'PENDING_FOSSIL' | 'PENDING_PATH'
 
 export interface Tension {
   id: string
@@ -191,11 +191,11 @@ export const useEmbryoStore = defineStore('embryos', () => {
     }
   }
 
-  async function fossilize(id: string, reason: string) {
+  async function fossilize(id: string, reason: string, opts?: { kind?: string; trigger?: 'USER' | 'AGENT' }) {
     try {
       await $fetch(`/api/embryos/${id}/fossilize`, {
         method: 'POST',
-        body: { reason },
+        body: { reason, kind: opts?.kind, trigger: opts?.trigger },
       })
       const idx = embryos.value.findIndex(e => e.id === id)
       if (idx !== -1) {
@@ -281,6 +281,32 @@ export const useEmbryoStore = defineStore('embryos', () => {
     }
   }
 
+  async function acceptPath(embryoId: string, noteId: string) {
+    try {
+      await $fetch(`/api/embryos/${embryoId}`, {
+        method: 'PATCH',
+        body: { action: 'accept_path', noteId },
+      })
+      await fetchOne(embryoId, { silent: true })
+    }
+    catch (e: any) {
+      error.value = e?.data?.statusMessage ?? 'Failed to accept path'
+    }
+  }
+
+  async function acceptFossil(embryoId: string, noteId: string) {
+    try {
+      await $fetch(`/api/embryos/${embryoId}`, {
+        method: 'PATCH',
+        body: { action: 'accept_fossil', noteId },
+      })
+      await fetchOne(embryoId, { silent: true })
+    }
+    catch (e: any) {
+      error.value = e?.data?.statusMessage ?? 'Failed to accept fossil'
+    }
+  }
+
   return {
     embryos,
     current,
@@ -299,5 +325,7 @@ export const useEmbryoStore = defineStore('embryos', () => {
     confirmConnection,
     dismissNote,
     reply,
+    acceptPath,
+    acceptFossil,
   }
 })

@@ -47,6 +47,7 @@ enum AgentNoteType {
   PENDING_QUESTION
   PENDING_CONNECTION
   PENDING_FOSSIL
+  PENDING_PATH
 }
 
 enum FossilTrigger {

@@ -16,8 +16,12 @@ const LIFECYCLE: Array<{ state: EmbryoState; label: string; glyph: string }> = [
 ]
 
 const visible = computed(() => {
-  if (activeFilter.value === 'ALL') return store.embryos
-  return store.embryos.filter(e => e.state === activeFilter.value)
+  const list = activeFilter.value === 'ALL' ? store.embryos : store.embryos.filter(e => e.state === activeFilter.value)
+  return [...list].sort((a, b) => {
+    if (a.state === 'FOSSIL' && b.state !== 'FOSSIL') return 1
+    if (a.state !== 'FOSSIL' && b.state === 'FOSSIL') return -1
+    return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+  })
 })
 
 async function submitSeed() {
@@ -117,7 +121,8 @@ onMounted(() => store.fetchAll())
         v-for="e in visible"
         :key="e.id"
         :to="`/embryo/${e.id}`"
-        class="wz-panel group block hover:border-[var(--term-accent-line)] transition-colors"
+        class="wz-panel group block transition-colors"
+        :class="e.state === 'FOSSIL' ? 'fossil-card' : 'hover:border-[var(--term-accent-line)]'"
       >
         <div class="wz-panel-header flex items-center justify-between">
           <span :class="['text-xs font-mono', stateColor(e.state)]">
@@ -125,18 +130,42 @@ onMounted(() => store.fetchAll())
             {{ e.state.toLowerCase() }}
           </span>
           <div class="flex items-center gap-3 wz-faint text-[10px]">
-            <span v-if="e.tensions.length">⚡ {{ e.tensions.length }} open</span>
+            <span v-if="e._count.connections + e._count.connectedTo > 0" class="opacity-70">
+              ⟶ {{ e._count.connections + e._count.connectedTo }}
+            </span>
+            <span v-if="e.tensions.filter(t => !t.resolved).length" class="text-[var(--term-warn)]">
+              ⚡ {{ e.tensions.filter(t => !t.resolved).length }}
+            </span>
+            <span v-if="e.agentNotes.length" class="wz-accent opacity-70">
+              ↯ {{ e.agentNotes.length }}
+            </span>
             <span>{{ new Date(e.createdAt).toLocaleDateString() }}</span>
           </div>
         </div>
         <div class="p-4">
-          <p class="text-sm wz-strong leading-relaxed line-clamp-3">{{ e.seed }}</p>
-          <div v-if="e.agentNotes.length" class="mt-2 text-[11px] wz-accent opacity-70">
-            ↳ {{ e.agentNotes.length }} agent note{{ e.agentNotes.length > 1 ? 's' : '' }}
-          </div>
+          <p
+            class="text-sm leading-relaxed line-clamp-3"
+            :class="e.state === 'FOSSIL' ? 'text-[var(--term-text-dim)]' : 'wz-strong'"
+          >
+            {{ e.seed }}
+          </p>
+          <p v-if="e.state === 'FOSSIL' && e.fossilReason" class="text-[11px] text-[var(--term-text-dim)] mt-2 opacity-60 line-clamp-1">
+            ◈ {{ e.fossilReason }}
+          </p>
         </div>
       </NuxtLink>
     </div>
 
   </div>
 </template>
+
+<style scoped>
+.fossil-card {
+  opacity: 0.55;
+  border-style: dashed !important;
+  transition: opacity 0.15s ease;
+}
+.fossil-card:hover {
+  opacity: 0.75;
+}
+</style>

@@ -4,6 +4,9 @@ export default defineConfig({
   title: 'hypar',
   description: 'AI interaction research lab — exploring how humans and agents collaborate on knowledge.',
   base: '/hypar/',
+  ignoreDeadLinks: [
+    /^https?:\/\/localhost/,
+  ],
 
   head: [
     ['meta', { name: 'og:title', content: 'hypar' }],

@@ -1,11 +1,11 @@
 # hypar — Auth & Multi-user Implementation Plan
 
-> **Status (2026-05-26):** Phases 1–4 are **shipped on `main`**. Phase 5 (removal of the `/learn` stack) is also done. This document is kept as historical context for the rollout — for current usage docs see [Authentication](/guide/auth), [Workspaces](/guide/workspaces), [Roles & permissions](/guide/roles-and-permissions), [Settings](/guide/settings) and [Admin panel](/guide/admin-panel).
+> **Status (2026-05-26):** Phases 1–4 are **shipped on `main`**. Phase 5 (removal of the `/learn` stack) is also done. This document is kept as historical context for the rollout — for current usage docs see [Authentication](/guide/auth) and [Roles & permissions](/guide/roles-and-permissions).
 
 > Original framing below — agent instructions for completing Phases 2–5 of the auth and multi-user rollout.
 > Phase 1 (better-auth bootstrap) is already merged. Read this file top to bottom before writing any code.
 
-**Repo drift note (2026):** Some paths below reference a **staging** layout (`pages/learn/*`, `utils/learning/*`). On current **`main`**, first-run onboarding lives in **`pages/setup.vue`** with wizard data in **`utils/setup/wizard-steps.ts`** and UI under **`components/setup/`**. The Monaco `/learn` quest is **removed** from the app ([Learning quest](/features/learning-quest)). Treat old `learn` paths as historical unless you are restoring that stack.
+**Repo drift note (2026):** Some paths below reference a **staging** layout (`pages/learn/*`, `utils/learning/*`). On current **`main`**, first-run onboarding lives in **`pages/setup.vue`** with wizard data in **`utils/setup/wizard-steps.ts`** and UI under **`components/setup/`**. The Monaco `/learn` quest is **removed** from the app. Treat old `learn` paths as historical unless you are restoring that stack.
 
 ---
 

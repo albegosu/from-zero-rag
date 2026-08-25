@@ -58,6 +58,4 @@ See [Environment variables → First-run setup](./env) for what gets written to 
 
 ## Next steps
 
-- [Workspaces →](./workspaces) — group documents and members
 - [Roles & permissions →](./roles-and-permissions) — who can do what
-- [Admin panel →](./admin-panel) — manage users, settings and usage

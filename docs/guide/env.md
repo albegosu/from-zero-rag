@@ -98,4 +98,4 @@ The setup wizard (step 2) can help you pick a **Postgres** connection style; sti
 | `ADMIN_API_KEY` | — | Optional key to protect admin endpoints |
 | `WORKFLOW_LOCAL_DATA_DIR` | `./data/workflow` | Durable workflow state directory |
 
-For runtime-configurable values stored in the database (model, chunking, search, RAG tunables) see [Settings](./settings). Anything in this file is read once at boot from the environment.
+Anything in this file is read once at boot from the environment.

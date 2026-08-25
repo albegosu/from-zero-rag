@@ -1,6 +1,6 @@
 # Plan: Unify Monorepo into a Single Nuxt 3 Project
 
-> **Historical ADR.** Records the multi-app layout (NestJS API, separate playground) and the **intent** to merge into one Nuxt repo. The current tree has evolved since (e.g. no `apps/*`, `/learn` quest removed from the unified app — see [Learning quest](../features/learning-quest.md)). Keep this document for **why** past decisions were made, not as a map of every file today.
+> **Historical ADR.** Records the multi-app layout (NestJS API, separate playground) and the **intent** to merge into one Nuxt repo. The current tree has evolved since (e.g. no `apps/*`, `/learn` quest removed from the unified app). Keep this document for **why** past decisions were made, not as a map of every file today.
 
 ## Context
 

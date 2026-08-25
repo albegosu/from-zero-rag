@@ -101,7 +101,6 @@ If you prefer cloud providers, set `GOOGLE_API_KEY` or `OPENAI_API_KEY` — they
 ## Next steps
 
 - [Authentication →](./auth) — sign-in, first-run setup, sessions
-- [Workspaces →](./workspaces) — group documents and members
 - [Configure Docker profiles →](./docker)
 - [Deploy to production with automatic TLS →](./production)
 - [Environment variables →](./env)

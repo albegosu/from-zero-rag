@@ -189,7 +189,7 @@ The fossilization dialogue already asks why. Improve the agent's case (when it p
 
 - [x] User-initiated fossilize still requires a reason (unchanged).
 - [x] Agent-proposed fossil includes which of the three kinds of death it believes happened (`ILL_DEFINED` / `WRONG_PATH` / `SUPERSEDED`).
-- [ ] Resurrection as a dedicated flow (new `LATENT` + `RESURRECTS` link) is **not** implemented — only the connection type exists. Out of this experiment.
+- [x] Resurrection creates a new `LATENT` embryo referencing the fossil — method restarts.
 
 **Out of this phase:** structured `fossilReason` enum. Keep free text; the agent can *ask*, not classify for the user.
 

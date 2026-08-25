@@ -191,11 +191,11 @@ export const useEmbryoStore = defineStore('embryos', () => {
     }
   }
 
-  async function fossilize(id: string, reason: string, opts?: { kind?: string; trigger?: 'USER' | 'AGENT' }) {
+  async function fossilize(id: string, reason: string, opts?: { kind?: string }) {
     try {
       await $fetch(`/api/embryos/${id}/fossilize`, {
         method: 'POST',
-        body: { reason, kind: opts?.kind, trigger: opts?.trigger },
+        body: { reason, kind: opts?.kind },
       })
       const idx = embryos.value.findIndex(e => e.id === id)
       if (idx !== -1) {
@@ -281,6 +281,34 @@ export const useEmbryoStore = defineStore('embryos', () => {
     }
   }
 
+  async function acceptConnection(embryoId: string, noteId: string) {
+    try {
+      await $fetch(`/api/embryos/${embryoId}`, {
+        method: 'PATCH',
+        body: { action: 'accept_connection', noteId },
+      })
+      await fetchOne(embryoId, { silent: true })
+    }
+    catch (e: any) {
+      error.value = e?.data?.statusMessage ?? 'Failed to accept connection'
+    }
+  }
+
+  async function resurrect(id: string, seed?: string): Promise<EmbryoSummary | null> {
+    try {
+      const embryo = await $fetch<EmbryoSummary>(`/api/embryos/${id}/resurrect`, {
+        method: 'POST',
+        body: seed ? { seed } : {},
+      })
+      embryos.value.unshift(embryo)
+      return embryo
+    }
+    catch (e: any) {
+      error.value = e?.data?.statusMessage ?? 'Failed to resurrect'
+      return null
+    }
+  }
+
   async function acceptPath(embryoId: string, noteId: string) {
     try {
       await $fetch(`/api/embryos/${embryoId}`, {
@@ -323,9 +351,11 @@ export const useEmbryoStore = defineStore('embryos', () => {
     fossilize,
     connect,
     confirmConnection,
+    acceptConnection,
     dismissNote,
     reply,
     acceptPath,
     acceptFossil,
+    resurrect,
   }
 })

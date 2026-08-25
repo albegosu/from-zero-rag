@@ -1,23 +1,47 @@
 <script setup lang="ts">
-import { useEmbryoStore, type EmbryoState } from '~/stores/embryos'
+import { useEmbryoStore, type EmbryoState, type EmbryoSummary } from '~/stores/embryos'
 import { LIFECYCLE, appendTranscript, stateColor } from '~/utils/embryo-display'
+import { FOSSIL_STRATUM_COPY, fossilStratum, type FossilStratum } from '~/utils/embryo-lab'
 
 const store = useEmbryoStore()
 const { locale } = useTerminalPrefs()
 
 const seedInput = ref('')
 const creating = ref(false)
-const activeFilter = ref<EmbryoState | 'ALL'>('ALL')
+const activeFilter = ref<EmbryoState | 'ALL' | 'SURFACE' | 'STRATA'>('ALL')
 
 const speechLang = computed(() => (locale.value === 'es' ? 'es-ES' : 'en-US'))
 
+const STRATA_ORDER: FossilStratum[] = ['recent', 'mid', 'deep']
+
 const visible = computed(() => {
-  const list = activeFilter.value === 'ALL' ? store.embryos : store.embryos.filter(e => e.state === activeFilter.value)
+  let list: EmbryoSummary[]
+  if (activeFilter.value === 'SURFACE') list = store.alive
+  else if (activeFilter.value === 'STRATA') list = store.byState.FOSSIL
+  else if (activeFilter.value === 'ALL') list = store.embryos
+  else list = store.embryos.filter(e => e.state === activeFilter.value)
+
   return [...list].sort((a, b) => {
+    if (activeFilter.value === 'STRATA') {
+      const ta = a.fossilizedAt ? new Date(a.fossilizedAt).getTime() : 0
+      const tb = b.fossilizedAt ? new Date(b.fossilizedAt).getTime() : 0
+      return tb - ta
+    }
     if (a.state === 'FOSSIL' && b.state !== 'FOSSIL') return 1
     if (a.state !== 'FOSSIL' && b.state === 'FOSSIL') return -1
     return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
   })
+})
+
+const strataGroups = computed(() => {
+  if (activeFilter.value !== 'STRATA') return null
+  const groups: Record<FossilStratum, EmbryoSummary[]> = { recent: [], mid: [], deep: [] }
+  for (const e of visible.value) {
+    groups[fossilStratum(e.fossilizedAt)].push(e)
+  }
+  return STRATA_ORDER
+    .filter(s => groups[s].length > 0)
+    .map(s => ({ stratum: s, ...FOSSIL_STRATUM_COPY[s], items: groups[s] }))
 })
 
 async function submitSeed() {
@@ -93,17 +117,20 @@ onMounted(() => store.fetchAll())
     <!-- filter bar -->
     <div class="flex gap-2 flex-wrap">
       <button
-        v-for="f in ['ALL', ...LIFECYCLE.map(l => l.state)]"
+        v-for="f in (['ALL', 'SURFACE', 'STRATA', ...LIFECYCLE.map(l => l.state)] as const)"
         :key="f"
         class="text-[11px] px-2 py-0.5 border transition-colors"
         :class="activeFilter === f
           ? 'border-[var(--term-accent)] wz-accent bg-[var(--term-accent-soft)]'
           : 'border-[var(--term-accent-faint)] wz-faint hover:border-[var(--term-accent-line)]'"
-        @click="activeFilter = f as any"
+        @click="activeFilter = f"
       >
-        {{ f === 'ALL' ? 'all' : LIFECYCLE.find(l => l.state === f)!.glyph + ' ' + f.toLowerCase() }}
+        {{ f === 'ALL' ? 'all' : f === 'SURFACE' ? 'surface' : f === 'STRATA' ? 'strata' : LIFECYCLE.find(l => l.state === f)!.glyph + ' ' + f.toLowerCase() }}
         <span class="opacity-50 ml-1">
-          {{ f === 'ALL' ? store.embryos.length : store.byState[f as EmbryoState].length }}
+          {{ f === 'ALL' ? store.embryos.length
+            : f === 'SURFACE' ? store.alive.length
+              : f === 'STRATA' ? store.byState.FOSSIL.length
+                : store.byState[f].length }}
         </span>
       </button>
     </div>
@@ -122,6 +149,36 @@ onMounted(() => store.fetchAll())
     </div>
 
     <!-- embryo list -->
+    <div v-else-if="strataGroups" class="flex flex-col gap-6">
+      <section v-for="group in strataGroups" :key="group.stratum" class="flex flex-col gap-3">
+        <div class="flex items-baseline justify-between px-1">
+          <p class="text-[11px] wz-accent font-mono uppercase tracking-wider">{{ group.label }}</p>
+          <p class="text-[10px] wz-faint font-mono">{{ group.depth }} · {{ group.items.length }}</p>
+        </div>
+        <NuxtLink
+          v-for="e in group.items"
+          :key="e.id"
+          :to="`/embryo/${e.id}`"
+          class="wz-panel group block transition-colors fossil-card"
+          :class="`stratum-${group.stratum}`"
+        >
+          <div class="wz-panel-header flex items-center justify-between">
+            <span :class="['text-xs font-mono', stateColor(e.state)]">
+              {{ LIFECYCLE.find(l => l.state === e.state)!.glyph }}
+              {{ e.state.toLowerCase() }}
+            </span>
+            <span class="wz-faint text-[10px]">{{ e.fossilizedAt ? new Date(e.fossilizedAt).toLocaleDateString() : '' }}</span>
+          </div>
+          <div class="p-4">
+            <p class="text-sm leading-relaxed line-clamp-3 text-[var(--term-text-dim)]">{{ e.seed }}</p>
+            <p v-if="e.fossilReason" class="text-[11px] text-[var(--term-text-dim)] mt-2 opacity-60 line-clamp-1">
+              ◈ {{ e.fossilReason }}
+            </p>
+          </div>
+        </NuxtLink>
+      </section>
+    </div>
+
     <div v-else class="flex flex-col gap-3">
       <NuxtLink
         v-for="e in visible"
@@ -174,4 +231,7 @@ onMounted(() => store.fetchAll())
 .fossil-card:hover {
   opacity: 0.75;
 }
+.stratum-recent { opacity: 0.78; }
+.stratum-mid { opacity: 0.55; padding-left: 8px; }
+.stratum-deep { opacity: 0.38; padding-left: 16px; }
 </style>

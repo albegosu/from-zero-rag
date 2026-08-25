@@ -18,9 +18,9 @@ const stages: Stage[] = [
   { num: '04', label: 'Fossilization UX', status: 'now' },
   { num: '05', label: 'Method stance', status: 'now' },
   { num: '06', label: 'ai-elements surfaces', status: 'now' },
-  { num: '07', label: 'Fossil strata nav', status: 'next' },
-  { num: '08', label: 'Resurrection flow' },
-  { num: '09', label: 'Inferred graph edges' },
+  { num: '07', label: 'Fossil strata nav', status: 'now' },
+  { num: '08', label: 'Resurrection flow', status: 'now' },
+  { num: '09', label: 'Inferred graph edges', status: 'now' },
   { num: '10', label: 'New experiment' },
 ]
 

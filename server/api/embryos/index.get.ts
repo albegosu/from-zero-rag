@@ -1,24 +1,25 @@
 import { prisma } from '~/server/utils/prisma'
 import { requireSessionUserId } from '~/server/utils/session'
+import { EMBRYO_LIST_INCLUDE, parseEmbryoStateParam } from '~/utils/embryo-lab'
 
 export default defineEventHandler(async (event) => {
   const userId = requireSessionUserId(event)
 
   const query = getQuery(event)
-  const state = query.state as string | undefined
+  let state: ReturnType<typeof parseEmbryoStateParam>
+  try {
+    state = parseEmbryoStateParam(query.state)
+  }
+  catch {
+    throw createError({ statusCode: 400, statusMessage: 'Invalid embryo state' })
+  }
 
-  const embryos = await prisma.embryo.findMany({
+  return prisma.embryo.findMany({
     where: {
       userId,
-      ...(state ? { state: state as any } : {}),
+      ...(state ? { state } : {}),
     },
-    include: {
-      tensions: { where: { resolved: false } },
-      agentNotes: { where: { dismissed: false } },
-      _count: { select: { events: true, connections: true, connectedTo: true } },
-    },
+    include: EMBRYO_LIST_INCLUDE,
     orderBy: { updatedAt: 'desc' },
   })
-
-  return embryos
 })

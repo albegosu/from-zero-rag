@@ -6,13 +6,12 @@ import { FOSSIL_KINDS } from '~/utils/embryo-method'
 const bodySchema = z.object({
   reason: z.string().min(1, 'A reason is required to fossilize an embryo'),
   kind: z.enum(FOSSIL_KINDS).optional(),
-  trigger: z.enum(['USER', 'AGENT']).optional(),
 })
 
 export default defineEventHandler(async (event) => {
   const userId = requireSessionUserId(event)
   const id = getRouterParam(event, 'id')!
-  const { reason, kind, trigger } = await readValidatedBody(event, bodySchema.parse)
+  const { reason, kind } = await readValidatedBody(event, bodySchema.parse)
 
   const embryo = await prisma.embryo.findFirst({ where: { id, userId } })
   if (!embryo) {
@@ -22,7 +21,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 409, statusMessage: 'Already a fossil' })
   }
 
-  const fossilBy = trigger ?? 'USER'
+  const fossilBy = 'USER'
 
   const fossil = await prisma.embryo.update({
     where: { id },

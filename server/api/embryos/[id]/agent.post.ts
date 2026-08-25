@@ -11,6 +11,7 @@ import {
   parseAgentResponse,
 } from '~/server/utils/embryo-agent'
 import { formatFossilNote } from '~/utils/embryo-method'
+import { connectionsToPersist, selectAgentPeers, shouldAutoGerminate } from '~/utils/embryo-lab'
 
 export default defineEventHandler(async (event) => {
   const userId = requireSessionUserId(event)
@@ -41,15 +42,23 @@ export default defineEventHandler(async (event) => {
     requestedModel = undefined
   }
 
-  const otherEmbryos = await prisma.embryo.findMany({
-    where: { userId, id: { not: id }, state: { not: 'FOSSIL' } },
-    select: { id: true, seed: true, state: true },
-    orderBy: { updatedAt: 'desc' },
-    take: 20,
-  })
+  const [living, fossils] = await Promise.all([
+    prisma.embryo.findMany({
+      where: { userId, id: { not: id }, state: { not: 'FOSSIL' } },
+      select: { id: true, seed: true, state: true },
+      orderBy: { updatedAt: 'desc' },
+      take: 15,
+    }),
+    prisma.embryo.findMany({
+      where: { userId, id: { not: id }, state: 'FOSSIL' },
+      select: { id: true, seed: true, state: true },
+      orderBy: { fossilizedAt: 'desc' },
+      take: 5,
+    }),
+  ])
 
-  const alreadyConnected = new Set(embryo.connections.map(c => c.targetId))
-  const candidates = otherEmbryos.filter(e => !alreadyConnected.has(e.id))
+  const alreadyConnected = embryo.connections.map(c => c.targetId)
+  const candidates = selectAgentPeers({ living, fossils, alreadyConnected })
   const dialogue = dialogueFromEvents(embryo.events).slice(-12)
 
   const userMessage = buildAgentUserMessage({
@@ -111,7 +120,7 @@ export default defineEventHandler(async (event) => {
             }),
           ]
 
-          if (embryo.state === 'LATENT') {
+          if (shouldAutoGerminate(embryo.state)) {
             dbOps.push(
               prisma.embryo.update({
                 where: { id },
@@ -130,15 +139,40 @@ export default defineEventHandler(async (event) => {
           }
 
           const validTargetIds = new Set(candidates.map(e => e.id))
-          const validConnections = parsed.connections.filter(c => validTargetIds.has(c.targetId))
+          const validConnections = connectionsToPersist(parsed.connections, validTargetIds)
+          const germinated = shouldAutoGerminate(embryo.state)
 
           for (const conn of validConnections) {
+            dbOps.push(
+              prisma.connection.upsert({
+                where: { sourceId_targetId: { sourceId: id, targetId: conn.targetId } },
+                create: {
+                  sourceId: id,
+                  targetId: conn.targetId,
+                  type: conn.type as 'REINFORCES' | 'CONTRADICTS' | 'EXTENDS' | 'RESURRECTS',
+                  detectedBy: 'AGENT',
+                  confirmedByUser: false,
+                  note: conn.reason,
+                },
+                update: {},
+              }),
+            )
             dbOps.push(
               prisma.agentNote.create({
                 data: {
                   embryoId: id,
                   type: 'PENDING_CONNECTION',
                   content: `${conn.type} [${conn.targetId}]: ${conn.reason}`,
+                },
+              }),
+            )
+            dbOps.push(
+              prisma.embryoEvent.create({
+                data: {
+                  embryoId: id,
+                  type: 'AGENT_SUGGESTION',
+                  initiatedBy: 'AGENT',
+                  payload: { kind: 'connection', targetId: conn.targetId, type: conn.type, reason: conn.reason },
                 },
               }),
             )
@@ -201,6 +235,7 @@ export default defineEventHandler(async (event) => {
             connections: validConnections,
             paths,
             fossil,
+            germinated,
           })}\n\n`))
           controller.close()
         }

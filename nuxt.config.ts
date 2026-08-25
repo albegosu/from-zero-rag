@@ -13,8 +13,6 @@ export default defineNuxtConfig({
     '@nuxt/ui',
     '@pinia/nuxt',
     '@vueuse/nuxt',
-    'workflow/nuxt',
-    './modules/copy-workflow-bundles',
     '@nuxtjs/robots',
     '@nuxtjs/sitemap',
   ],
@@ -63,10 +61,6 @@ export default defineNuxtConfig({
         },
       ],
     },
-  },
-
-  workflow: {
-    typescriptPlugin: true,
   },
 
   runtimeConfig: {

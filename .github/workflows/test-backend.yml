@@ -44,7 +44,7 @@ jobs:
     env:
       DATABASE_URL: postgresql://test:test@localhost:5432/test
       BETTER_AUTH_SECRET: ci-test-secret-minimum-32-characters-long
-      GOOGLE_API_KEY: ci-placeholder-key
+      OLLAMA_URL: http://localhost:11434
       SKIP_ENV_VALIDATION: 'true'
 
     steps:

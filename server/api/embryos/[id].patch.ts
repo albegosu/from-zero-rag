@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { prisma } from '~/server/utils/prisma'
 import { requireSessionUserId } from '~/server/utils/session'
 import { parseFossilNote } from '~/utils/embryo-method'
+import { parseConnectionNote } from '~/utils/embryo-display'
 
 const VALID_STATES = ['LATENT', 'GERMINATING', 'GROWING', 'MATURE'] as const
 
@@ -29,6 +30,10 @@ const bodySchema = z.discriminatedUnion('action', [
   z.object({
     action: z.literal('confirm_connection'),
     connectionId: z.string(),
+  }),
+  z.object({
+    action: z.literal('accept_connection'),
+    noteId: z.string(),
   }),
   z.object({
     action: z.literal('dismiss_note'),
@@ -138,6 +143,11 @@ export default defineEventHandler(async (event) => {
         note: body.note || null,
       },
       include: { target: { select: { id: true, seed: true, state: true } } },
+    }).catch((err: { code?: string }) => {
+      if (err?.code === 'P2002') {
+        throw createError({ statusCode: 409, statusMessage: 'Connection already exists' })
+      }
+      throw err
     })
     await prisma.embryoEvent.create({
       data: {
@@ -164,12 +174,87 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  if (body.action === 'accept_connection') {
+    const note = await prisma.agentNote.findFirst({
+      where: { id: body.noteId, embryoId: id, type: 'PENDING_CONNECTION', dismissed: false },
+    })
+    if (!note) {
+      throw createError({ statusCode: 404, statusMessage: 'Pending connection not found' })
+    }
+    const parsed = parseConnectionNote(note.content)
+    if (!parsed) {
+      throw createError({ statusCode: 400, statusMessage: 'Malformed connection note' })
+    }
+
+    return prisma.$transaction(async (tx) => {
+      const existing = await tx.connection.findUnique({
+        where: { sourceId_targetId: { sourceId: id, targetId: parsed.targetId } },
+      })
+      const type = CONNECTION_TYPES.includes(parsed.type as typeof CONNECTION_TYPES[number])
+        ? parsed.type as typeof CONNECTION_TYPES[number]
+        : 'EXTENDS'
+      const connection = existing
+        ? await tx.connection.update({
+            where: { id: existing.id },
+            data: { confirmedByUser: true, note: parsed.reason },
+            include: { target: { select: { id: true, seed: true, state: true } } },
+          })
+        : await tx.connection.create({
+            data: {
+              sourceId: id,
+              targetId: parsed.targetId,
+              type,
+              detectedBy: 'AGENT',
+              confirmedByUser: true,
+              note: parsed.reason,
+            },
+            include: { target: { select: { id: true, seed: true, state: true } } },
+          })
+      await tx.embryoEvent.create({
+        data: {
+          embryoId: id,
+          type: 'CONNECTION_MADE',
+          initiatedBy: 'USER',
+          payload: { connectionId: connection.id, targetId: parsed.targetId, type: connection.type, fromProposal: true },
+        },
+      })
+      await tx.agentNote.update({
+        where: { id: note.id },
+        data: { dismissed: true },
+      })
+      return connection
+    })
+  }
+
   if (body.action === 'dismiss_note') {
     const note = await prisma.agentNote.findFirst({
       where: { id: body.noteId, embryoId: id },
     })
     if (!note) {
       throw createError({ statusCode: 404, statusMessage: 'Agent note not found' })
+    }
+    if (note.type === 'PENDING_QUESTION') {
+      await prisma.embryoEvent.create({
+        data: {
+          embryoId: id,
+          type: 'USER_RESPONSE',
+          initiatedBy: 'USER',
+          payload: { noteId: note.id, question: note.content, skipped: true },
+        },
+      })
+    }
+    if (note.type === 'PENDING_CONNECTION') {
+      const parsed = parseConnectionNote(note.content)
+      if (parsed) {
+        await prisma.connection.deleteMany({
+          where: {
+            sourceId: id,
+            targetId: parsed.targetId,
+            detectedBy: 'AGENT',
+            confirmedByUser: false,
+          },
+        })
+      }
     }
     return prisma.agentNote.update({
       where: { id: body.noteId },

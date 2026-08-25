@@ -18,6 +18,7 @@ const fossilKind = ref<FossilKind | null>(null)
 const showFossilDialog = ref(false)
 const addingTension = ref(false)
 const fossilizing = ref(false)
+const resurrecting = ref(false)
 
 const showConnectDialog = ref(false)
 const connectSearch = ref('')
@@ -102,6 +103,13 @@ async function submitConnection(targetId: string) {
   connecting.value = false
 }
 
+async function submitResurrect() {
+  resurrecting.value = true
+  const next = await store.resurrect(id.value)
+  resurrecting.value = false
+  if (next) await navigateTo(`/embryo/${next.id}`)
+}
+
 const EVENT_LABELS: Record<string, string> = {
   CREATED: 'created',
   STATE_CHANGED: 'state →',
@@ -145,7 +153,17 @@ const EVENT_LABELS: Record<string, string> = {
               — fossilized {{ embryo.fossilizedAt ? new Date(embryo.fossilizedAt).toLocaleDateString() : '' }}
             </span>
           </div>
-          <span class="wz-faint text-[10px]">{{ new Date(embryo.createdAt).toLocaleString() }}</span>
+          <div class="flex items-center gap-2">
+            <button
+              v-if="isFossil"
+              class="text-[11px] wz-accent border border-[var(--term-accent-line)] px-2 py-0.5 hover:bg-[var(--term-accent-soft)] disabled:opacity-40 transition-colors"
+              :disabled="resurrecting"
+              @click="submitResurrect"
+            >
+              {{ resurrecting ? '...' : '↺ resurrect' }}
+            </button>
+            <span class="wz-faint text-[10px]">{{ new Date(embryo.createdAt).toLocaleString() }}</span>
+          </div>
         </div>
         <div class="p-4">
           <p class="text-sm leading-relaxed font-mono" :class="isFossil ? 'text-[var(--term-text-dim)]' : 'wz-strong'">

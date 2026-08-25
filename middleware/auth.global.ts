@@ -1,4 +1,4 @@
-const PUBLIC_ROUTES = ['/setup', '/auth/signin', '/auth/signup']
+const PUBLIC_ROUTES = ['/auth/signin', '/auth/signup']
 
 export default defineNuxtRouteMiddleware(async (to) => {
   if (import.meta.server) return

@@ -25,13 +25,13 @@ The most important knowledge in a thinking system is not always the ideas that s
 - **What was tried and failed** — a fossil with a documented reason for closure is a map of explored territory
 - **What resurfaces** — an idea that seemed wrong in one context may become right in another
 
-The agent cannot yet say *"you explored this in March and abandoned it because of X"* — fossils are excluded from agent context. That is an open research question. The record is still there for you.
+The agent can see a few recent fossils in context and may propose `RESURRECTS`. It still cannot search the whole strata on demand.
 
 ## The geological metaphor
 
 Living embryos exist on the surface — visible, active, engaged. Fossils exist in strata below.
 
-**Strata navigation** (excavation UI, depth by age) is still an [open question](/open-questions). Today fossils are living-state siblings in the garden, filtered by lifecycle, not a separate underground view.
+**Strata navigation** lives in the garden filter **strata**: fossils grouped by age (near surface / buried / deep). You can also excavate a single fossil from its detail page.
 
 ## Fossilization
 
@@ -63,9 +63,9 @@ An embryo cannot become a fossil without a recorded reason. PATCH and agent call
 
 A fossilized embryo cannot be "un-fossilized" — its lifecycle is complete.
 
-**Resurrection** is specified as: a new embryo at `LATENT` that references the fossil with connection type `RESURRECTS`. The type exists in the schema and in the connect UI. There is **no** dedicated resurrect flow yet (no “new embryo from this fossil” action, and the agent cannot propose `RESURRECTS`).
+**Resurrection** creates a new embryo at `LATENT` that references the fossil with connection type `RESURRECTS`. Use **↺ resurrect** on the fossil page. The new embryo starts its own lifecycle; the fossil stays closed. The agent may also propose `RESURRECTS` when a fossil is in context.
 
-That is the system's intended mechanism for *"That idea was right, but we weren't ready for it then."* It is not implemented as a first-class path.
+That is the system's mechanism for *"That idea was right, but we weren't ready for it then."*
 
 ---
 

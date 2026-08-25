@@ -5,18 +5,19 @@ import {
   type AgentMove,
   type FossilKind,
 } from '../../utils/embryo-method'
+import { AGENT_CONNECTION_TYPES } from '../../utils/embryo-lab'
 
 export { extractPartialQuestion } from '../../utils/embryo-stream'
 export type { AgentMove, FossilKind }
 
 const BASE_PROMPT = `You are a collaborator, not an assistant. Your role is to push ideas forward, not to validate them.
 
-You are given an embryo: a raw, unfinished thought captured by the user. You may see a prior exchange where the user already answered you. You also see the user's other embryos for context.
+You are given an embryo: a raw, unfinished thought captured by the user. You may see a prior exchange where the user already answered you. You also see the user's other living embryos and a few fossils for context.
 
 Respond with a JSON object (no markdown fences, no preamble) with these fields:
 - "question": exactly ONE question that challenges, extends, or destabilizes the idea. Be direct — no filler.
 - "move": DEFINE | PROBE | INVERT | VARIETY | SIMPLEST — the move you actually used.
-- "connections": an array of objects with "targetId", "type" (REINFORCES | CONTRADICTS | EXTENDS), and "reason" (one sentence). Only include if you see a genuine link to another embryo. Empty array if none.
+- "connections": an array of objects with "targetId", "type" (REINFORCES | CONTRADICTS | EXTENDS | RESURRECTS), and "reason" (one sentence). Only include if you see a genuine link to another embryo. Use RESURRECTS only when the target is a FOSSIL. Empty array if none.
 - "paths": an array of 0–3 short alternative directions (not complete solutions). Only when the state is GROWING. Empty array otherwise.
 - "fossil": null, or {"kind":"ILL_DEFINED"|"WRONG_PATH"|"SUPERSEDED","reason":"..."} only when the state is MATURE and the embryo looks ready to close. Do not propose fossil in other states.
 
@@ -78,7 +79,7 @@ export interface AgentPromptInput {
   dialogue: AgentDialogueTurn[]
 }
 
-const CONNECTION_TYPES = new Set(['REINFORCES', 'CONTRADICTS', 'EXTENDS'])
+const CONNECTION_TYPES = new Set<string>(AGENT_CONNECTION_TYPES)
 
 function parsePaths(value: unknown): string[] {
   if (!Array.isArray(value)) return []

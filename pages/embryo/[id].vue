@@ -17,10 +17,10 @@ async function askAgent() {
   askingAgent.value = true
   agentError.value = null
   try {
-    await $fetch(`/api/embryos/${id}/agent`, { method: 'POST' })
+    await $fetch(`/api/embryos/${id}/agent`, { method: 'POST', credentials: 'include' })
     await store.fetchOne(id)
   } catch (e: any) {
-    agentError.value = e?.data?.statusMessage ?? 'Agent unavailable'
+    agentError.value = e?.data?.statusMessage ?? e?.statusMessage ?? 'Agent unavailable'
   } finally {
     askingAgent.value = false
   }

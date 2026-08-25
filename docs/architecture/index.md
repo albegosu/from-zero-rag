@@ -1,8 +1,8 @@
 # Architecture
 
-hypar is a **single Nuxt 3 application**: Vue 3 on the client, **Nitro** (`h3`) server routes on the same port, **Prisma** + **PostgreSQL/pgvector** for persistence, and the **Vercel AI SDK** for embeddings, streaming chat, and tool execution.
+Hypar is a **single Nuxt 3 application**: Vue 3 on the client, **Nitro** (`h3`) server routes on the same port, **Prisma 7** + **PostgreSQL** for persistence, and the **Vercel AI SDK** for agent interactions via Ollama.
 
-There is **no separate Node API repo** and no CORS split — the UI calls relative `/api/*` routes.
+There is no separate API repo and no CORS split — the UI calls relative `/api/*` routes.
 
 ---
 
@@ -11,67 +11,69 @@ There is **no separate Node API repo** and no CORS split — the UI calls relati
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                     Browser (Vue 3)                        │
-│  pages/*  components/*  Pinia stores  @ai-sdk/vue chat      │
+│  pages/*  components/*  Pinia stores                       │
 └──────────────────────────┬────────────────────────────────┘
                            │ same origin
 ┌──────────────────────────▼────────────────────────────────┐
 │                  Nitro server (Nuxt)                      │
-│  server/api/*          — REST + streaming                 │
-│  server/utils/*        — services (search, agent, docs)   │
-│  server/workflows/*    — durable ingest (Workflow SDK)  │
-│  server/middleware/*   — rate limits, etc.                │
+│  server/api/embryos/*  — CRUD + agent endpoint            │
+│  server/utils/*        — prisma, session, logger          │
 └───────────────┬───────────────────────┬───────────────────┘
                 │                       │
                 ▼                       ▼
-        PostgreSQL 16              Provider HTTP
-        + pgvector                 (Gemini / OpenAI / Ollama)
+          PostgreSQL 16           Ollama (local or cloud)
+                                  via OpenAI-compatible API
 ```
+
+---
+
+## Domain: Embryo
+
+The data model centers on the **Embryo** — a unit of knowledge with a lifecycle.
+
+| Model | Purpose |
+| --- | --- |
+| **Embryo** | The idea. Has a `seed` (text), `state` (lifecycle), timestamps. |
+| **EmbryoEvent** | Audit log: every state change, tension, agent question is an event. |
+| **Tension** | An open question attached to an embryo. Can be raised by user or agent. |
+| **Connection** | A typed link between two embryos (supports, contradicts, extends, merges_into). |
+| **AgentNote** | Agent output stored per embryo (questions, suggestions). |
+
+States: `LATENT → GERMINATING → GROWING → MATURE → FOSSIL`
+
+No delete. Fossilization preserves the idea, the reason it died, and its full event history.
+
+---
+
+## Agent integration
+
+The agent endpoint (`/api/embryos/[id]/agent`) calls Ollama via the OpenAI-compatible `/v1/chat/completions` API using `@ai-sdk/openai` with `compatibility: 'compatible'`.
+
+The agent's role is constrained: ask one challenging question per invocation. No summaries, no validation, no preamble.
 
 ---
 
 ## Layer responsibilities
 
-| Layer | Path / module | Responsibility |
+| Layer | Path | Responsibility |
 | --- | --- | --- |
-| UI | `pages/`, `components/`, `layouts/` | Chat, documents, upload, `/setup`, `/auth/*`, `/admin/*`. |
-| API | `server/api/**/*.ts` | Validation, orchestration, HTTP status codes. |
-| Domain | `server/utils/*.service.ts`, `chunking.ts`, `embedding.ts` | RAG logic, Prisma queries, agent + tools. |
-| Background | `server/workflows/ingest-document.ts` | Chunk → embed → persist with retries. |
-| Data | `prisma/schema.prisma` | `Document`, `Chunk`, `Conversation`, `Message`, `Query`. |
+| UI | `pages/`, `components/` | Embryo garden, detail page, auth, admin stubs. |
+| API | `server/api/embryos/**` | CRUD, state transitions, fossilization, agent. |
+| Store | `stores/embryos.ts` | Pinia store with computed views (`byState`, `alive`). |
+| Data | `prisma/schema.prisma` | Embryo domain + better-auth models. |
 
 ---
 
-## Key data models (conceptual)
+## Deployment
 
-- **`Document`** — source file or note; `ingestStatus`, `chunkCount`, optional `userId` for per-user memories.  
-- **`Chunk`** — text segment + `vector(768)` + optional char offsets for citations.  
-- **`Conversation` / `Message`** — persisted chat with optional `sources` on assistant rows.  
-- **`Query`** — analytics / audit log for retrieval + responses.
-
-Indexes include **HNSW** on embeddings (see migrations) and full-text **`textsearch`** on chunks for hybrid retrieval.
-
----
-
-## Deeper reading
-
-| Doc | Contents |
-| --- | --- |
-| [Technical architecture (deep dive)](./core-rag-architecture) | Historical narrative, tool definition sketch, embedding table, security notes. |
-| [Project structure](./project-structure) | Directory tour and file naming conventions. |
-
-When the deep-dive doc disagrees with **current code** (chunk sizes, exact SQL), **trust the repository** — the [RAG pipeline](/features/rag-pipeline) and [Search](/features/search) feature pages are kept aligned with implementation.
-
----
-
-## Deployment shape
-
-- **Development:** `docker compose --profile full` runs app + Postgres + Ollama (see [Docker guide](/guide/docker)).  
-- **Production:** see [Production deployment](/guide/production) and root `docker-compose.prod.yml` / Caddy notes in [DOCKER.md](../DOCKER.md).
+- **Development:** `pnpm dev` + local PostgreSQL + Ollama (local or cloud)
+- **Docker:** `docker compose --profile full` runs app + Postgres + Ollama
+- **Production:** see [Production deployment](/guide/production)
 
 ---
 
 ## Next
 
-- [API reference →](/api/reference)  
-- [Features overview →](/features/rag-pipeline)  
+- [Embryo concept →](/concepts/embryo)
+- [Getting started →](/guide/getting-started)
 - [Contributing →](/contributing)

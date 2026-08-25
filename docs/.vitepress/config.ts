@@ -2,12 +2,12 @@ import { defineConfig } from 'vitepress'
 
 export default defineConfig({
   title: 'hypar',
-  description: 'An AI-native wiki that thinks with you, not for you.',
+  description: 'AI interaction research lab — exploring how humans and agents collaborate on knowledge.',
   base: '/hypar/',
 
   head: [
     ['meta', { name: 'og:title', content: 'hypar' }],
-    ['meta', { name: 'og:description', content: 'An AI-native wiki that thinks with you, not for you.' }],
+    ['meta', { name: 'og:description', content: 'AI interaction research lab — exploring how humans and agents collaborate on knowledge.' }],
   ],
 
   themeConfig: {

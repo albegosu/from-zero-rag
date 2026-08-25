@@ -29,17 +29,14 @@ const { t } = useI18n()
 const { isAuthenticated, isAdmin } = useAuth()
 
 const baseItems = [
-  { path: '/', icon: 'i-heroicons-chat-bubble-left-right', label: 'nav.chat' },
-  { path: '/documents', icon: 'i-heroicons-document-text', label: 'nav.documents' },
-  { path: '/upload', icon: 'i-heroicons-arrow-up-tray', label: 'nav.upload' },
+  { path: '/', icon: 'i-heroicons-sparkles', label: 'nav.garden' },
 ]
 
 const authItems = [
-  { path: '/setup', icon: 'i-heroicons-sparkles', label: 'nav.setup' },
   { path: '/settings', icon: 'i-heroicons-cog-6-tooth', label: 'nav.settings' },
 ]
 
-const adminItem = { path: '/admin/settings', icon: 'i-heroicons-adjustments-horizontal', label: 'nav.adminSettings' }
+const adminItem = { path: '/admin', icon: 'i-heroicons-adjustments-horizontal', label: 'nav.admin' }
 
 const items = computed(() => {
   if (!isAuthenticated.value) return baseItems
@@ -49,7 +46,7 @@ const items = computed(() => {
 })
 
 function isActive(path: string) {
-  if (path === '/') return route.path === '/'
+  if (path === '/') return route.path === '/' || route.path.startsWith('/embryo/')
   return route.path === path || route.path.startsWith(path + '/')
 }
 </script>

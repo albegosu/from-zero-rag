@@ -45,6 +45,7 @@
     "better-auth": "^1.6.10",
     "js-tiktoken": "^1.0.14",
     "marked": "^14.1.3",
+    "ollama-ai-provider": "^1.2.0",
     "pdf-parse": "^1.1.1",
     "pg": "^8.20.0",
     "pinia": "^2.1.7",

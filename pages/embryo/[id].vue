@@ -10,6 +10,21 @@ const fossilReason = ref('')
 const showFossilDialog = ref(false)
 const addingTension = ref(false)
 const fossilizing = ref(false)
+const askingAgent = ref(false)
+const agentError = ref<string | null>(null)
+
+async function askAgent() {
+  askingAgent.value = true
+  agentError.value = null
+  try {
+    await $fetch(`/api/embryos/${id}/agent`, { method: 'POST' })
+    await store.fetchOne(id)
+  } catch (e: any) {
+    agentError.value = e?.data?.statusMessage ?? 'Agent unavailable'
+  } finally {
+    askingAgent.value = false
+  }
+}
 
 const LIFECYCLE: Array<{ state: EmbryoState; glyph: string }> = [
   { state: 'LATENT',      glyph: '◌' },
@@ -125,6 +140,35 @@ onMounted(() => store.fetchOne(id))
             ◈ fossilize
           </button>
         </div>
+      </div>
+
+      <!-- agent panel -->
+      <div v-if="!isFossil" class="wz-panel">
+        <div class="wz-panel-header flex items-center justify-between">
+          <div>
+            <span class="wz-accent">$</span>
+            <span class="wz-label ml-2">agent.collaborate</span>
+          </div>
+          <button
+            class="text-[11px] wz-accent border border-[var(--term-accent-line)] px-2 py-0.5 hover:bg-[var(--term-accent-soft)] disabled:opacity-40 transition-colors"
+            :disabled="askingAgent"
+            @click="askAgent"
+          >
+            {{ askingAgent ? 'thinking...' : '↯ ask' }}
+          </button>
+        </div>
+        <div v-if="agentError" class="px-4 py-3 text-[11px] text-[var(--term-danger)]">{{ agentError }}</div>
+        <div v-if="embryo.agentNotes.length" class="divide-y divide-[var(--term-accent-faint)]">
+          <div
+            v-for="note in embryo.agentNotes"
+            :key="note.id"
+            class="px-4 py-3"
+          >
+            <p class="text-[10px] wz-faint mb-1">{{ note.type.toLowerCase().replace('_', ' ') }}</p>
+            <p class="text-xs wz-strong leading-relaxed">{{ note.content }}</p>
+          </div>
+        </div>
+        <div v-else class="px-4 py-3 wz-faint text-[11px]">no agent notes yet — press ↯ ask to engage</div>
       </div>
 
       <!-- fossilize dialog -->

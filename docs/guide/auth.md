@@ -50,7 +50,7 @@ API routes that return user-scoped data call `requireSessionUserId(event)` and u
 
 ## First-run setup
 
-On a fresh database, every page request is redirected to `/setup`. The wizard collects provider, DB, embedding, chunking, search and RAG configuration, then asks for a name, email and password.
+On a fresh database, the first user to sign up at `/auth/signup` becomes the admin.
 
 The account created by the wizard is the **first admin** (`role = 'admin'`). After completion the app writes `Setting { key: 'app.configured', value: 'true' }` and subsequent users that sign up at `/auth/signup` get the default `user` role.
 

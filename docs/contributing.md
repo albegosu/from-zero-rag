@@ -1,8 +1,8 @@
 # Contributing
 
-Thank you for helping improve hypar. The **canonical** contributing guide (branch naming, commit style) lives in the repository root:
+The **canonical** contributing guide lives in the repository root:
 
-**[`CONTRIBUTING.md`](https://github.com/albegosu/hypar/blob/main/CONTRIBUTING.md)** (same content as in your clone at the project root).
+**[`CONTRIBUTING.md`](https://github.com/albegosu/hypar/blob/main/CONTRIBUTING.md)**
 
 ---
 
@@ -12,23 +12,19 @@ Thank you for helping improve hypar. The **canonical** contributing guide (branc
 git clone https://github.com/albegosu/hypar.git
 cd hypar
 pnpm install
-docker compose --profile api up -d   # Postgres (+ Ollama if you use the profile)
-cp .env.example .env                  # then edit DATABASE_URL, keys, etc.
-pnpm db:migrate
+cp .env.example .env   # configure DATABASE_URL + Ollama
+npx prisma migrate deploy
 pnpm dev
 ```
-
-Open `http://localhost:3000`.
 
 ---
 
 ## Before you open a PR
 
 ```bash
-pnpm build   # production build + type checking via Nuxt
-pnpm test    # Vitest
+pnpm build
+pnpm test
 pnpm docs:build   # if you touch docs/**
-pnpm db:migrate   # only if Prisma schema changed
 ```
 
 ---
@@ -37,14 +33,10 @@ pnpm db:migrate   # only if Prisma schema changed
 
 | Goal | Likely paths |
 | --- | --- |
-| RAG / search | `server/utils/search.service.ts`, `server/utils/agent.service.ts` |
-| Ingestion | `server/workflows/ingest-document.ts`, `server/utils/documents.service.ts` |
-| API contracts | `server/api/**/*.ts` |
+| Embryo API | `server/api/embryos/**/*.ts` |
+| Agent collaborator | `server/api/embryos/[id]/agent.post.ts` |
 | UI | `pages/`, `components/` |
-| Docs site | `docs/` (this VitePress project) |
+| Store | `stores/embryos.ts` |
+| Docs site | `docs/` (VitePress) |
 
-## Micrographics (UI)
-
-Use the shared kit in [`components/micro/`](https://github.com/albegosu/hypar/tree/main/components/micro): `MicroGlyph.vue` plus `glyphs.ts` (stroke `1.5`, `currentColor`). Prefer **semantic** glyphs for empty states and headings; add **decorative** ones only at low density (`aria-hidden="true"` via `decorative` on `MicroGlyph`). In the docs theme, chapter pages can start with `<DocMicroLead />`. **Animation** (GSAP) is optional and should respect `prefers-reduced-motion` — match the landing pattern in `docs/.vitepress/theme/HomeLandingAnimations.vue` when extending motion.
-
-Questions or large features: open a **[GitHub issue](https://github.com/albegosu/hypar/issues)** first when in doubt.
+Questions or large features: open a **[GitHub issue](https://github.com/albegosu/hypar/issues)** first.

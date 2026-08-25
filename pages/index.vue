@@ -29,8 +29,11 @@ async function submitSeed() {
   if (!seed) return
   creating.value = true
   const embryo = await store.create(seed)
-  if (embryo) seedInput.value = ''
   creating.value = false
+  if (embryo) {
+    seedInput.value = ''
+    await navigateTo(`/embryo/${embryo.id}`)
+  }
 }
 
 function stateColor(state: EmbryoState) {
@@ -56,7 +59,7 @@ onMounted(() => store.fetchAll())
         <span class="wz-faint text-[11px]">{{ store.alive.length }} alive · {{ store.byState.FOSSIL.length }} fossil</span>
       </div>
       <div class="px-4 pt-3 pb-4">
-        <p class="wz-muted text-xs">capture a raw thought — unfinished, uncertain, alive</p>
+        <p class="wz-muted text-xs">capture a raw thought — the agent will challenge it</p>
       </div>
     </div>
 
@@ -79,7 +82,7 @@ onMounted(() => store.fetchAll())
           :disabled="!seedInput.trim() || creating"
           @click="submitSeed"
         >
-          {{ creating ? '...' : '+ seed' }}
+          {{ creating ? 'engaging...' : '+ seed' }}
         </button>
       </div>
     </div>

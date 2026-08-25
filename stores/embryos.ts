@@ -103,11 +103,19 @@ export const useEmbryoStore = defineStore('embryos', () => {
     }
   }
 
-  async function fetchOne(id: string) {
-    loading.value = true
+  async function fetchOne(id: string, opts?: { silent?: boolean }) {
+    if (!opts?.silent) loading.value = true
     error.value = null
     try {
       current.value = await $fetch(`/api/embryos/${id}`)
+      if (current.value) {
+        const idx = embryos.value.findIndex(e => e.id === id)
+        if (idx !== -1) {
+          embryos.value[idx]!.state = current.value.state
+          embryos.value[idx]!.tensions = current.value.tensions
+          embryos.value[idx]!.agentNotes = current.value.agentNotes
+        }
+      }
     }
     catch (e: any) {
       error.value = e?.data?.statusMessage ?? 'Failed to load embryo'
@@ -258,6 +266,21 @@ export const useEmbryoStore = defineStore('embryos', () => {
     }
   }
 
+  async function reply(embryoId: string, noteId: string, text: string): Promise<boolean> {
+    try {
+      await $fetch(`/api/embryos/${embryoId}`, {
+        method: 'PATCH',
+        body: { action: 'reply', noteId, reply: text },
+      })
+      await fetchOne(embryoId, { silent: true })
+      return true
+    }
+    catch (e: any) {
+      error.value = e?.data?.statusMessage ?? 'Failed to reply'
+      return false
+    }
+  }
+
   return {
     embryos,
     current,
@@ -275,5 +298,6 @@ export const useEmbryoStore = defineStore('embryos', () => {
     connect,
     confirmConnection,
     dismissNote,
+    reply,
   }
 })

@@ -49,6 +49,15 @@ describe('rate-limit middleware', () => {
     expect(() => handler(makeEvent('/api/chat', 'POST', ip, 'flood-user'))).toThrow('Rate limit exceeded')
   })
 
+  it('applies the same chat rule to embryo agent POSTs', () => {
+    const ip = '10.0.0.81'
+    const path = '/api/embryos/abc123/agent'
+    for (let i = 0; i < 30; i++) {
+      handler(makeEvent(path, 'POST', ip, 'agent-user'))
+    }
+    expect(() => handler(makeEvent(path, 'POST', ip, 'agent-user'))).toThrow('Rate limit exceeded')
+  })
+
   it('applies upload rule with lower capacity (10 req)', () => {
     const ip = '10.0.0.50'
     for (let i = 0; i < 10; i++) {

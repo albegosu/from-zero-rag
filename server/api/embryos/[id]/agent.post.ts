@@ -4,22 +4,12 @@ import { prisma } from '~/server/utils/prisma'
 import { requireSessionUserId } from '~/server/utils/session'
 import { logger } from '~/server/utils/logger'
 import { classifyLlmError } from '~/utils/llm-errors'
-
-const SYSTEM_PROMPT = `You are a collaborator, not an assistant. Your role is to push ideas forward, not to validate them.
-
-You are given an embryo: a raw, unfinished thought captured by the user. You also see the user's other embryos for context.
-
-Respond with a JSON object (no markdown fences, no preamble) with these fields:
-- "question": exactly ONE question that challenges, extends, or destabilizes the idea. Be direct — no filler.
-- "connections": an array of objects with "targetId", "type" (REINFORCES | CONTRADICTS | EXTENDS), and "reason" (one sentence). Only include if you see a genuine link to another embryo. Empty array if none.
-
-Rules:
-- The question should create productive tension, not comfort.
-- If the idea has obvious blind spots, surface them.
-- If the idea contradicts something implicit, name it.
-- Never summarize what the user already said.
-- For connections, only suggest links that are non-obvious or that the user might miss.
-- Keep "reason" under 20 words.`
+import {
+  AGENT_SYSTEM_PROMPT,
+  buildAgentUserMessage,
+  dialogueFromEvents,
+  parseAgentResponse,
+} from '~/server/utils/embryo-agent'
 
 function createOllamaChatModel() {
   const config = useRuntimeConfig()
@@ -50,33 +40,6 @@ function createOllamaChatModel() {
   }
 }
 
-interface AgentResponse {
-  question: string
-  connections: Array<{ targetId: string; type: string; reason: string }>
-}
-
-function parseAgentResponse(text: string): AgentResponse {
-  const cleaned = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim()
-  try {
-    const parsed = JSON.parse(cleaned)
-    return {
-      question: String(parsed.question || '').trim(),
-      connections: Array.isArray(parsed.connections)
-        ? parsed.connections
-            .filter((c: any) => c.targetId && c.type && c.reason)
-            .map((c: any) => ({
-              targetId: String(c.targetId),
-              type: ['REINFORCES', 'CONTRADICTS', 'EXTENDS'].includes(c.type) ? c.type : 'EXTENDS',
-              reason: String(c.reason).slice(0, 200),
-            }))
-        : [],
-    }
-  }
-  catch {
-    return { question: text.trim(), connections: [] }
-  }
-}
-
 export default defineEventHandler(async (event) => {
   const userId = requireSessionUserId(event)
   const id = getRouterParam(event, 'id')!
@@ -85,7 +48,7 @@ export default defineEventHandler(async (event) => {
     where: { id, userId },
     include: {
       tensions: { where: { resolved: false } },
-      events: { orderBy: { createdAt: 'desc' }, take: 10 },
+      events: { orderBy: { createdAt: 'asc' } },
       connections: { select: { targetId: true } },
     },
   })
@@ -106,18 +69,15 @@ export default defineEventHandler(async (event) => {
 
   const alreadyConnected = new Set(embryo.connections.map(c => c.targetId))
   const candidates = otherEmbryos.filter(e => !alreadyConnected.has(e.id))
+  const dialogue = dialogueFromEvents(embryo.events).slice(-12)
 
-  const openTensions = embryo.tensions.map(t => `- ${t.question}`).join('\n')
-  const otherEmbryosList = candidates.length > 0
-    ? candidates.map(e => `- [${e.id}] ${e.seed} (${e.state})`).join('\n')
-    : ''
-
-  const userMessage = [
-    `Embryo: ${embryo.seed}`,
-    embryo.state !== 'LATENT' ? `Current state: ${embryo.state}` : '',
-    openTensions ? `Open tensions:\n${openTensions}` : '',
-    otherEmbryosList ? `Other embryos in the garden:\n${otherEmbryosList}` : '',
-  ].filter(Boolean).join('\n\n')
+  const userMessage = buildAgentUserMessage({
+    seed: embryo.seed,
+    state: embryo.state,
+    openTensions: embryo.tensions.map(t => t.question),
+    otherEmbryos: candidates,
+    dialogue,
+  })
 
   const { model, timeoutMs } = createOllamaChatModel()
 
@@ -130,7 +90,7 @@ export default defineEventHandler(async (event) => {
   try {
     const result = streamText({
       model,
-      system: SYSTEM_PROMPT,
+      system: AGENT_SYSTEM_PROMPT,
       prompt: userMessage,
       abortSignal: AbortSignal.timeout(timeoutMs),
     })
@@ -169,6 +129,24 @@ export default defineEventHandler(async (event) => {
               },
             }),
           ]
+
+          if (embryo.state === 'LATENT') {
+            dbOps.push(
+              prisma.embryo.update({
+                where: { id },
+                data: {
+                  state: 'GERMINATING',
+                  events: {
+                    create: {
+                      type: 'STATE_CHANGED',
+                      initiatedBy: 'AGENT',
+                      payload: { from: 'LATENT', to: 'GERMINATING' },
+                    },
+                  },
+                },
+              }),
+            )
+          }
 
           const validTargetIds = new Set(candidates.map(e => e.id))
           const validConnections = parsed.connections.filter(c => validTargetIds.has(c.targetId))

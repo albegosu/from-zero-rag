@@ -57,7 +57,7 @@
     "@vitest/coverage-v8": "^2.1.0",
     "changelogen": "^0.6.2",
     "dotenv": "^17.4.2",
-    "eslint": "^9.22.0",
+    "eslint": "^10.9.1",
     "globals": "^16.0.0",
     "gsap": "^3.15.0",
     "husky": "^9.1.7",

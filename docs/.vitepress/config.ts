@@ -20,7 +20,7 @@ export default defineConfig({
       { text: 'Direction', link: '/direction' },
       { text: 'Guide', link: '/guide/getting-started' },
       { text: 'Concepts', link: '/concepts/embryo' },
-      { text: 'Architecture', link: '/architecture' },
+      { text: 'Architecture', link: '/architecture/' },
       { text: 'Experiments', link: '/experiments/' },
       { text: 'Decisions', link: '/decisions/' },
       {
@@ -63,7 +63,7 @@ export default defineConfig({
       {
         text: 'Architecture',
         items: [
-          { text: 'Overview', link: '/architecture' },
+          { text: 'Overview', link: '/architecture/' },
         ],
       },
       {

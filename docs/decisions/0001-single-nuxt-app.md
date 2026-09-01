@@ -24,7 +24,7 @@ Hypar is a **single Nuxt 3 application**: Vue 3 on the client, Nitro (`h3`) rout
 
 ## Sources
 
-- [Architecture](/architecture) — “single Nuxt 3 application”
+- [Architecture](/architecture/) — “single Nuxt 3 application”
 - [Getting started](/guide/getting-started) — single Nuxt 3 process
 - [History](/history) — infrastructure carried forward after the pivot
 - [monorepo-unification](./monorepo-unification) — historical plan

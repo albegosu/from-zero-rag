@@ -52,5 +52,5 @@ Hypar is the lab. `ai-elements-nuxt` is the library. Docs (this site + [AGENTS.m
 | Active tensions | [Open Questions](/open-questions) |
 | Experiment log | [Experiments](/experiments/) |
 | Settled choices | [Decisions](/decisions/) |
-| How it is built | [Architecture](/architecture) |
+| How it is built | [Architecture](/architecture/) |
 | Pivot story | [History](/history) |

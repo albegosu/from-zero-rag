@@ -2,6 +2,8 @@
 
 Thanks for your interest in contributing. This is an AI interaction research lab — improvements, bug fixes, and experiment write-ups are welcome.
 
+Coding agents: start at [`AGENTS.md`](AGENTS.md) and [`docs/direction.md`](docs/direction.md).
+
 ## Getting Started
 
 ### Prerequisites

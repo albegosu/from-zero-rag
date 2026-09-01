@@ -8,7 +8,7 @@ A playground for exploring how humans and AI agents collaborate on knowledge wor
 [![Docker Build](https://github.com/albegosu/hypar/actions/workflows/docker-build.yml/badge.svg)](https://github.com/albegosu/hypar/actions/workflows/docker-build.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-📖 [Docs](https://albegosu.github.io/hypar/)
+📖 [Docs](https://albegosu.github.io/hypar/) · [Direction](https://albegosu.github.io/hypar/direction) · [AGENTS.md](AGENTS.md) (coding agents)
 
 ---
 

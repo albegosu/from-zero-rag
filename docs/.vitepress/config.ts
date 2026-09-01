@@ -17,10 +17,12 @@ export default defineConfig({
     logo: null,
 
     nav: [
+      { text: 'Direction', link: '/direction' },
       { text: 'Guide', link: '/guide/getting-started' },
       { text: 'Concepts', link: '/concepts/embryo' },
       { text: 'Architecture', link: '/architecture' },
       { text: 'Experiments', link: '/experiments/' },
+      { text: 'Decisions', link: '/decisions/' },
       {
         text: 'ai-elements-nuxt',
         link: 'https://github.com/albegosu/ai-elements-nuxt',
@@ -30,6 +32,14 @@ export default defineConfig({
     ],
 
     sidebar: [
+      {
+        text: 'Lab',
+        items: [
+          { text: 'Direction', link: '/direction' },
+          { text: 'Open Questions', link: '/open-questions' },
+          { text: 'Decisions', link: '/decisions/' },
+        ],
+      },
       {
         text: 'Guide',
         items: [
@@ -54,7 +64,6 @@ export default defineConfig({
         text: 'Architecture',
         items: [
           { text: 'Overview', link: '/architecture' },
-          { text: 'Open Questions', link: '/open-questions' },
         ],
       },
       {
@@ -63,6 +72,16 @@ export default defineConfig({
           { text: 'Experiments', link: '/experiments/' },
           { text: 'Method as process', link: '/experiments/method-as-process' },
           { text: 'ai-elements surfaces', link: '/experiments/ai-elements-surfaces' },
+        ],
+      },
+      {
+        text: 'Decisions',
+        items: [
+          { text: 'Index', link: '/decisions/' },
+          { text: '0001 Single Nuxt app', link: '/decisions/0001-single-nuxt-app' },
+          { text: '0002 Agent one question', link: '/decisions/0002-agent-one-question' },
+          { text: '0003 No-delete fossils', link: '/decisions/0003-no-delete-fossils' },
+          { text: 'Monorepo unification (historical)', link: '/decisions/monorepo-unification' },
         ],
       },
       {

@@ -5,8 +5,10 @@ Technical documentation for hypar.
 ## Core docs
 
 - [`index.md`](index.md) — landing (VitePress home)
+- [`direction.md`](direction.md) — lab / product north star
 - [`architecture/index.md`](architecture/index.md) — Embryo domain architecture
 - [`guide/env.md`](guide/env.md) — environment variables
+- Root [`AGENTS.md`](../AGENTS.md) — first-read for coding agents
 
 ## Concepts
 
@@ -31,8 +33,9 @@ Technical documentation for hypar.
 - [`guide/env.md`](guide/env.md) — environment variables
 - [`guide/production.md`](guide/production.md) — production compose
 
-## Design history
+## Decisions & history
 
+- [`decisions/`](decisions/) — ADR index, template, accepted decisions
 - [`decisions/monorepo-unification.md`](decisions/monorepo-unification.md) — ADR (historical)
 - [`rfcs/2026-auth-phases.md`](rfcs/2026-auth-phases.md) — auth RFC (historical)
 - [`history.md`](history.md) — project evolution

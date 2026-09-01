@@ -6,7 +6,13 @@ import {
   METHOD_COPY,
   type FossilKind,
 } from '~/utils/embryo-method'
-import { CONNECTION_TYPES, LIFECYCLE, stateColor } from '~/utils/embryo-display'
+import {
+  CONNECTION_TYPES,
+  LIFECYCLE,
+  lifecycleStepIndex,
+  nextLifecycleState,
+  stateColor,
+} from '~/utils/embryo-display'
 
 const route = useRoute()
 const store = useEmbryoStore()
@@ -19,6 +25,7 @@ const showFossilDialog = ref(false)
 const addingTension = ref(false)
 const fossilizing = ref(false)
 const resurrecting = ref(false)
+const advancing = ref(false)
 
 const showConnectDialog = ref(false)
 const connectSearch = ref('')
@@ -27,6 +34,9 @@ const connectNote = ref('')
 const connecting = ref(false)
 const connectCandidates = ref<Array<{ id: string; seed: string; state: EmbryoState }>>([])
 const connectionView = ref<'list' | 'graph'>('graph')
+
+const tensionsOpen = ref(false)
+const historyOpen = ref(false)
 
 const filteredCandidates = computed(() => {
   const q = connectSearch.value.toLowerCase().trim()
@@ -54,13 +64,23 @@ const isFossil = computed(() => embryo.value?.state === 'FOSSIL')
 const hasLinks = computed(() =>
   !!embryo.value && (embryo.value.connections.length > 0 || embryo.value.connectedTo.length > 0),
 )
+const nextState = computed(() =>
+  embryo.value ? nextLifecycleState(embryo.value.state) : null,
+)
+const currentStepIdx = computed(() =>
+  embryo.value ? lifecycleStepIndex(embryo.value.state) : -1,
+)
 
 watch(id, async (embryoId) => {
   await store.fetchOne(embryoId)
 }, { immediate: true })
 
-async function transition(state: Exclude<EmbryoState, 'FOSSIL'>) {
-  await store.transition(id.value, state)
+async function advanceLifecycle() {
+  const next = nextState.value
+  if (!next) return
+  advancing.value = true
+  await store.transition(id.value, next)
+  advancing.value = false
 }
 
 async function submitTension() {
@@ -122,6 +142,13 @@ const EVENT_LABELS: Record<string, string> = {
   FOSSIL_PROPOSED: 'fossil proposed',
   FOSSILIZED: 'fossilized',
 }
+
+function stepClass(state: EmbryoState) {
+  if (!embryo.value) return ''
+  if (embryo.value.state === state) return 'is-current'
+  const idx = lifecycleStepIndex(state)
+  return idx < currentStepIdx.value ? 'is-done' : ''
+}
 </script>
 
 <template>
@@ -130,91 +157,109 @@ const EVENT_LABELS: Record<string, string> = {
     :class="{ 'fossil-view': isFossil }"
   >
 
-    <NuxtLink to="/" class="wz-faint text-xs hover:wz-accent transition-colors">← garden</NuxtLink>
+    <NuxtLink to="/" class="wz-faint text-xs hover:wz-accent transition-colors">← Garden</NuxtLink>
 
-    <div v-if="store.loading && !embryo" class="wz-faint text-xs text-center py-12">excavating...</div>
-    <div v-else-if="store.error && !embryo" class="text-[var(--term-danger)] text-xs p-3 border border-[var(--term-danger)]">
-      error: {{ store.error }}
+    <div v-if="store.loading && !embryo" class="wz-faint text-xs text-center py-12">Excavating…</div>
+    <div v-else-if="store.error && !embryo" class="text-[var(--term-danger)] text-xs p-3 border border-[var(--term-danger)] rounded-[var(--term-radius)]">
+      Error: {{ store.error }}
     </div>
 
     <template v-else-if="embryo">
 
-      <div class="wz-panel" :class="{ 'fossil-panel': isFossil }">
-        <div class="wz-panel-header flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <span :class="['text-xs font-mono', stateColor(embryo.state)]">
+      <!-- 1. Seed + lifecycle stepper -->
+      <div
+        class="wz-panel"
+        :class="{
+          'fossil-panel': isFossil,
+          'wz-live-glow': embryo.state === 'GROWING',
+        }"
+      >
+        <div class="wz-panel-header flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 min-w-0">
+            <span :class="['text-xs', stateColor(embryo.state)]">
               {{ LIFECYCLE.find(l => l.state === embryo!.state)!.glyph }}
               {{ embryo.state.toLowerCase() }}
             </span>
-            <span class="text-[10px] wz-faint font-mono hidden sm:inline">
+            <span class="text-[10px] wz-faint hidden sm:inline truncate">
               {{ METHOD_COPY[embryo.state] }}
             </span>
-            <span v-if="isFossil" class="text-[10px] text-[var(--term-text-dim)] opacity-60 font-mono">
-              — fossilized {{ embryo.fossilizedAt ? new Date(embryo.fossilizedAt).toLocaleDateString() : '' }}
-            </span>
           </div>
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 shrink-0">
             <button
               v-if="isFossil"
-              class="text-[11px] wz-accent border border-[var(--term-accent-line)] px-2 py-0.5 hover:bg-[var(--term-accent-soft)] disabled:opacity-40 transition-colors"
+              class="wz-btn-outline text-[11px] py-1 disabled:opacity-40"
               :disabled="resurrecting"
               @click="submitResurrect"
             >
-              {{ resurrecting ? '...' : '↺ resurrect' }}
+              {{ resurrecting ? '…' : 'Resurrect' }}
             </button>
             <span class="wz-faint text-[10px]">{{ new Date(embryo.createdAt).toLocaleString() }}</span>
           </div>
         </div>
-        <div class="p-4">
-          <p class="text-sm leading-relaxed font-mono" :class="isFossil ? 'text-[var(--term-text-dim)]' : 'wz-strong'">
+
+        <div class="p-4 flex flex-col gap-4">
+          <p class="text-base leading-relaxed" :class="isFossil ? 'text-[var(--term-text-dim)]' : 'wz-strong'">
             {{ embryo.seed }}
           </p>
-          <div v-if="isFossil && embryo.fossilReason" class="mt-3 pt-3 border-t border-[var(--term-text-dim)] fossil-reason">
-            <p class="text-[10px] text-[var(--term-text-dim)] uppercase tracking-wider mb-1">cause of fossilization</p>
+          <div v-if="isFossil && embryo.fossilReason" class="pt-3 border-t border-[var(--term-text-dim)] fossil-reason">
+            <p class="text-[10px] text-[var(--term-text-dim)] uppercase tracking-wider mb-1">Cause of fossilization</p>
             <p class="text-xs text-[var(--term-text-dim)]">{{ embryo.fossilReason }}</p>
           </div>
-        </div>
-      </div>
 
-      <div v-if="!isFossil" class="wz-panel">
-        <div class="wz-panel-header">
-          <span class="wz-accent">$</span>
-          <span class="wz-label ml-2">lifecycle.transition</span>
-        </div>
-        <div class="p-4 flex flex-col gap-3">
-          <p class="text-[10px] wz-faint font-mono">{{ METHOD_COPY[embryo.state] }}</p>
-          <div class="flex flex-wrap gap-2">
-            <button
-              v-for="step in LIFECYCLE.filter(l => l.state !== 'FOSSIL' && l.state !== embryo!.state)"
-              :key="step.state"
-              class="text-[11px] px-2 py-1 border border-[var(--term-accent-faint)] wz-faint hover:border-[var(--term-accent-line)] hover:wz-accent transition-colors"
-              @click="transition(step.state as Exclude<EmbryoState, 'FOSSIL'>)"
-            >
-              → {{ step.glyph }} {{ step.state.toLowerCase() }}
-            </button>
-            <button
-              class="text-[11px] px-2 py-1 border border-[var(--term-danger)] text-[var(--term-danger)] opacity-60 hover:opacity-100 transition-opacity ml-auto"
-              @click="showFossilDialog = true"
-            >
-              ◈ fossilize
-            </button>
+          <div v-if="!isFossil" class="flex flex-col gap-3 pt-1">
+            <div class="wz-stepper" aria-label="Lifecycle">
+              <template v-for="(step, i) in LIFECYCLE" :key="step.state">
+                <span
+                  v-if="i > 0"
+                  class="wz-step-sep"
+                  aria-hidden="true"
+                />
+                <span
+                  class="wz-step"
+                  :class="stepClass(step.state)"
+                >
+                  <span aria-hidden="true">{{ step.glyph }}</span>
+                  {{ step.label }}
+                </span>
+              </template>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button
+                v-if="nextState"
+                type="button"
+                class="wz-btn-primary text-xs disabled:opacity-40"
+                :disabled="advancing"
+                @click="advanceLifecycle"
+              >
+                {{ advancing ? '…' : `Advance to ${LIFECYCLE.find(l => l.state === nextState)!.label}` }}
+              </button>
+              <span v-else class="text-[11px] wz-faint self-center">Ready to close — or keep probing</span>
+              <button
+                type="button"
+                class="wz-btn-danger text-xs ml-auto"
+                @click="showFossilDialog = true"
+              >
+                Fossilize
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
+      <!-- 2. Agent challenge (focal) -->
       <EmbryoAgentCollaborate :embryo-id="id" />
 
       <div v-if="showFossilDialog" class="wz-panel border-[var(--term-danger)]">
         <div class="wz-panel-header" style="border-color: var(--term-danger)">
-          <span class="text-[var(--term-danger)] text-xs">◈ fossilize — this cannot be undone</span>
+          <span class="text-[var(--term-danger)] text-xs">Fossilize — this cannot be undone</span>
         </div>
         <div class="p-4 flex flex-col gap-3">
-          <p class="text-[10px] wz-faint font-mono">closing is evaluation — which kind of death?</p>
+          <p class="text-[10px] wz-faint">Closing is evaluation — which kind of death?</p>
           <div class="flex flex-wrap gap-2">
             <button
               v-for="kind in FOSSIL_KINDS"
               :key="kind"
-              class="text-[11px] px-2 py-0.5 border transition-colors"
+              class="text-[11px] px-2.5 py-1 border rounded-full transition-colors"
               :class="fossilKind === kind
                 ? 'border-[var(--term-danger)] text-[var(--term-danger)]'
                 : 'border-[var(--term-accent-faint)] wz-faint hover:border-[var(--term-danger)]'"
@@ -226,100 +271,51 @@ const EVENT_LABELS: Record<string, string> = {
           <textarea
             v-model="fossilReason"
             rows="2"
-            placeholder="why is this closing? (required)"
-            class="bg-transparent resize-none text-sm wz-strong placeholder:wz-faint focus:outline-none font-mono w-full"
+            placeholder="Why is this closing? (required)"
+            class="bg-transparent resize-none text-sm wz-strong placeholder:wz-faint focus:outline-none w-full"
           />
           <div class="flex gap-2 justify-end">
-            <button class="text-xs wz-faint px-3 py-1 hover:wz-muted" @click="showFossilDialog = false; fossilKind = null">cancel</button>
+            <button class="wz-btn-ghost text-xs" @click="showFossilDialog = false; fossilKind = null">Cancel</button>
             <button
-              class="text-xs px-3 py-1 border border-[var(--term-danger)] text-[var(--term-danger)] disabled:opacity-40 hover:bg-red-950/30 transition-colors"
+              class="wz-btn-danger text-xs disabled:opacity-40"
               :disabled="!fossilReason.trim() || fossilizing"
               @click="submitFossilize"
             >
-              {{ fossilizing ? '...' : 'confirm fossilize' }}
+              {{ fossilizing ? '…' : 'Confirm fossilize' }}
             </button>
           </div>
         </div>
       </div>
 
-      <div class="wz-panel" :class="{ 'fossil-panel': isFossil }">
-        <div class="wz-panel-header flex items-center justify-between">
-          <div>
-            <span class="wz-accent">$</span>
-            <span class="wz-label ml-2">tensions.open</span>
-          </div>
-          <span class="wz-faint text-[10px]">{{ embryo.tensions.filter(t => !t.resolved).length }} unresolved</span>
-        </div>
-        <div class="divide-y divide-[var(--term-accent-faint)]">
-          <div
-            v-for="t in embryo.tensions"
-            :key="t.id"
-            class="px-4 py-3 flex items-start justify-between gap-3"
-            :class="t.resolved ? 'opacity-40' : ''"
-          >
-            <div>
-              <span class="text-[10px] wz-faint mr-2">{{ t.raisedBy.toLowerCase() }}</span>
-              <span class="text-xs wz-strong">{{ t.question }}</span>
-            </div>
-            <button
-              v-if="!t.resolved && !isFossil"
-              class="text-[10px] wz-faint hover:wz-accent shrink-0 transition-colors"
-              @click="store.resolveTension(id, t.id)"
-            >
-              resolve ✓
-            </button>
-            <span v-else-if="t.resolved" class="text-[10px] wz-faint shrink-0">resolved</span>
-          </div>
-        </div>
-        <div v-if="!isFossil" class="p-4 border-t border-[var(--term-accent-faint)] flex gap-3">
-          <input
-            v-model="tensionInput"
-            type="text"
-            placeholder="add an open question..."
-            class="flex-1 bg-transparent text-xs wz-strong placeholder:wz-faint focus:outline-none font-mono"
-            @keydown.enter="submitTension"
-          />
-          <button
-            class="text-[11px] wz-accent border border-[var(--term-accent-line)] px-2 py-0.5 hover:bg-[var(--term-accent-soft)] disabled:opacity-40 transition-colors"
-            :disabled="!tensionInput.trim() || addingTension"
-            @click="submitTension"
-          >
-            +
-          </button>
-        </div>
-      </div>
-
+      <!-- 3. Connections (empty graph shell always visible) -->
       <div class="wz-panel" :class="{ 'fossil-panel': isFossil }">
         <div class="wz-panel-header flex items-center justify-between gap-2">
-          <div>
-            <span class="wz-accent">$</span>
-            <span class="wz-label ml-2">connections</span>
-          </div>
+          <span class="wz-label">Connections</span>
           <div class="flex items-center gap-2">
             <button
-              class="text-[10px] px-2 py-0.5 border transition-colors"
+              class="text-[10px] px-2.5 py-0.5 border rounded-full transition-colors"
               :class="connectionView === 'graph'
                 ? 'border-[var(--term-accent)] wz-accent bg-[var(--term-accent-soft)]'
                 : 'border-[var(--term-accent-faint)] wz-faint'"
               @click="connectionView = 'graph'"
             >
-              graph
+              Graph
             </button>
             <button
-              class="text-[10px] px-2 py-0.5 border transition-colors"
+              class="text-[10px] px-2.5 py-0.5 border rounded-full transition-colors"
               :class="connectionView === 'list'
                 ? 'border-[var(--term-accent)] wz-accent bg-[var(--term-accent-soft)]'
                 : 'border-[var(--term-accent-faint)] wz-faint'"
               @click="connectionView = 'list'"
             >
-              list
+              List
             </button>
             <button
               v-if="!isFossil"
-              class="text-[11px] wz-accent border border-[var(--term-accent-line)] px-2 py-0.5 hover:bg-[var(--term-accent-soft)] transition-colors"
+              class="wz-btn-outline text-[11px] py-0.5"
               @click="openConnectDialog"
             >
-              + connect
+              Connect
             </button>
           </div>
         </div>
@@ -329,7 +325,7 @@ const EVENT_LABELS: Record<string, string> = {
             <button
               v-for="ct in CONNECTION_TYPES"
               :key="ct.value"
-              class="text-[11px] px-2 py-0.5 border transition-colors"
+              class="text-[11px] px-2.5 py-0.5 border rounded-full transition-colors"
               :class="connectType === ct.value
                 ? 'border-[var(--term-accent)] wz-accent bg-[var(--term-accent-soft)]'
                 : 'border-[var(--term-accent-faint)] wz-faint hover:border-[var(--term-accent-line)]'"
@@ -341,44 +337,41 @@ const EVENT_LABELS: Record<string, string> = {
           <input
             v-model="connectSearch"
             type="text"
-            placeholder="search embryos..."
-            class="bg-transparent text-xs wz-strong placeholder:wz-faint focus:outline-none font-mono w-full border-b border-[var(--term-accent-faint)] pb-2"
+            placeholder="Search embryos…"
+            class="bg-transparent text-xs wz-strong placeholder:wz-faint focus:outline-none w-full border-b border-[var(--term-accent-faint)] pb-2"
           />
           <div class="max-h-48 overflow-y-auto flex flex-col gap-1">
             <button
               v-for="candidate in filteredCandidates.slice(0, 10)"
               :key="candidate.id"
-              class="text-left px-2 py-1.5 text-xs hover:bg-[var(--term-accent-soft)] transition-colors flex items-center gap-2 group"
+              class="text-left px-2 py-1.5 text-xs hover:bg-[var(--term-accent-soft)] transition-colors flex items-center gap-2 group rounded-[var(--term-radius)]"
               :disabled="connecting"
               @click="submitConnection(candidate.id)"
             >
-              <span :class="['text-[10px] font-mono shrink-0', stateColor(candidate.state)]">
+              <span :class="['text-[10px] shrink-0', stateColor(candidate.state)]">
                 {{ LIFECYCLE.find(l => l.state === candidate.state)?.glyph }}
               </span>
               <span class="wz-muted truncate flex-1 group-hover:wz-strong">{{ candidate.seed }}</span>
             </button>
             <p v-if="filteredCandidates.length === 0" class="text-[11px] wz-faint py-2 text-center">
-              {{ connectCandidates.length === 0 ? 'no other embryos available' : 'no matches' }}
+              {{ connectCandidates.length === 0 ? 'No other embryos available' : 'No matches' }}
             </p>
           </div>
           <input
             v-model="connectNote"
             type="text"
-            placeholder="note (optional)"
-            class="bg-transparent text-xs wz-strong placeholder:wz-faint focus:outline-none font-mono w-full"
+            placeholder="Note (optional)"
+            class="bg-transparent text-xs wz-strong placeholder:wz-faint focus:outline-none w-full"
           />
           <div class="flex justify-end">
-            <button class="text-xs wz-faint px-3 py-1 hover:wz-muted" @click="showConnectDialog = false">cancel</button>
+            <button class="wz-btn-ghost text-xs" @click="showConnectDialog = false">Cancel</button>
           </div>
         </div>
 
         <EmbryoConnectionGraph
-          v-if="connectionView === 'graph' && hasLinks"
+          v-if="connectionView === 'graph'"
           :embryo="embryo"
         />
-        <div v-else-if="connectionView === 'graph' && !showConnectDialog" class="px-4 py-3 wz-faint text-[11px]">
-          no connections yet — the graph appears when a link exists
-        </div>
 
         <div v-if="connectionView === 'list' && hasLinks" class="divide-y divide-[var(--term-accent-faint)]">
           <div
@@ -398,9 +391,9 @@ const EVENT_LABELS: Record<string, string> = {
               class="text-[10px] text-[var(--term-warn)] hover:wz-accent shrink-0 transition-colors"
               @click="store.confirmConnection(id, c.id)"
             >
-              confirm ✓
+              Confirm
             </button>
-            <span v-else-if="!c.confirmedByUser" class="text-[10px] text-[var(--term-warn)] shrink-0">unconfirmed</span>
+            <span v-else-if="!c.confirmedByUser" class="text-[10px] text-[var(--term-warn)] shrink-0">Unconfirmed</span>
           </div>
           <NuxtLink
             v-for="c in embryo.connectedTo"
@@ -412,15 +405,84 @@ const EVENT_LABELS: Record<string, string> = {
             <span class="text-xs wz-muted truncate">{{ c.source.seed }}</span>
           </NuxtLink>
         </div>
-        <div v-else-if="connectionView === 'list' && !showConnectDialog" class="px-4 py-3 wz-faint text-[11px]">no connections yet</div>
+        <div v-else-if="connectionView === 'list' && !showConnectDialog" class="px-4 py-3 wz-faint text-[11px]">No connections yet</div>
       </div>
 
+      <!-- 4. Tensions (collapsed by default) -->
       <div class="wz-panel" :class="{ 'fossil-panel': isFossil }">
         <div class="wz-panel-header">
-          <span class="wz-accent">$</span>
-          <span class="wz-label ml-2">history.log</span>
+          <button
+            type="button"
+            class="wz-collapse-toggle"
+            :aria-expanded="tensionsOpen"
+            @click="tensionsOpen = !tensionsOpen"
+          >
+            <span class="wz-label">
+              Tensions
+              <span class="wz-faint font-normal ml-2">{{ embryo.tensions.filter(t => !t.resolved).length }} open</span>
+            </span>
+            <span class="wz-faint text-[10px]">{{ tensionsOpen ? 'Hide' : 'Show' }}</span>
+          </button>
         </div>
-        <div class="divide-y divide-[var(--term-accent-faint)]">
+        <template v-if="tensionsOpen">
+          <div class="divide-y divide-[var(--term-accent-faint)]">
+            <div
+              v-for="t in embryo.tensions"
+              :key="t.id"
+              class="px-4 py-3 flex items-start justify-between gap-3"
+              :class="t.resolved ? 'opacity-40' : ''"
+            >
+              <div>
+                <span class="text-[10px] wz-faint mr-2">{{ t.raisedBy.toLowerCase() }}</span>
+                <span class="text-xs wz-strong">{{ t.question }}</span>
+              </div>
+              <button
+                v-if="!t.resolved && !isFossil"
+                class="text-[10px] wz-faint hover:wz-accent shrink-0 transition-colors"
+                @click="store.resolveTension(id, t.id)"
+              >
+                Resolve
+              </button>
+              <span v-else-if="t.resolved" class="text-[10px] wz-faint shrink-0">Resolved</span>
+            </div>
+            <p v-if="embryo.tensions.length === 0" class="px-4 py-3 wz-faint text-[11px]">No tensions yet</p>
+          </div>
+          <div v-if="!isFossil" class="p-4 border-t border-[var(--term-accent-faint)] flex gap-3">
+            <input
+              v-model="tensionInput"
+              type="text"
+              placeholder="Add an open question…"
+              class="flex-1 bg-transparent text-xs wz-strong placeholder:wz-faint focus:outline-none"
+              @keydown.enter="submitTension"
+            />
+            <button
+              class="wz-btn-outline text-[11px] py-0.5 disabled:opacity-40"
+              :disabled="!tensionInput.trim() || addingTension"
+              @click="submitTension"
+            >
+              Add
+            </button>
+          </div>
+        </template>
+      </div>
+
+      <!-- History (collapsed by default) -->
+      <div class="wz-panel" :class="{ 'fossil-panel': isFossil }">
+        <div class="wz-panel-header">
+          <button
+            type="button"
+            class="wz-collapse-toggle"
+            :aria-expanded="historyOpen"
+            @click="historyOpen = !historyOpen"
+          >
+            <span class="wz-label">
+              History
+              <span class="wz-faint font-normal ml-2">{{ embryo.events.length }} events</span>
+            </span>
+            <span class="wz-faint text-[10px]">{{ historyOpen ? 'Hide' : 'Show' }}</span>
+          </button>
+        </div>
+        <div v-if="historyOpen" class="divide-y divide-[var(--term-accent-faint)]">
           <div
             v-for="ev in [...embryo.events].reverse()"
             :key="ev.id"

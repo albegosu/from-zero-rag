@@ -43,6 +43,7 @@ Copy [`_template.md`](./_template.md) when proposing a new ADR.
 | [0001 — Single Nuxt app](./0001-single-nuxt-app) | accepted | One Nuxt 3 process; no separate API repo / CORS split |
 | [0002 — Agent one-question constraint](./0002-agent-one-question) | accepted | Exactly one challenging question per agent turn |
 | [0003 — No-delete fossils](./0003-no-delete-fossils) | accepted | No delete; close with required reason as fossil |
+| [0004 — Glass visual language](./0004-glass-visual-language) | accepted | Glass + rounded light/dark app UI; not terminal chrome |
 | [monorepo-unification](./monorepo-unification) | historical | Pre-ADR plan to collapse multi-app RAG monorepo into one Nuxt app |
 
 ---

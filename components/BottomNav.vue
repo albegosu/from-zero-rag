@@ -6,7 +6,7 @@
           v-for="item in items"
           :key="item.path"
           :to="item.path"
-          class="flex flex-col items-center gap-1 py-2 px-3 rounded-lg transition-colors duration-150 relative"
+          class="flex flex-col items-center gap-1 py-2 px-3 rounded-full transition-colors duration-150 relative"
           :class="[
             isActive(item.path) ? 'nav-active-pill wz-strong' : 'wz-muted hover:text-[color:var(--term-text-strong)]'
           ]"

@@ -8,7 +8,7 @@
           <span class="wz-strong font-semibold">hypar</span>
         </div>
         <button type="button" class="wz-btn-ghost wz-theme-toggle" @click="toggleTheme">
-          {{ theme === 'light' ? '[ light ]' : '[ dark ]' }}
+          {{ theme === 'light' ? 'Light' : 'Dark' }}
         </button>
       </header>
 
@@ -17,14 +17,13 @@
           <div class="wz-panel">
 
             <div class="wz-panel-header flex items-center gap-2">
-              <span class="wz-accent">$</span>
-              <span class="wz-label">auth --signup</span>
+              <span class="wz-label">Create account</span>
             </div>
 
             <div class="p-6 space-y-5">
               <div class="space-y-1">
-                <h1 class="text-base font-semibold wz-strong">// create account</h1>
-                <p class="text-[11px] wz-faint">Join your workspace</p>
+                <h1 class="text-base font-semibold wz-strong">Join hypar</h1>
+                <p class="text-[11px] wz-faint">Create your workspace account</p>
               </div>
 
               <template v-if="hasOAuth">
@@ -36,7 +35,7 @@
                     :disabled="!!loadingProvider"
                     @click="registerWith('google')"
                   >
-                    {{ loadingProvider === 'google' ? '…' : '▸ continue with google' }}
+                    {{ loadingProvider === 'google' ? '…' : 'Continue with Google' }}
                   </button>
                   <button
                     v-if="providers.github"
@@ -45,13 +44,13 @@
                     :disabled="!!loadingProvider"
                     @click="registerWith('github')"
                   >
-                    {{ loadingProvider === 'github' ? '…' : '▸ continue with github' }}
+                    {{ loadingProvider === 'github' ? '…' : 'Continue with GitHub' }}
                   </button>
                 </div>
 
                 <div class="flex items-center gap-3">
                   <div class="flex-1 h-px" style="background: var(--term-accent-line)" />
-                  <span class="text-[11px] wz-faint">── or ──</span>
+                  <span class="text-[11px] wz-faint">or</span>
                   <div class="flex-1 h-px" style="background: var(--term-accent-line)" />
                 </div>
               </template>
@@ -112,7 +111,7 @@
                   class="wz-btn-primary w-full justify-center"
                   :disabled="loadingEmail"
                 >
-                  {{ loadingEmail ? '…' : 'create account ▶' }}
+                  {{ loadingEmail ? '…' : 'Create account' }}
                 </button>
               </form>
 

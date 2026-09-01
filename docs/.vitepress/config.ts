@@ -81,6 +81,7 @@ export default defineConfig({
           { text: '0001 Single Nuxt app', link: '/decisions/0001-single-nuxt-app' },
           { text: '0002 Agent one question', link: '/decisions/0002-agent-one-question' },
           { text: '0003 No-delete fossils', link: '/decisions/0003-no-delete-fossils' },
+          { text: '0004 Glass visual language', link: '/decisions/0004-glass-visual-language' },
           { text: 'Monorepo unification (historical)', link: '/decisions/monorepo-unification' },
         ],
       },

@@ -70,26 +70,25 @@ onMounted(() => store.fetchAll())
     <!-- header -->
     <div class="wz-panel">
       <div class="wz-panel-header flex items-center justify-between">
-        <span class="wz-faint text-[11px]">hypar // embryo garden</span>
+        <span class="wz-label">Embryo garden</span>
         <span class="wz-faint text-[11px]">{{ store.alive.length }} alive · {{ store.byState.FOSSIL.length }} fossil</span>
       </div>
       <div class="px-4 pt-3 pb-4">
-        <p class="wz-muted text-xs">capture a raw thought — the agent will challenge it</p>
+        <p class="wz-muted text-xs">Capture a raw thought — the agent will challenge it</p>
       </div>
     </div>
 
     <!-- seed capture -->
     <div class="wz-panel">
       <div class="wz-panel-header">
-        <span class="wz-accent">$</span>
-        <span class="wz-label ml-2">embryo.create --capture</span>
+        <span class="wz-label">New seed</span>
       </div>
       <div class="p-4 flex gap-3">
         <textarea
           v-model="seedInput"
           rows="3"
-          placeholder="drop the seed..."
-          class="flex-1 bg-transparent resize-none text-sm wz-strong placeholder:wz-faint focus:outline-none font-mono"
+          placeholder="Drop the seed..."
+          class="flex-1 bg-transparent resize-none text-sm wz-strong placeholder:wz-faint focus:outline-none"
           @keydown.meta.enter="submitSeed"
         />
         <div class="flex flex-col gap-2 self-end">
@@ -102,11 +101,11 @@ onMounted(() => store.fetchAll())
             <template #unsupported />
           </AiSpeechInput>
           <button
-            class="px-3 py-1.5 text-xs wz-accent border border-[var(--term-accent-line)] hover:bg-[var(--term-accent-soft)] transition-colors disabled:opacity-40"
+            class="wz-btn-primary text-xs disabled:opacity-40"
             :disabled="!seedInput.trim() || creating"
             @click="submitSeed"
           >
-            {{ creating ? 'engaging...' : '+ seed' }}
+            {{ creating ? 'Engaging…' : 'Plant seed' }}
           </button>
         </div>
       </div>
@@ -119,7 +118,7 @@ onMounted(() => store.fetchAll())
       <button
         v-for="f in (['ALL', 'SURFACE', 'STRATA', ...LIFECYCLE.map(l => l.state)] as const)"
         :key="f"
-        class="text-[11px] px-2 py-0.5 border transition-colors"
+        class="text-[11px] px-2.5 py-1 border transition-colors rounded-full"
         :class="activeFilter === f
           ? 'border-[var(--term-accent)] wz-accent bg-[var(--term-accent-soft)]'
           : 'border-[var(--term-accent-faint)] wz-faint hover:border-[var(--term-accent-line)]'"
@@ -152,8 +151,8 @@ onMounted(() => store.fetchAll())
     <div v-else-if="strataGroups" class="flex flex-col gap-6">
       <section v-for="group in strataGroups" :key="group.stratum" class="flex flex-col gap-3">
         <div class="flex items-baseline justify-between px-1">
-          <p class="text-[11px] wz-accent font-mono uppercase tracking-wider">{{ group.label }}</p>
-          <p class="text-[10px] wz-faint font-mono">{{ group.depth }} · {{ group.items.length }}</p>
+          <p class="text-[11px] wz-accent uppercase tracking-wider">{{ group.label }}</p>
+          <p class="text-[10px] wz-faint">{{ group.depth }} · {{ group.items.length }}</p>
         </div>
         <NuxtLink
           v-for="e in group.items"
@@ -163,7 +162,7 @@ onMounted(() => store.fetchAll())
           :class="`stratum-${group.stratum}`"
         >
           <div class="wz-panel-header flex items-center justify-between">
-            <span :class="['text-xs font-mono', stateColor(e.state)]">
+            <span :class="['text-xs', stateColor(e.state)]">
               {{ LIFECYCLE.find(l => l.state === e.state)!.glyph }}
               {{ e.state.toLowerCase() }}
             </span>
@@ -185,10 +184,13 @@ onMounted(() => store.fetchAll())
         :key="e.id"
         :to="`/embryo/${e.id}`"
         class="wz-panel group block transition-colors"
-        :class="e.state === 'FOSSIL' ? 'fossil-card' : 'hover:border-[var(--term-accent-line)]'"
+        :class="[
+          e.state === 'FOSSIL' ? 'fossil-card' : 'hover:border-[var(--term-accent-line)]',
+          e.state === 'GROWING' ? 'wz-live-glow' : '',
+        ]"
       >
         <div class="wz-panel-header flex items-center justify-between">
-          <span :class="['text-xs font-mono', stateColor(e.state)]">
+          <span :class="['text-xs', stateColor(e.state)]">
             {{ LIFECYCLE.find(l => l.state === e.state)!.glyph }}
             {{ e.state.toLowerCase() }}
           </span>

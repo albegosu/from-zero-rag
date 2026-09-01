@@ -20,8 +20,7 @@ const models = computed<AiModelOption[]>(() => data.value?.models ?? [{
   <div class="max-w-3xl mx-auto px-4 pt-6 pb-24 flex flex-col gap-5">
     <div class="wz-panel">
       <div class="wz-panel-header">
-        <span class="wz-accent">$</span>
-        <span class="wz-label ml-2">settings</span>
+        <span class="wz-label">Settings</span>
       </div>
       <div class="p-4 flex flex-col gap-4">
         <div>

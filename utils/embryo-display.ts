@@ -8,6 +8,26 @@ export const LIFECYCLE: Array<{ state: EmbryoState; label: string; glyph: string
   { state: 'FOSSIL', label: 'fossil', glyph: '◈' },
 ]
 
+/** Forward-only next state (excludes FOSSIL — closing is a separate action). */
+export const LIFECYCLE_FORWARD: Exclude<EmbryoState, 'FOSSIL'>[] = [
+  'LATENT',
+  'GERMINATING',
+  'GROWING',
+  'MATURE',
+]
+
+export function nextLifecycleState(
+  state: EmbryoState,
+): Exclude<EmbryoState, 'FOSSIL'> | null {
+  const idx = LIFECYCLE_FORWARD.indexOf(state as Exclude<EmbryoState, 'FOSSIL'>)
+  if (idx < 0 || idx >= LIFECYCLE_FORWARD.length - 1) return null
+  return LIFECYCLE_FORWARD[idx + 1]!
+}
+
+export function lifecycleStepIndex(state: EmbryoState): number {
+  return LIFECYCLE.findIndex(l => l.state === state)
+}
+
 export const CONNECTION_TYPES: Array<{ value: ConnectionType; label: string; glyph: string }> = [
   { value: 'REINFORCES', label: 'reinforces', glyph: '⟶' },
   { value: 'CONTRADICTS', label: 'contradicts', glyph: '⟷' },

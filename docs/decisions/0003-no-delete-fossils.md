@@ -25,6 +25,6 @@ Hypar has **no delete operation** for embryos. Ideas close as **fossils** with a
 ## Sources
 
 - [Fossils & Memory](/concepts/fossils)
-- [Architecture](/architecture) — “No delete”
+- [Architecture](/architecture/) — “No delete”
 - [README](https://github.com/albegosu/hypar/blob/main/README.md) — “No delete”
 - [The Lifecycle](/concepts/lifecycle)

@@ -8,7 +8,7 @@ Technical documentation for hypar.
 - [`direction.md`](direction.md) — lab / product north star
 - [`architecture/index.md`](architecture/index.md) — Embryo domain architecture
 - [`guide/env.md`](guide/env.md) — environment variables
-- Root [`AGENTS.md`](../AGENTS.md) — first-read for coding agents
+- Root [`AGENTS.md`](https://github.com/albegosu/hypar/blob/main/AGENTS.md) — first-read for coding agents
 
 ## Concepts
 

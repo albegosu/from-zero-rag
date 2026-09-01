@@ -25,6 +25,6 @@ Each agent invocation streams **exactly one challenging question**. No summaries
 ## Sources
 
 - [The Agent](/concepts/agent)
-- [Architecture — Agent integration](/architecture)
+- [Architecture — Agent integration](/architecture/)
 - [README](https://github.com/albegosu/hypar/blob/main/README.md) — “one challenging question per turn”
 - [Open Questions — Variety vs exactly one question](/open-questions)

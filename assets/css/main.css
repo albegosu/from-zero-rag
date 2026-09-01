@@ -17,7 +17,7 @@
  */
 .terminal-theme {
   --term-bg:            #0b1220;
-  --term-bg-elevated:   rgba(255, 255, 255, 0.06);
+  --term-bg-elevated:   rgba(255, 255, 255, 0.09);
   --term-bg-input:      rgba(255, 255, 255, 0.08);
   --term-bg-soft:       rgba(255, 255, 255, 0.04);
 
@@ -50,9 +50,9 @@
   --term-glow: 0 0 28px -6px rgba(94, 234, 212, 0.45);
 
   --term-scanlines:
-    radial-gradient(900px 520px at 12% -8%, rgba(167, 139, 250, 0.18), transparent 58%),
-    radial-gradient(780px 480px at 92% 8%, rgba(94, 234, 212, 0.16), transparent 55%),
-    radial-gradient(700px 520px at 50% 110%, rgba(251, 191, 36, 0.08), transparent 55%);
+    radial-gradient(1000px 580px at 10% -12%, rgba(167, 139, 250, 0.32), transparent 58%),
+    radial-gradient(900px 540px at 95% 6%, rgba(94, 234, 212, 0.28), transparent 55%),
+    radial-gradient(780px 560px at 48% 115%, rgba(251, 191, 36, 0.14), transparent 55%);
 
   --term-cta-bg: #ffffff;
   --term-cta-fg: #0b1220;
@@ -64,7 +64,7 @@
 
 .terminal-theme.theme-light {
   --term-bg:            #f4efe8;
-  --term-bg-elevated:   rgba(255, 255, 255, 0.72);
+  --term-bg-elevated:   rgba(255, 255, 255, 0.62);
   --term-bg-input:      rgba(255, 255, 255, 0.88);
   --term-bg-soft:       rgba(255, 255, 255, 0.48);
 
@@ -87,9 +87,9 @@
   --term-glow: 0 0 24px -8px rgba(45, 212, 191, 0.35);
 
   --term-scanlines:
-    radial-gradient(820px 480px at 8% -6%, rgba(253, 186, 116, 0.28), transparent 58%),
-    radial-gradient(760px 460px at 96% 4%, rgba(196, 181, 253, 0.22), transparent 55%),
-    radial-gradient(680px 500px at 48% 108%, rgba(153, 246, 228, 0.22), transparent 55%);
+    radial-gradient(980px 540px at 6% -10%, rgba(253, 186, 116, 0.42), transparent 58%),
+    radial-gradient(900px 520px at 98% 2%, rgba(196, 181, 253, 0.36), transparent 55%),
+    radial-gradient(820px 560px at 45% 112%, rgba(153, 246, 228, 0.34), transparent 55%);
 
   --term-cta-bg: #0f172a;
   --term-cta-fg: #f8fafc;

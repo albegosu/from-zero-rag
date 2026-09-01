@@ -3,6 +3,7 @@
 This directory holds **scratch notes** from Cursor / agent sessions: explorations, rough plans, and one-off write-ups. It is **not** product documentation.
 
 - Do **not** treat these files as the source of truth for behaviour, APIs, or roadmap.
+- Agent entrypoint: [AGENTS.md](../AGENTS.md) and [docs/direction.md](../docs/direction.md).
 - For accurate docs use the root [README.md](../README.md), [docs/](../docs/) (VitePress), [docs/rfcs/](../docs/rfcs/), and [docs/decisions/](../docs/decisions/).
 - New notes can be added here without editorial bar; prune or archive when they stop being useful.
 

@@ -7,6 +7,9 @@ hero:
   tagline: Exploring how humans and agents collaborate on knowledge. Each feature is an experiment — patterns are extracted into ai-elements-nuxt.
   actions:
     - theme: brand
+      text: Direction
+      link: /direction
+    - theme: alt
       text: Get started
       link: /guide/getting-started
     - theme: alt

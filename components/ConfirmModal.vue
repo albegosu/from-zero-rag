@@ -18,7 +18,6 @@
         <div class="relative z-10 w-full max-w-md">
           <div class="wz-panel card-hover overflow-hidden shadow-lg">
             <div class="wz-panel-header flex items-center gap-2">
-              <span class="wz-accent">$</span>
               <span class="wz-label truncate">{{ title }}</span>
             </div>
 

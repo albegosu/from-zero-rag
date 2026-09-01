@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AiConfirmationData, AiContextItem, AiMessageProps, AiSuggestion } from 'ai-elements-nuxt/types'
+import type { AiConfirmationData, AiContextItem, AiSuggestion } from 'ai-elements-nuxt/types'
 import { extractPartialQuestion } from '~/utils/embryo-stream'
 import { FOSSIL_KIND_COPY, parseFossilNote } from '~/utils/embryo-method'
 import { appendTranscript, parseConnectionNote } from '~/utils/embryo-display'
@@ -75,13 +75,18 @@ const canAsk = computed(() =>
   !isFossil.value && !askingAgent.value && !unansweredQuestion.value && (!neverEngaged.value || firstEngageFailed.value),
 )
 
-const dialogueMessages = computed<AiMessageProps[]>(() =>
-  dialogue.value.map(turn => ({
-    role: turn.role === 'agent' ? 'assistant' : 'user',
-    content: turn.text,
-    status: 'complete',
-  })),
-)
+/** Current unanswered question as the hero (streaming uses streamPreview in template). */
+const focalChallenge = computed(() => unansweredQuestion.value?.content ?? null)
+
+/** Prior completed turns — compact log, excluding the live unanswered question. */
+const priorTurns = computed(() => {
+  const pending = unansweredQuestion.value?.content
+  const turns = dialogue.value.filter((t) => {
+    if (pending && t.role === 'agent' && t.text === pending) return false
+    return true
+  })
+  return turns.slice(-8)
+})
 
 const contextItems = computed<AiContextItem[]>(() => {
   const e = embryo.value
@@ -286,26 +291,23 @@ watch(
 <template>
   <div class="wz-panel" :class="{ 'fossil-panel': isFossil }">
     <div class="wz-panel-header flex items-center justify-between">
-      <div>
-        <span class="wz-accent">$</span>
-        <span class="wz-label ml-2">agent.collaborate</span>
-      </div>
+      <span class="wz-label">Agent challenge</span>
       <button
         v-if="canAsk"
-        class="text-[11px] wz-accent border border-[var(--term-accent-line)] px-2 py-0.5 hover:bg-[var(--term-accent-soft)] disabled:opacity-40 transition-colors"
+        class="wz-btn-outline text-[11px] py-0.5 disabled:opacity-40"
         :disabled="askingAgent"
         @click="askAgent"
       >
-        {{ dialogue.length ? 'ask again' : 'engage' }}
+        {{ dialogue.length ? 'Ask again' : 'Engage' }}
       </button>
-      <span v-else-if="askingAgent" class="text-[11px] wz-accent">thinking...</span>
+      <span v-else-if="askingAgent" class="text-[11px] wz-accent">Thinking…</span>
     </div>
 
     <div
       v-if="germinatedNotice && !isFossil"
-      class="px-4 py-2 text-[11px] wz-accent border-b border-[var(--term-accent-faint)] font-mono"
+      class="px-4 py-2 text-[11px] wz-accent border-b border-[var(--term-accent-faint)]"
     >
-      state → germinating · first engage
+      Advanced to germinating — first engage
     </div>
 
     <AiErrorBoundary
@@ -320,111 +322,106 @@ watch(
       <AiContext :items="contextItems" :collapsed="true" />
     </div>
 
-      <div v-if="pendingConnections.length && !isFossil" class="divide-y divide-[var(--term-accent-faint)]">
-        <AiConfirmation
-          v-for="note in pendingConnections"
-          :key="note.id"
-          :confirmation="connectionConfirmation(note)"
-          @confirm="acceptConnection(note.id)"
-          @deny="store.dismissNote(embryoId, note.id)"
-        />
-      </div>
-
-      <div v-if="pendingPaths.length && !isFossil" class="divide-y divide-[var(--term-accent-faint)] border-t border-[var(--term-accent-faint)]">
-        <AiConfirmation
-          v-for="note in pendingPaths"
-          :key="note.id"
-          :confirmation="pathConfirmation(note)"
-          @confirm="store.acceptPath(embryoId, note.id)"
-          @deny="store.dismissNote(embryoId, note.id)"
-        />
-      </div>
-
+    <div v-if="pendingConnections.length && !isFossil" class="divide-y divide-[var(--term-accent-faint)]">
       <AiConfirmation
-        v-if="fossilConfirmation && pendingFossil && !isFossil"
-        :confirmation="fossilConfirmation"
-        @confirm="store.acceptFossil(embryoId, pendingFossil.id)"
-        @deny="store.dismissNote(embryoId, pendingFossil.id)"
+        v-for="note in pendingConnections"
+        :key="note.id"
+        :confirmation="connectionConfirmation(note)"
+        @confirm="acceptConnection(note.id)"
+        @deny="store.dismissNote(embryoId, note.id)"
       />
+    </div>
 
+    <div v-if="pendingPaths.length && !isFossil" class="divide-y divide-[var(--term-accent-faint)] border-t border-[var(--term-accent-faint)]">
+      <AiConfirmation
+        v-for="note in pendingPaths"
+        :key="note.id"
+        :confirmation="pathConfirmation(note)"
+        @confirm="store.acceptPath(embryoId, note.id)"
+        @deny="store.dismissNote(embryoId, note.id)"
+      />
+    </div>
+
+    <AiConfirmation
+      v-if="fossilConfirmation && pendingFossil && !isFossil"
+      :confirmation="fossilConfirmation"
+      @confirm="store.acceptFossil(embryoId, pendingFossil.id)"
+      @deny="store.dismissNote(embryoId, pendingFossil.id)"
+    />
+
+    <!-- Focal challenge: current unanswered / streaming question -->
+    <div
+      v-if="focalChallenge || askingAgent"
+      class="hypar-challenge-hero"
+    >
+      <p class="hypar-challenge-hero__label">Current challenge</p>
+      <AiShimmer v-if="askingAgent && !streamPreview && !focalChallenge" :active="true" :lines="2" />
+      <p v-else class="hypar-challenge-hero__q">
+        {{ streamPreview || focalChallenge }}
+        <AiStreamingCursor v-if="askingAgent && streamPreview" :active="true" character="|" />
+      </p>
+    </div>
+
+    <!-- Compact prior-turn log (not chat-stack dominant) -->
+    <div v-if="priorTurns.length" class="hypar-turn-log border-b border-[var(--term-accent-faint)]">
       <div
-        v-if="dialogueMessages.length || askingAgent"
-        class="hypar-chat-thread px-4 py-3"
-        data-ai-message-list
-        role="log"
+        v-for="(turn, idx) in priorTurns"
+        :key="`${turn.role}-${idx}`"
+        class="hypar-turn-log__row"
       >
-        <AiMessage
-          v-for="(msg, idx) in dialogueMessages"
-          :key="`${msg.role}-${idx}`"
-          v-bind="msg"
+        <span class="hypar-turn-log__role">{{ turn.role === 'agent' ? 'agent' : 'you' }}</span>
+        <span class="hypar-turn-log__text line-clamp-2">{{ turn.text }}</span>
+      </div>
+    </div>
+
+    <div
+      v-else-if="emptyHint && !focalChallenge && !askingAgent"
+      class="px-4 py-3 wz-faint text-[11px]"
+    >
+      <AiShimmer v-if="agentThinking || (neverEngaged && !firstEngageFailed && !isFossil)" :active="true" :lines="2" />
+      <span v-else>{{ emptyHint }}</span>
+    </div>
+
+    <div
+      v-if="unansweredQuestion && !isFossil"
+      class="p-4 border-t border-[var(--term-accent-faint)] flex flex-col gap-3"
+    >
+      <div class="flex items-start gap-2">
+        <AiPromptInput
+          v-model="replyInput"
+          class="flex-1"
+          :rows="3"
+          submit-shortcut="mod+enter"
+          placeholder="Reply — push back, go deeper, or name the assumption"
+          :disabled="replying || askingAgent"
+          :loading="replying || askingAgent"
+          @submit="submitReply"
+        />
+        <AiSpeechInput
+          class="hypar-speech shrink-0 pt-1"
+          :language="speechLang"
+          @result="onReplySpeech"
         >
-          <template #content="{ content }">
-            <AiMarkdown :content="content || ''" />
-          </template>
-        </AiMessage>
-        <AiMessage
-          v-if="askingAgent"
-          role="assistant"
-          :content="streamPreview"
-          :status="streamPreview ? 'streaming' : 'pending'"
+          <template #transcript />
+          <template #unsupported />
+        </AiSpeechInput>
+      </div>
+      <div class="flex items-center justify-between gap-2">
+        <AiSuggestion
+          v-if="replySuggestions.length"
+          :suggestions="replySuggestions"
+          @select="onSuggestion"
+        />
+        <span v-else />
+        <button
+          class="wz-btn-primary text-[11px] disabled:opacity-40"
+          :disabled="!replyInput.trim() || replying || askingAgent"
+          @click="submitReply"
         >
-          <template #content="{ content, isStreaming }">
-            <AiShimmer v-if="!content" :active="true" :lines="2" />
-            <template v-else>
-              <AiMarkdown :content="content || ''" />
-              <AiStreamingCursor :active="!!isStreaming" character="█" />
-            </template>
-          </template>
-        </AiMessage>
+          {{ replying ? '…' : 'Reply' }}
+        </button>
       </div>
-
-      <div
-        v-else-if="emptyHint"
-        class="px-4 py-3 wz-faint text-[11px]"
-      >
-        <AiShimmer v-if="agentThinking || (neverEngaged && !firstEngageFailed && !isFossil)" :active="true" :lines="2" />
-        <span v-else>{{ emptyHint }}</span>
-      </div>
-
-      <div
-        v-if="unansweredQuestion && !isFossil"
-        class="p-4 border-t border-[var(--term-accent-faint)] flex flex-col gap-3"
-      >
-        <div class="flex items-start gap-2">
-          <AiPromptInput
-            v-model="replyInput"
-            class="flex-1"
-            :rows="3"
-            submit-shortcut="mod+enter"
-            placeholder="reply — push back, go deeper, or name the assumption"
-            :disabled="replying || askingAgent"
-            :loading="replying || askingAgent"
-            @submit="submitReply"
-          />
-          <AiSpeechInput
-            class="hypar-speech shrink-0 pt-1"
-            :language="speechLang"
-            @result="onReplySpeech"
-          >
-            <template #transcript />
-            <template #unsupported />
-          </AiSpeechInput>
-        </div>
-        <div class="flex items-center justify-between gap-2">
-          <AiSuggestion
-            v-if="replySuggestions.length"
-            :suggestions="replySuggestions"
-            @select="onSuggestion"
-          />
-          <span v-else />
-          <button
-            class="text-[11px] wz-accent border border-[var(--term-accent-line)] px-2 py-0.5 hover:bg-[var(--term-accent-soft)] disabled:opacity-40 transition-colors"
-            :disabled="!replyInput.trim() || replying || askingAgent"
-            @click="submitReply"
-          >
-            {{ replying ? '...' : 'reply' }}
-          </button>
-        </div>
-      </div>
+    </div>
   </div>
 </template>
+

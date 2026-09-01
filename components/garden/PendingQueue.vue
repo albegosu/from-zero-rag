@@ -40,10 +40,7 @@ function openItem(item: AiQueueItem) {
 <template>
   <div v-if="items.length" class="wz-panel">
     <div class="wz-panel-header flex items-center justify-between">
-      <div>
-        <span class="wz-accent">$</span>
-        <span class="wz-label ml-2">agent.queue</span>
-      </div>
+      <span class="wz-label">Pending challenges</span>
       <span class="wz-faint text-[10px]">{{ items.length }} unanswered</span>
     </div>
     <div class="p-3">

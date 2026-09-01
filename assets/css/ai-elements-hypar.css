@@ -1,10 +1,10 @@
 /**
- * hypar terminal theme overrides for ai-elements-nuxt [data-ai-*] hooks.
+ * hypar glass theme overrides for ai-elements-nuxt [data-ai-*] hooks.
  */
 
 .terminal-theme [data-ai-message] {
-  font-family: var(--term-font-mono);
-  padding: 0.5rem 0.75rem;
+  font-family: var(--term-font-sans);
+  padding: 0.55rem 0.8rem;
   border-radius: var(--term-radius);
   max-width: 90%;
   gap: 0.35rem;
@@ -25,7 +25,7 @@
 }
 
 .terminal-theme [data-ai-prompt-input] {
-  font-family: var(--term-font-mono);
+  font-family: var(--term-font-sans);
   border: 0;
   border-radius: var(--term-radius);
   background: transparent;
@@ -38,6 +38,7 @@
   font-size: 0.875rem;
   color: var(--term-text);
   min-height: 1.5rem;
+  font-family: var(--term-font-sans);
 }
 
 .terminal-theme [data-ai-prompt-input] textarea::placeholder {
@@ -68,10 +69,11 @@
   font-size: 0.6875rem;
   font-family: var(--term-font-mono);
   margin-bottom: 0.35rem;
-  padding: 0.35rem 0.5rem;
+  padding: 0.4rem 0.55rem;
   border: 1px dashed var(--term-accent-line);
   border-radius: var(--term-radius);
   color: var(--term-text-dim);
+  background: var(--term-bg-soft);
 }
 
 .terminal-theme [data-ai-tool-name] {
@@ -83,6 +85,7 @@
   line-height: 1.625;
   overflow-wrap: break-word;
   word-break: break-word;
+  font-family: var(--term-font-sans);
 }
 
 .terminal-theme [data-ai-markdown] p {
@@ -96,16 +99,18 @@
 .terminal-theme [data-ai-markdown] code {
   background: var(--term-accent-soft);
   padding: 0.1em 0.3em;
-  border-radius: 3px;
+  border-radius: 6px;
   font-size: 0.9em;
+  font-family: var(--term-font-mono);
 }
 
 .terminal-theme [data-ai-markdown] pre {
   background: var(--term-accent-soft);
-  padding: 0.6rem 0.8rem;
-  border-radius: 4px;
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--term-radius);
   overflow-x: auto;
   margin: 0.5rem 0;
+  border: 1px solid var(--term-accent-faint);
 }
 
 .terminal-theme [data-ai-markdown] pre code {
@@ -144,12 +149,12 @@
 }
 
 .terminal-theme [data-ai-suggestion] {
-  font-family: var(--term-font-mono);
+  font-family: var(--term-font-sans);
   font-size: 0.75rem;
-  padding: 0.35rem 0.65rem;
+  padding: 0.35rem 0.75rem;
   border: 1px solid var(--term-accent-line);
-  border-radius: var(--term-radius);
-  background: transparent;
+  border-radius: var(--term-radius-pill);
+  background: var(--term-bg-soft);
   color: var(--term-text-muted);
   cursor: pointer;
 }
@@ -160,7 +165,7 @@
 }
 
 .terminal-theme [data-ai-conversation] {
-  font-family: var(--term-font-mono);
+  font-family: var(--term-font-sans);
   font-size: 0.75rem;
 }
 
@@ -177,7 +182,7 @@
 .terminal-theme [data-ai-conversation-item] button {
   width: 100%;
   text-align: left;
-  padding: 0.5rem;
+  padding: 0.55rem 0.65rem;
   border: 1px solid var(--term-accent-faint);
   border-radius: var(--term-radius);
   background: var(--term-bg-soft);
@@ -191,7 +196,7 @@
 }
 
 .terminal-theme [data-ai-model-selector] button {
-  font-family: var(--term-font-mono);
+  font-family: var(--term-font-sans);
   font-size: 0.625rem;
   background: transparent;
   border: none;
@@ -215,16 +220,18 @@
   display: flex;
   flex-direction: column;
   border: 1px solid var(--term-accent-line);
-  border-radius: var(--term-radius);
-  background: var(--term-bg);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  border-radius: var(--term-radius-lg);
+  background: var(--term-bg-elevated);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: var(--term-shadow);
   overflow: hidden;
 }
 
 .terminal-theme [data-ai-model-selector-dropdown] input {
   width: 100%;
   padding: 0.375rem 0.5rem;
-  font-family: var(--term-font-mono);
+  font-family: var(--term-font-sans);
   font-size: 0.6875rem;
   background: transparent;
   border: none;
@@ -234,7 +241,7 @@
 }
 
 .terminal-theme [data-ai-error-boundary] {
-  font-family: var(--term-font-mono);
+  font-family: var(--term-font-sans);
   font-size: 0.875rem;
 }
 
@@ -274,7 +281,7 @@
 }
 
 .terminal-theme [data-ai-confirmation] {
-  padding: 0.75rem 1rem;
+  padding: 0.85rem 1.1rem;
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
@@ -283,11 +290,14 @@
 
 .terminal-theme [data-ai-confirmation-title] {
   font-size: 0.625rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--term-accent);
+  font-weight: 600;
 }
 
 .terminal-theme [data-ai-confirmation-desc] {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   color: var(--term-text-strong);
   line-height: 1.5;
 }
@@ -295,21 +305,22 @@
 .terminal-theme [data-ai-confirmation-actions] {
   display: flex;
   gap: 0.75rem;
-  margin-top: 0.25rem;
+  margin-top: 0.35rem;
 }
 
 .terminal-theme [data-ai-confirmation-confirm],
 .terminal-theme [data-ai-confirmation-deny] {
-  font-size: 0.625rem;
+  font-size: 0.7rem;
   background: transparent;
   border: 0;
   cursor: pointer;
-  padding: 0;
-  font-family: var(--term-font-mono);
+  padding: 0.2rem 0;
+  font-family: var(--term-font-sans);
 }
 
 .terminal-theme [data-ai-confirmation-confirm] {
   color: var(--term-accent);
+  font-weight: 600;
 }
 
 .terminal-theme [data-ai-confirmation-deny] {
@@ -322,7 +333,7 @@
 
 .terminal-theme [data-ai-context] {
   font-size: 0.625rem;
-  font-family: var(--term-font-mono);
+  font-family: var(--term-font-sans);
   color: var(--term-text-dim);
 }
 
@@ -377,18 +388,22 @@
 .terminal-theme [data-ai-node] {
   width: 156px;
   min-height: 52px;
-  padding: 0.4rem 0.5rem;
+  padding: 0.45rem 0.55rem;
   border: 1px solid var(--term-accent-line);
   border-radius: var(--term-radius);
-  background: var(--term-bg);
+  background: var(--term-bg-elevated);
   color: var(--term-text);
-  font-family: var(--term-font-mono);
+  font-family: var(--term-font-sans);
   box-sizing: border-box;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: var(--term-shadow);
 }
 
 .terminal-theme [data-ai-node][data-type="current"] {
-  border-color: var(--term-accent);
+  border-color: color-mix(in srgb, var(--term-accent) 55%, var(--term-accent-line));
   background: var(--term-accent-soft);
+  box-shadow: var(--term-shadow), var(--term-glow);
 }
 
 .terminal-theme [data-ai-node][data-type="fossil"] {
@@ -425,19 +440,22 @@
 .terminal-theme [data-ai-edge] text {
   font-size: 9px;
   fill: var(--term-text-dim);
-  font-family: var(--term-font-mono);
+  font-family: var(--term-font-sans);
 }
 
 .terminal-theme [data-ai-controls] {
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  padding: 0.25rem 0.4rem;
-  background: var(--term-bg);
+  padding: 0.3rem 0.45rem;
+  background: var(--term-bg-elevated);
   border: 1px solid var(--term-accent-line);
-  border-radius: var(--term-radius);
-  font-family: var(--term-font-mono);
+  border-radius: var(--term-radius-pill);
+  font-family: var(--term-font-sans);
   font-size: 0.625rem;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--term-shadow);
 }
 
 .terminal-theme [data-ai-controls] button {
@@ -459,18 +477,20 @@
 }
 
 .terminal-theme [data-ai-speech-input] button {
-  font-family: var(--term-font-mono);
+  font-family: var(--term-font-sans);
   font-size: 0.625rem;
-  background: transparent;
+  background: var(--term-bg-soft);
   border: 1px solid var(--term-accent-faint);
+  border-radius: var(--term-radius-pill);
   color: var(--term-text-dim);
   cursor: pointer;
-  padding: 0.25rem 0.45rem;
+  padding: 0.3rem 0.55rem;
 }
 
 .terminal-theme [data-ai-speech-input][data-listening] button {
   border-color: var(--term-accent);
   color: var(--term-accent);
+  box-shadow: var(--term-glow);
 }
 
 .terminal-theme .hypar-speech [data-ai-speech-unsupported] {
@@ -485,5 +505,5 @@
 
 .terminal-theme [data-ai-shimmer-line] {
   height: 0.55rem;
-  border-radius: 2px;
+  border-radius: 999px;
 }

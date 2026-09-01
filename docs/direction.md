@@ -26,6 +26,7 @@ Each shipped surface is an experiment. Findings live under [Experiments](/experi
 - Ideas that stay **accountable** when they die (reasoned fossils, not silent delete)
 - Interaction patterns small enough to **extract** into reusable primitives ([`ai-elements-nuxt`](https://github.com/albegosu/ai-elements-nuxt))
 - Claims that match **runtime** — aspirational ideas stay marked as such
+- A **glass + rounded** app visual language (light and dark) — see [ADR 0004](/decisions/0004-glass-visual-language); not terminal chrome as the default voice
 
 ## What we are not optimizing for
 
@@ -33,6 +34,7 @@ Each shipped surface is an experiment. Findings live under [Experiments](/experi
 - Multi-user shared gardens (deferred — single garden per user; see [Open Questions](/open-questions))
 - Invented roadmap items that are not backed by experiments or ADRs
 - Treating [agents-plans/](https://github.com/albegosu/hypar/blob/main/agents-plans/) scratch notes as product truth
+- CLI/terminal aesthetics as the product UI (docs marketing may differ)
 
 ## Experiments ↔ product ↔ extraction
 

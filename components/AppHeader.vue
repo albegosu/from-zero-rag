@@ -1,11 +1,11 @@
 <template>
   <header class="sticky top-0 z-50 glass hairline-b">
-    <div class="px-4 h-12 flex items-center justify-between text-xs">
+    <div class="px-4 h-14 flex items-center justify-between text-xs">
 
       <NuxtLink to="/" class="flex items-center gap-3 shrink-0">
         <BrandHyparMark />
         <div class="flex items-center gap-2">
-          <span class="wz-strong font-semibold">{{ t('app.brand') }}</span>
+          <span class="wz-strong font-semibold text-sm tracking-tight">{{ t('app.brand') }}</span>
         </div>
       </NuxtLink>
 
@@ -39,7 +39,6 @@
       </NuxtLink>
 
       <div class="flex flex-1 items-center gap-1 min-w-0 ml-auto justify-end">
-        <!-- mobile menu toggle -->
         <button
           v-if="user"
           type="button"
@@ -48,7 +47,7 @@
           aria-label="Menu"
           @click="mobileMenuOpen = !mobileMenuOpen"
         >
-          {{ mobileMenuOpen ? '✕' : '☰' }}
+          {{ mobileMenuOpen ? 'Close' : 'Menu' }}
         </button>
 
         <NuxtLink
@@ -56,7 +55,7 @@
           to="/settings"
           class="hidden md:inline-flex wz-btn-ghost text-[11px] shrink-0"
         >
-          [ settings ]
+          Settings
         </NuxtLink>
 
         <NuxtLink
@@ -64,7 +63,7 @@
           to="/admin"
           class="hidden md:inline-flex wz-btn-ghost text-[11px] shrink-0"
         >
-          [ admin ]
+          Admin
         </NuxtLink>
 
         <button
@@ -95,11 +94,10 @@
           aria-label="Toggle theme"
           @click="toggleTheme"
         >
-          {{ theme === 'light' ? '[ light ]' : '[ dark ]' }}
+          {{ theme === 'light' ? 'Light' : 'Dark' }}
         </button>
 
         <div v-if="user" class="hidden md:flex items-center gap-1 ml-1 min-w-0 shrink-0">
-          <span class="wz-faint shrink-0">@</span>
           <span class="wz-muted truncate max-w-[120px]">{{ userLabel }}</span>
         </div>
 
@@ -110,15 +108,15 @@
             class="hidden md:inline-flex wz-btn-ghost text-[11px] ml-1 shrink-0"
             @click="confirmLogout = true"
           >
-            [ logout ]
+            Log out
           </button>
           <div v-else class="hidden md:flex items-center gap-1 ml-1 shrink-0">
-            <span class="wz-faint text-[11px]">sure?</span>
+            <span class="wz-faint text-[11px]">Sure?</span>
             <button type="button" class="wz-btn-ghost text-[11px]" :disabled="loggingOut" @click="logout">
-              {{ loggingOut ? '…' : 'yes' }}
+              {{ loggingOut ? '…' : 'Yes' }}
             </button>
             <button type="button" class="wz-btn-ghost text-[11px]" @click="confirmLogout = false">
-              no
+              No
             </button>
           </div>
         </template>
@@ -126,7 +124,6 @@
 
     </div>
 
-    <!-- Mobile slide-out menu -->
     <div
       v-if="user && mobileMenuOpen"
       class="md:hidden glass hairline-b px-4 py-3 space-y-2 text-xs"
@@ -137,13 +134,13 @@
           to="/settings"
           class="wz-btn-ghost text-[11px]"
           @click="mobileMenuOpen = false"
-        >[ settings ]</NuxtLink>
+        >Settings</NuxtLink>
         <NuxtLink
           v-if="isAdmin"
           to="/admin"
           class="wz-btn-ghost text-[11px]"
           @click="mobileMenuOpen = false"
-        >[ admin ]</NuxtLink>
+        >Admin</NuxtLink>
 
         <button
           type="button"
@@ -161,13 +158,13 @@
       </div>
 
       <div class="flex items-center justify-between pt-1 hairline-t">
-        <span class="wz-muted">@{{ userLabel }}</span>
+        <span class="wz-muted">{{ userLabel }}</span>
         <button
           type="button"
           class="wz-btn-ghost text-[11px]"
           :disabled="loggingOut"
           @click="logout"
-        >[ logout ]</button>
+        >Log out</button>
       </div>
     </div>
   </header>

@@ -216,7 +216,9 @@ function glyphFor(state: unknown) {
       @fit-view="fit"
     />
     <p class="px-3 py-2 text-[10px] wz-faint">
-      dashed = inferred (unconfirmed) · solid = explicit · double-click a node to open
+      {{ neighborEntries().length
+        ? 'Dashed = inferred (unconfirmed) · solid = explicit · double-click a node to open'
+        : 'Empty graph shell — connect another embryo to grow the map' }}
     </p>
   </div>
 </template>

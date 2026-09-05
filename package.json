@@ -36,7 +36,7 @@
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "@vueuse/nuxt": "^11.0.0",
-    "ai": "^6.0.174",
+    "ai": "^7.0.90",
     "ai-elements-nuxt": "^1.5.0",
     "better-auth": "^1.6.10",
     "pg": "^8.20.0",
